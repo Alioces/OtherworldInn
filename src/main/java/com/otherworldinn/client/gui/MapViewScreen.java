@@ -8,7 +8,6 @@ import net.minecraft.network.chat.Component;
 
 /**
  * 地图视图屏幕
- * 显示 HUD 或其他 UI 元素
  */
 public class MapViewScreen extends Screen {
 
@@ -32,12 +31,12 @@ public class MapViewScreen extends Screen {
     
     @Override
     public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        
+        // 留空以保持背景透明，不渲染默认的暗色背景
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        // 允许通过再次按下 M 键关闭
+        // 再次按下 M 键关闭
         if (ModKeyBindings.TOGGLE_STRATEGY_MODE.matches(keyCode, scanCode)) {
             this.onClose();
             return true;

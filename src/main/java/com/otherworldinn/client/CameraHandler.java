@@ -1,6 +1,7 @@
 package com.otherworldinn.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexSorting;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ClientConfig;
 import com.otherworldinn.init.ModKeyBindings;
@@ -15,30 +16,26 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
-import org.lwjgl.glfw.GLFW;
 
 import com.otherworldinn.client.gui.MapViewScreen;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
-import net.neoforged.neoforge.client.event.RenderPlayerEvent;
-import net.neoforged.neoforge.client.event.RenderLivingEvent;
-
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.minecraft.client.gui.Gui;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT)
+/**
+ * 摄像机处理器
+ */
 public class CameraHandler {
 
     private static boolean isStrategyMode = false;
     private static Entity dummyCameraEntity;
     private static Entity originalCameraEntity;
     
-    // Animation fields
     private static boolean isTransitioning = false;
     private static float transitionProgress = 0.0f;
     private static final float TRANSITION_DURATION = 5.0f;
@@ -49,11 +46,14 @@ public class CameraHandler {
     private static float startYaw, startPitch;
     private static float targetYaw, targetPitch;
 
+    /**
+     * 处理按键输入事件
+     * @param event 按键事件
+     */
     @SubscribeEvent
     public static void onKeyInput(InputEvent.Key event) {
         if (ModKeyBindings.TOGGLE_STRATEGY_MODE.consumeClick()) {
             if (isStrategyMode) {
-                // 如果已经在地图模式，则关闭它（通常通过 GUI 关闭，但这里作为备份）
                 disableStrategyMode();
             } else {
                 enableStrategyMode();
@@ -61,27 +61,25 @@ public class CameraHandler {
         }
     }
 
+    /**
+     * 打开地图
+     */
     public static void enableStrategyMode() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
         
-        // Start transition
         isTransitioning = true;
         transitionProgress = 0.0f;
         transitionToStrategy = true;
         
         originalCameraEntity = mc.getCameraEntity();
         
-        // Create dummy entity if needed
         if (dummyCameraEntity == null || !dummyCameraEntity.isAlive()) {
             dummyCameraEntity = new ArmorStand(EntityType.ARMOR_STAND, mc.level);
             dummyCameraEntity.setInvisible(true);
             dummyCameraEntity.setNoGravity(true);
             mc.level.addEntity(dummyCameraEntity);
         }
-
-        
-        // Setup target position
         double x = ClientConfig.INSTANCE.cameraX.get();
         double y = ClientConfig.INSTANCE.cameraY.get();
         double z = ClientConfig.INSTANCE.cameraZ.get();
@@ -89,38 +87,32 @@ public class CameraHandler {
         targetYaw = ClientConfig.INSTANCE.cameraYaw.get().floatValue();
         targetPitch = ClientConfig.INSTANCE.cameraPitch.get().floatValue();
         
-        // 修改：初始位置不是玩家位置，而是目标位置减去一定高度（例如 -5）
-        // 这样效果是从下方升起
         startPos = new Vec3(x, y - 5.0, z);
         startYaw = targetYaw;
         startPitch = targetPitch;
         
-        // Set initial dummy state to start position
         updateDummyEntity(startPos, startYaw, startPitch);
         
         mc.setCameraEntity(dummyCameraEntity);
         mc.options.setCameraType(CameraType.FIRST_PERSON);
         mc.player.setInvisible(false);
         
-        // Don't set screen yet, wait for transition? Or set immediately?
-        // Set immediately to block input, but maybe we want to see the transition
-        // MapViewScreen handles input blocking.
-        // Let's set it immediately.
         mc.setScreen(new MapViewScreen());
         
         isStrategyMode = true;
     }
 
+    /**
+     * 关闭地图
+     */
     public static void disableStrategyMode() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
 
-        // Start transition back
         isTransitioning = true;
         transitionProgress = 0.0f;
         transitionToStrategy = false;
         
-        // Current dummy pos is start (which is the high position)
         double x = ClientConfig.INSTANCE.cameraX.get();
         double y = ClientConfig.INSTANCE.cameraY.get();
         double z = ClientConfig.INSTANCE.cameraZ.get();
@@ -128,17 +120,21 @@ public class CameraHandler {
         startYaw = ClientConfig.INSTANCE.cameraYaw.get().floatValue();
         startPitch = ClientConfig.INSTANCE.cameraPitch.get().floatValue();
         
-        // Target is lower position (not player position)
         targetPos = new Vec3(x, y - 5.0, z);
         targetYaw = startYaw;
         targetPitch = startPitch;
         
-        // Close screen immediately
         if (mc.screen instanceof MapViewScreen) {
             mc.setScreen(null);
         }
     }
     
+    /**
+     * 更新虚拟摄像机实体的位置和旋转
+     * @param pos 位置
+     * @param yaw 偏航角
+     * @param pitch 俯仰角
+     */
     private static void updateDummyEntity(Vec3 pos, float yaw, float pitch) {
         if (dummyCameraEntity == null) return;
         dummyCameraEntity.setPos(pos.x, pos.y, pos.z);
@@ -154,6 +150,9 @@ public class CameraHandler {
         }
     }
 
+    /**
+     * 阻止第一人称手部渲染
+     */
     @SubscribeEvent
     public static void onRenderHand(RenderHandEvent event) {
         if (isStrategyMode) {
@@ -161,36 +160,22 @@ public class CameraHandler {
         }
     }
 
-    @SubscribeEvent
-    public static void onRenderLiving(RenderLivingEvent.Pre<?, ?> event) {
-        if (isStrategyMode && event.getEntity() == Minecraft.getInstance().player) {
-            // 确保玩家总是被渲染
-            // 某些 Mod 或原版逻辑可能因为 cameraEntity != player 而跳过一些渲染阶段
-            // 这里我们不做取消操作，默认应该渲染
-        }
-    }
-
-    @SubscribeEvent
-    public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
-         if (isStrategyMode) {
-             // 强制设置透明度为 1.0，防止意外透明
-             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-         }
-    }
 
 
+    /**
+     * 应用正交投影矩阵
+     * <p>
+     * 在 {@link RenderLevelStageEvent.Stage#AFTER_SKY} 阶段修改投影矩阵，
+     * </p>
+     */
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY && isStrategyMode) {
             double size = ClientConfig.INSTANCE.orthoSize.get();
             double aspectRatio = (double) Minecraft.getInstance().getWindow().getWidth() / (double) Minecraft.getInstance().getWindow().getHeight();
             
-            double near = 0.05;
-            double far = Minecraft.getInstance().gameRenderer.getRenderDistance();
-            
-            // Apply zoom animation during transition if desired, or just static
-            // Maybe interpolate size too?
-            // For now, static ortho size.
+            double near = -256.0;
+            double far = 256.0;
             
             Matrix4f ortho = new Matrix4f();
             ortho.setOrtho(
@@ -202,22 +187,27 @@ public class CameraHandler {
                     (float)far
             );
             
+            RenderSystem.setProjectionMatrix(ortho, VertexSorting.DISTANCE_TO_ORIGIN);
+            
             event.getProjectionMatrix().set(ortho);
         }
     }
     
+    /**
+     * 隐藏准星
+     */
     @SubscribeEvent
     public static void onRenderGuiLayer(RenderGuiLayerEvent.Pre event) {
         if (isStrategyMode) {
-             // Block crosshair
-             // In 1.21, layers are identified by ResourceLocation
-             // Vanilla layers are in VanillaGuiLayers
              if (event.getName().getPath().equals("crosshair")) {
                  event.setCanceled(true);
              }
         }
     }
 
+    /**
+     * 客户端每刻更新
+     */
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         if (isTransitioning) {
@@ -228,19 +218,15 @@ public class CameraHandler {
                 
                 if (!transitionToStrategy) {
                     finishDisableStrategyMode();
-                    return; // Stop processing
+                    return;
                 }
             }
             
             float t;
             if (transitionToStrategy) {
-                // Ease out (decelerating)
-                // 1 - (1 - x)^3
                 float f = 1.0f - transitionProgress;
                 t = 1.0f - f * f * f;
             } else {
-                // Ease in (accelerating)
-                // x^3
                 t = transitionProgress * transitionProgress * transitionProgress;
             }
             
@@ -270,6 +256,9 @@ public class CameraHandler {
         }
     }
     
+    /**
+     * 完成退出地图视角
+     */
     private static void finishDisableStrategyMode() {
         Minecraft mc = Minecraft.getInstance();
         isStrategyMode = false;
@@ -286,13 +275,4 @@ public class CameraHandler {
         }
     }
     
-    @SubscribeEvent
-    public static void onKeyInputPre(InputEvent.Key event) {
-        if (isStrategyMode && Minecraft.getInstance().screen == null) {
-            // Allow toggle key
-            if (event.getKey() == ModKeyBindings.TOGGLE_STRATEGY_MODE.getKey().getValue()) {
-                return;
-            }
-        }
-    }
 }
