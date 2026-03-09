@@ -124,8 +124,14 @@ public class CameraHandler {
         targetYaw = startYaw;
         targetPitch = startPitch;
         
-        if (mc.screen instanceof MapViewScreen) {
-            mc.setScreen(null);
+        if (mc.screen instanceof MapViewScreen mapScreen) {
+            // 不立即关闭屏幕，而是通知屏幕开始关闭动画
+            mapScreen.startClosing();
+        } else {
+            // 如果不是地图屏幕（异常情况），则直接关闭
+            if (mc.screen instanceof MapViewScreen) {
+                mc.setScreen(null);
+            }
         }
     }
     
@@ -174,8 +180,8 @@ public class CameraHandler {
             double size = ClientConfig.INSTANCE.orthoSize.get();
             double aspectRatio = (double) Minecraft.getInstance().getWindow().getWidth() / (double) Minecraft.getInstance().getWindow().getHeight();
             
-            double near = -256.0;
-            double far = 256.0;
+            double near = -128.0;
+            double far = 128.0;
             
             Matrix4f ortho = new Matrix4f();
             ortho.setOrtho(
@@ -256,6 +262,28 @@ public class CameraHandler {
         }
     }
     
+    /**
+     * 获取虚拟摄像机实体的当前位置
+     * @return 位置，如果虚拟实体不存在则返回 null
+     */
+    public static Vec3 getDummyCameraPos() {
+        return dummyCameraEntity != null ? dummyCameraEntity.position() : null;
+    }
+    
+    /**
+     * 获取目标偏航角
+     */
+    public static float getTargetYaw() {
+        return targetYaw;
+    }
+    
+    /**
+     * 获取目标俯仰角
+     */
+    public static float getTargetPitch() {
+        return targetPitch;
+    }
+
     /**
      * 完成退出地图视角
      */

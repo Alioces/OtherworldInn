@@ -1,5 +1,24 @@
 {
+  "command.otherworldinn.team.already_in_team": "你已经在一个队伍中了！",
+  "command.otherworldinn.team.created": "已创建队伍：%s",
+  "command.otherworldinn.team.joined": "已加入队伍：%s",
+  "command.otherworldinn.team.kick_self": "你不能踢出你自己！请使用离开命令。",
+  "command.otherworldinn.team.kicked": "已将 %s 踢出队伍。",
+  "command.otherworldinn.team.left": "已离开队伍。",
+  "command.otherworldinn.team.not_in_team": "你不在一个队伍中！",
+  "command.otherworldinn.team.not_leader": "只有队长可以执行此操作！",
+  "command.otherworldinn.team.renamed": "队伍已重命名为：%s",
+  "command.otherworldinn.team.target_no_team": "目标玩家不在队伍中！",
+  "command.otherworldinn.team.target_not_in_team": "目标玩家不在你的队伍中！",
+  "command.otherworldinn.team.teleport_set": "队伍传送功能已设置为：%s",
+  "command.otherworldinn.team.transferred": "队长职位已移交给 %s",
+  "command.otherworldinn.team.you_were_kicked": "你已被踢出队伍。",
   "itemGroup.otherworldinn": "异界旅社",
   "key.categories.otherworldinn": "异界旅社",
-  "key.otherworldinn.strategy_mode": "地图视图"
+  "key.otherworldinn.strategy_mode": "地图视图",
+  "map_point.otherworldinn.blacksmith": "铁匠铺",
+  "map_point.otherworldinn.cant_teleport": "无法传送至",
+  "map_point.otherworldinn.inn": "旅社",
+  "map_point.otherworldinn.locked": "未解锁",
+  "map_point.otherworldinn.town_gate": "城镇大门"
 }

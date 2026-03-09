@@ -33,10 +33,56 @@ public class ModLanguageProvider extends LanguageProvider {
             add("itemGroup.otherworldinn", "异界旅社");
             add("key.categories.otherworldinn", "异界旅社");
             add("key.otherworldinn.strategy_mode", "地图视图");
+            
+            // 地图点名称
+            add("map_point.otherworldinn.inn", "旅社");
+            add("map_point.otherworldinn.blacksmith", "铁匠铺");
+            add("map_point.otherworldinn.town_gate", "城镇大门");
+            add("map_point.otherworldinn.locked", "未解锁");
+            add("map_point.otherworldinn.cant_teleport", "无法传送至");
+            
+            // 队伍命令
+            add("command.otherworldinn.team.already_in_team", "你已经在一个队伍中了！");
+            add("command.otherworldinn.team.created", "已创建队伍：%s");
+            add("command.otherworldinn.team.target_no_team", "目标玩家不在队伍中！");
+            add("command.otherworldinn.team.joined", "已加入队伍：%s");
+            add("command.otherworldinn.team.not_in_team", "你不在一个队伍中！");
+            add("command.otherworldinn.team.left", "已离开队伍。");
+            add("command.otherworldinn.team.not_leader", "只有队长可以执行此操作！");
+            add("command.otherworldinn.team.target_not_in_team", "目标玩家不在你的队伍中！");
+            add("command.otherworldinn.team.kick_self", "你不能踢出你自己！请使用离开命令。");
+            add("command.otherworldinn.team.kicked", "已将 %s 踢出队伍。");
+            add("command.otherworldinn.team.you_were_kicked", "你已被踢出队伍。");
+            add("command.otherworldinn.team.transferred", "队长职位已移交给 %s");
+            add("command.otherworldinn.team.renamed", "队伍已重命名为：%s");
+            add("command.otherworldinn.team.teleport_set", "队伍传送功能已设置为：%s");
         } else {
             add("itemGroup.otherworldinn", "Otherworld Inn");
             add("key.categories.otherworldinn", "Otherworld Inn");
             add("key.otherworldinn.strategy_mode", "Map View");
+            
+            // Map Point Names
+            add("map_point.otherworldinn.inn", "Otherworld Inn");
+            add("map_point.otherworldinn.blacksmith", "Blacksmith");
+            add("map_point.otherworldinn.town_gate", "Town Gate");
+            add("map_point.otherworldinn.locked", "Locked");
+            add("map_point.otherworldinn.cant_teleport", "Cannot teleport to");
+            
+            // Team Commands
+            add("command.otherworldinn.team.already_in_team", "You are already in a team!");
+            add("command.otherworldinn.team.created", "Created team: %s");
+            add("command.otherworldinn.team.target_no_team", "Target player is not in a team!");
+            add("command.otherworldinn.team.joined", "Joined team: %s");
+            add("command.otherworldinn.team.not_in_team", "You are not in a team!");
+            add("command.otherworldinn.team.left", "Left the team.");
+            add("command.otherworldinn.team.not_leader", "Only the leader can perform this action!");
+            add("command.otherworldinn.team.target_not_in_team", "Target player is not in your team!");
+            add("command.otherworldinn.team.kick_self", "You cannot kick yourself! Use leave command.");
+            add("command.otherworldinn.team.kicked", "Kicked %s from the team.");
+            add("command.otherworldinn.team.you_were_kicked", "You were kicked from the team.");
+            add("command.otherworldinn.team.transferred", "Transferred leadership to %s");
+            add("command.otherworldinn.team.renamed", "Renamed team to: %s");
+            add("command.otherworldinn.team.teleport_set", "Team teleport capability set to: %s");
         }
 
         // 生成方块语言键
