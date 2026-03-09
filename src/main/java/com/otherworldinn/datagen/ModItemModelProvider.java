@@ -42,14 +42,14 @@ public class ModItemModelProvider extends ItemModelProvider {
     
     private void simpleItem(DeferredItem<?> item) {
         withExistingParent(item.getId().getPath(),
-                new ResourceLocation("item/generated")).texture("layer0",
-                new ResourceLocation(OtherworldInn.MODID,"item/" + item.getId().getPath()));
+                ResourceLocation.parse("item/generated")).texture("layer0",
+                ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "item/" + item.getId().getPath()));
     }
 
     private void handheldItem(DeferredItem<?> item) {
         withExistingParent(item.getId().getPath(),
-                new ResourceLocation("item/handheld")).texture("layer0",
-                new ResourceLocation(OtherworldInn.MODID,"item/" + item.getId().getPath()));
+                ResourceLocation.parse("item/handheld")).texture("layer0",
+                ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "item/" + item.getId().getPath()));
     }
 }
 

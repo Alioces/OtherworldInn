@@ -1,8 +1,11 @@
 # Gradle files
+gradle/
 .gradle/
 build/
 out/
 gradle/kotlin/
+src/generated/resources/.cache
+.github/
 
 # Eclipse
 .classpath

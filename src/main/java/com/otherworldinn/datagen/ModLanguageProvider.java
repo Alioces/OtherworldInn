@@ -18,18 +18,25 @@ import java.util.Map;
  * 负责生成 en_us.json 和 zh_cn.json
  */
 public class ModLanguageProvider extends LanguageProvider {
+    private final String locale;
+
     public ModLanguageProvider(PackOutput output, String locale) {
         super(output, OtherworldInn.MODID, locale);
+        this.locale = locale;
     }
 
     @Override
     protected void addTranslations() {
-        boolean isZh = "zh_cn".equals(getName().replace("Languages: ", ""));
+        boolean isZh = "zh_cn".equals(locale);
         
         if (isZh) {
             add("itemGroup.otherworldinn", "异界旅社");
+            add("key.categories.otherworldinn", "异界旅社");
+            add("key.otherworldinn.strategy_mode", "地图视图");
         } else {
             add("itemGroup.otherworldinn", "Otherworld Inn");
+            add("key.categories.otherworldinn", "Otherworld Inn");
+            add("key.otherworldinn.strategy_mode", "Map View");
         }
 
         // 生成方块语言键

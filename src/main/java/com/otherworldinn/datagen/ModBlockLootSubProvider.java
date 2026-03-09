@@ -5,6 +5,7 @@ import com.otherworldinn.foundation.LootConfig;
 import com.otherworldinn.init.ModBlocks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlags;
@@ -29,8 +30,11 @@ import java.util.stream.Collectors;
  * 负责生成方块被破坏时的掉落物
  */
 public class ModBlockLootSubProvider extends BlockLootSubProvider {
+    private final HolderLookup.Provider registries;
+
     protected ModBlockLootSubProvider(HolderLookup.Provider provider) {
         super(Collections.emptySet(), FeatureFlags.REGISTRY.allFlags(), provider);
+        this.registries = provider;
     }
 
     @Override
@@ -74,7 +78,7 @@ public class ModBlockLootSubProvider extends BlockLootSubProvider {
 
                          entryPool.add(LootItem.lootTableItem(item)
                                  .apply(SetItemCountFunction.setCount(UniformGenerator.between(lootEntry.minCount(), lootEntry.maxCount())))
-                                 .apply(ApplyBonusCount.addOreBonusCount(BuiltInRegistries.ENCHANTMENT.getHolderOrThrow(net.minecraft.world.item.enchantment.Enchantments.FORTUNE))));
+                                 .apply(ApplyBonusCount.addOreBonusCount(this.registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.FORTUNE))));
                                  
                          poolBuilder.withPool(entryPool);
                     }
@@ -89,8 +93,7 @@ public class ModBlockLootSubProvider extends BlockLootSubProvider {
     protected Iterable<Block> getKnownBlocks() {
         // 返回所有已注册的方块，确保验证通过
         return ModBlocks.BLOCKS.getEntries().stream()
-                .map(DeferredBlock::get)
-                .map(Block.class::cast)
+                .map(holder -> (Block) holder.get())
                 .collect(Collectors.toList());
     }
 }
