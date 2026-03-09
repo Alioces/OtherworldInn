@@ -28,8 +28,8 @@ public class TownDataProvider {
         // 旅社 (Inn)
         POINTS.add(new MapPoint(
                 ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn"),
-                new Vec3(5, 71, 5), // 假设旅社在原点附近
-                Vec2.ZERO,
+                new Vec3(27, 71, 0),
+                new Vec2(-20, -40),
                 ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "textures/gui/map/icon_inn.png"),
                 Component.translatable("map_point.otherworldinn.inn"),
                 MapPoint.MapPointType.SHOP,
@@ -39,8 +39,8 @@ public class TownDataProvider {
         // 铁匠铺 (Blacksmith)
         POINTS.add(new MapPoint(
                 ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "blacksmith"),
-                new Vec3(10, 71, 5),
-                Vec2.ZERO,
+                new Vec3(17, 71, 3),
+                new Vec2(0, -40),
                 ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
                 Component.translatable("map_point.otherworldinn.blacksmith"),
                 MapPoint.MapPointType.SHOP,
@@ -50,7 +50,7 @@ public class TownDataProvider {
         // 城镇大门 (Exit Gate)
         POINTS.add(new MapPoint(
                 ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "town_gate"),
-                new Vec3(10, 71, 10),
+                new Vec3(-30, 71, 0),
                 Vec2.ZERO,
                 ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "textures/gui/map/icon_gate.png"),
                 Component.translatable("map_point.otherworldinn.town_gate"),

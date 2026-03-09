@@ -157,8 +157,8 @@ public class MapViewScreen extends Screen {
         
         // 计算缩放比例：将世界单位转换为屏幕像素
         // 屏幕高度对应 2 * orthoSize 的世界高度
-        double fovMultiplier = 1.5;
-        double pixelsPerBlock = height / (orthoSize * 2.0 * fovMultiplier);
+        //double fovMultiplier = 1.5;
+        double pixelsPerBlock = height / (orthoSize * 2.0);
         
         int iconSize = getIconSize();
 
