@@ -6,6 +6,11 @@ import com.otherworldinn.foundation.BlockReg;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.EntityType;
 
 import com.otherworldinn.block.OverworldPortalBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -31,7 +36,7 @@ public class ModBlocks {
     public static final BlockReg<OverworldPortalBlock> OVERWORLD_PORTAL_REG = register("overworld_portal", OverworldPortalBlock::new)
             .properties(props -> props.noCollission().strength(-1.0F, 3600000.8F).noLootTable().isValidSpawn(ModBlocks::never))
             .lang("Overworld Portal", "主世界传送门")
-            .rarity(net.minecraft.world.item.Rarity.EPIC)
+            .rarity(Rarity.EPIC)
             .stacksTo(64)
             .fireResistant();
             
@@ -41,7 +46,7 @@ public class ModBlocks {
      * 判断实体是否可以在该方块上生成
      * 用于 isValidSpawn 属性
      */
-    private static Boolean never(net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.BlockGetter level, net.minecraft.core.BlockPos pos, net.minecraft.world.entity.EntityType<?> entityType) {
+    private static Boolean never(BlockState state, BlockGetter level, BlockPos pos, EntityType<?> entityType) {
         return false;
     }
 
@@ -55,7 +60,7 @@ public class ModBlocks {
      * @param <T>     方块类型
      * @return BlockReg 构建器
      */
-    public static <T extends Block> BlockReg<T> register(String name, java.util.function.Function<net.minecraft.world.level.block.state.BlockBehaviour.Properties, T> factory) {
+    public static <T extends Block> BlockReg<T> register(String name, java.util.function.Function<BlockBehaviour.Properties, T> factory) {
         return new BlockReg<>(name, factory);
     }
 }

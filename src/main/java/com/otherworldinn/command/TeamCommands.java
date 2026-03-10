@@ -9,7 +9,9 @@ import com.otherworldinn.world.team.TeamManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.UUID;
@@ -63,7 +65,63 @@ public class TeamCommands {
                         .requires(s -> s.hasPermission(2))
                         .then(Commands.argument("enabled", BoolArgumentType.bool())
                                 .executes(TeamCommands::toggleOpenStatus)))
+                .then(Commands.literal("unlockpoint")
+                        .requires(s -> s.hasPermission(2))
+                        .then(Commands.argument("target", EntityArgument.player())
+                                .then(Commands.argument("pointId", ResourceLocationArgument.id())
+                                        .executes(TeamCommands::unlockMapPoint))))
+                .then(Commands.literal("lockpoint")
+                        .requires(s -> s.hasPermission(2))
+                        .then(Commands.argument("target", EntityArgument.player())
+                                .then(Commands.argument("pointId", ResourceLocationArgument.id())
+                                        .executes(TeamCommands::lockMapPoint))))
         );
+    }
+
+    private static int unlockMapPoint(CommandContext<CommandSourceStack> context) {
+        try {
+            ServerPlayer target = EntityArgument.getPlayer(context, "target");
+            ResourceLocation pointId = ResourceLocationArgument.getId(context, "pointId");
+            
+            TeamManager manager = TeamManager.getInstance();
+            TeamData team = manager.getPlayerTeam(target);
+            
+            if (team == null) {
+                context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.target_no_team"));
+                return 0;
+            }
+            
+            manager.unlockMapPoint(team, pointId, context.getSource().getServer());
+            context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.point_unlocked", pointId.toString(), team.getName()), true);
+            
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int lockMapPoint(CommandContext<CommandSourceStack> context) {
+        try {
+            ServerPlayer target = EntityArgument.getPlayer(context, "target");
+            ResourceLocation pointId = ResourceLocationArgument.getId(context, "pointId");
+            
+            TeamManager manager = TeamManager.getInstance();
+            TeamData team = manager.getPlayerTeam(target);
+            
+            if (team == null) {
+                context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.target_no_team"));
+                return 0;
+            }
+            
+            manager.lockMapPoint(team, pointId, context.getSource().getServer());
+            context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.point_locked", pointId.toString(), team.getName()), true);
+            
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
+            return 0;
+        }
     }
 
     private static int toggleEditMode(CommandContext<CommandSourceStack> context) {

@@ -30,6 +30,8 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.core.Direction;
 
 /**
  * 城镇保护处理器
@@ -214,7 +216,7 @@ public class TownProtectionHandler {
 
             // 2. 检查建筑权限 (针对放置方块的行为)
             // 只有当玩家在生存/冒险模式下，且手持方块物品时才需要提前拦截
-            if (!player.isCreative() && !stack.isEmpty() && stack.getItem() instanceof net.minecraft.world.item.BlockItem) {
+            if (!player.isCreative() && !stack.isEmpty() && stack.getItem() instanceof BlockItem) {
                 // 计算拟放置位置
                 BlockPos placePos = pos.relative(event.getFace());
                 
@@ -289,7 +291,7 @@ public class TownProtectionHandler {
             pointsToCheck.addAll(resolver.getToDestroy());
             
             // 4. 将被移动的方块及其目标位置
-            net.minecraft.core.Direction moveDir = (event.getPistonMoveType() == PistonEvent.PistonMoveType.EXTEND) ? event.getDirection() : event.getDirection().getOpposite();
+            Direction moveDir = (event.getPistonMoveType() == PistonEvent.PistonMoveType.EXTEND) ? event.getDirection() : event.getDirection().getOpposite();
             for (BlockPos p : resolver.getToPush()) {
                 pointsToCheck.add(p); // 源位置
                 pointsToCheck.add(p.relative(moveDir)); // 目标位置

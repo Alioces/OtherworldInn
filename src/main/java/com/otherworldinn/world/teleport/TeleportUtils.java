@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
  * 传送工具类
@@ -26,7 +27,7 @@ public class TeleportUtils {
         BlockPos spawnPos = overworld.getSharedSpawnPos();
         
         // 寻找安全的 Y 轴高度
-        int y = overworld.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, spawnPos.getX(), spawnPos.getZ());
+        int y = overworld.getHeight(Heightmap.Types.MOTION_BLOCKING, spawnPos.getX(), spawnPos.getZ());
         
         player.teleportTo(overworld, spawnPos.getX() + 0.5, y + 1, spawnPos.getZ() + 0.5, player.getYRot(), player.getXRot());
     }

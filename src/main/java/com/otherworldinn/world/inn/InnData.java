@@ -4,19 +4,20 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 import com.otherworldinn.world.team.TeamData;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import com.otherworldinn.entity.GuestEntity;
 
 /**
@@ -135,10 +136,10 @@ public class InnData {
         return this.rooms.get(roomId);
     }
 
-    public RoomData getRoomAt(net.minecraft.core.BlockPos pos) {
+    public RoomData getRoomAt(BlockPos pos) {
         for (RoomData room : rooms.values()) {
-            net.minecraft.core.BlockPos min = room.getMinPos();
-            net.minecraft.core.BlockPos max = room.getMaxPos();
+            BlockPos min = room.getMinPos();
+            BlockPos max = room.getMaxPos();
             if (pos.getX() >= min.getX() && pos.getX() <= max.getX() &&
                 pos.getY() >= min.getY() && pos.getY() <= max.getY() &&
                 pos.getZ() >= min.getZ() && pos.getZ() <= max.getZ()) {
@@ -166,7 +167,7 @@ public class InnData {
      * @param roomId 房间ID
      * @param level  服务器等级 (用于获取方块状态)
      */
-    public void calculateRoomStats(int roomId, net.minecraft.world.level.Level level) {
+    public void calculateRoomStats(int roomId, Level level) {
         RoomData room = rooms.get(roomId);
         if (room == null) {
             return;
@@ -175,13 +176,13 @@ public class InnData {
         // 使用局部变量累加，避免 lambda 表达式中无法修改局部变量的问题
         final int[] stats = new int[3]; // [0]: comfort, [1]: light, [2]: humidity
 
-        net.minecraft.core.BlockPos min = room.getMinPos();
-        net.minecraft.core.BlockPos max = room.getMaxPos();
+        BlockPos min = room.getMinPos();
+        BlockPos max = room.getMaxPos();
 
         // 遍历房间区域
-        for (net.minecraft.core.BlockPos pos : net.minecraft.core.BlockPos.betweenClosed(min, max)) {
+        for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
             // 获取方块状态
-            net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);
+            BlockState state = level.getBlockState(pos);
             // 获取家具属性
             FurnitureManager.getStats(state.getBlock()).ifPresent(s -> {
                 stats[0] += s.comfort();
@@ -200,7 +201,7 @@ public class InnData {
      *
      * @param level 服务器等级
      */
-    public void updateAllRoomsStats(net.minecraft.world.level.Level level) {
+    public void updateAllRoomsStats(Level level) {
         for (Integer roomId : rooms.keySet()) {
             calculateRoomStats(roomId, level);
         }

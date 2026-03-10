@@ -1,8 +1,6 @@
 package com.otherworldinn.world.team;
 
-import com.otherworldinn.world.inn.InnData;
-import com.otherworldinn.world.map.MapPoint;
-import com.otherworldinn.world.map.TownDataProvider;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -13,6 +11,10 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import com.otherworldinn.world.inn.InnData;
+import com.otherworldinn.world.map.MapPoint;
+import com.otherworldinn.world.map.TownDataProvider;
 
 /**
  * 队伍数据
@@ -28,7 +30,7 @@ public class TeamData {
     private final Set<ResourceLocation> unlockedMapPoints = new HashSet<>();
     private boolean teleportUnlocked = false;
     private int coins = 0; // 队伍金币
-    private net.minecraft.core.BlockPos innZoneCenter = new net.minecraft.core.BlockPos(0, 70, 0); // 旅社中心
+    private BlockPos innZoneCenter = new BlockPos(0, 70, 0); // 旅社中心
     private int innZoneRadius = 15; // 旅社半径
     private final InnData innData = new InnData(); // 旅社数据管理系统
 
@@ -108,6 +110,10 @@ public class TeamData {
         unlockedMapPoints.add(pointId);
     }
 
+    public void lockMapPoint(ResourceLocation pointId) {
+        unlockedMapPoints.remove(pointId);
+    }
+
     public boolean isTeleportUnlocked() {
         return teleportUnlocked;
     }
@@ -152,11 +158,11 @@ public class TeamData {
         this.members.addAll(newMembers);
     }
 
-    public net.minecraft.core.BlockPos getInnZoneCenter() {
+    public BlockPos getInnZoneCenter() {
         return innZoneCenter;
     }
 
-    public void setInnZoneCenter(net.minecraft.core.BlockPos center) {
+    public void setInnZoneCenter(BlockPos center) {
         this.innZoneCenter = center;
     }
 
@@ -252,10 +258,10 @@ public class TeamData {
         }
         
         if (tag.contains("InnCenter")) {
-            innZoneCenter = net.minecraft.core.BlockPos.of(tag.getLong("InnCenter"));
+            innZoneCenter = BlockPos.of(tag.getLong("InnCenter"));
         } else {
             // 默认值
-            innZoneCenter = new net.minecraft.core.BlockPos(0, 70, 0);
+            innZoneCenter = new BlockPos(0, 70, 0);
         }
         
         if (tag.contains("InnRadius")) {

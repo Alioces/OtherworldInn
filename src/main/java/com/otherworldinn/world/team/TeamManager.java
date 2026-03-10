@@ -1,17 +1,16 @@
 package com.otherworldinn.world.team;
 
-import com.otherworldinn.network.ModMessages;
-import com.otherworldinn.network.packet.S2CTeamSyncPacket;
-import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.loading.FMLEnvironment;
-
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
+
+import com.otherworldinn.network.ModMessages;
+import com.otherworldinn.network.packet.S2CTeamSyncPacket;
 
 /**
  * 队伍管理器
@@ -119,7 +118,7 @@ public class TeamManager {
         team.setLeaderId(playerId);
         
         // 初始解锁
-        team.unlockMapPoint(net.minecraft.resources.ResourceLocation.parse("otherworldinn:inn"));
+        team.unlockMapPoint(ResourceLocation.parse("otherworldinn:inn"));
         
         if (player instanceof ServerPlayer serverPlayer) {
             TeamSavedData data = getData(serverPlayer.getServer());
@@ -188,8 +187,8 @@ public class TeamManager {
                 team.getTeamId(),
                 team.getName(),
                 team.getLeaderId(),
-                new java.util.ArrayList<>(team.getMembers()),
-                new java.util.ArrayList<>(team.getUnlockedMapPoints()),
+                new ArrayList<>(team.getMembers()),
+                new ArrayList<>(team.getUnlockedMapPoints()),
                 unlocked,
                 team.getCoins()
         );
@@ -213,8 +212,8 @@ public class TeamManager {
                 team.getTeamId(),
                 team.getName(),
                 team.getLeaderId(),
-                new java.util.ArrayList<>(team.getMembers()),
-                new java.util.ArrayList<>(team.getUnlockedMapPoints()),
+                new ArrayList<>(team.getMembers()),
+                new ArrayList<>(team.getUnlockedMapPoints()),
                 team.isTeleportUnlocked(),
                 team.getCoins()
         );
@@ -244,10 +243,10 @@ public class TeamManager {
      * @param server 服务器实例
      * @return 包含该坐标的队伍，如果没有则返回 null
      */
-    public TeamData getTeamAt(net.minecraft.core.BlockPos pos, MinecraftServer server) {
+    public TeamData getTeamAt(BlockPos pos, MinecraftServer server) {
         TeamSavedData data = getData(server);
         for (TeamData team : data.getTeams().values()) {
-            net.minecraft.core.BlockPos center = team.getInnZoneCenter();
+            BlockPos center = team.getInnZoneCenter();
             int radius = team.getInnZoneRadius();
             
             if (Math.abs(pos.getX() - center.getX()) <= radius &&
@@ -271,6 +270,18 @@ public class TeamManager {
     
     public void transferLeader(TeamData team, UUID newLeader, MinecraftServer server) {
         team.setLeaderId(newLeader);
+        getData(server).markDirty();
+        setTeamTeleportUnlocked(team, team.isTeleportUnlocked(), server);
+    }
+
+    public void unlockMapPoint(TeamData team, ResourceLocation pointId, MinecraftServer server) {
+        team.unlockMapPoint(pointId);
+        getData(server).markDirty();
+        setTeamTeleportUnlocked(team, team.isTeleportUnlocked(), server);
+    }
+
+    public void lockMapPoint(TeamData team, ResourceLocation pointId, MinecraftServer server) {
+        team.lockMapPoint(pointId);
         getData(server).markDirty();
         setTeamTeleportUnlocked(team, team.isTeleportUnlocked(), server);
     }

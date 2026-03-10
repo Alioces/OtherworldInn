@@ -62,6 +62,8 @@ public class ModLanguageProvider extends LanguageProvider {
             add("command.otherworldinn.team.edit_mode_disabled", "已关闭编辑模式。");
             add("command.otherworldinn.team.edit_mode_fail", "无法开启编辑模式！请确保旅社未营业且无客人。");
             add("command.otherworldinn.team.open_status_set", "旅社营业状态已设置为：%s");
+            add("command.otherworldinn.team.point_unlocked", "已解锁地图点：%s (队伍：%s)");
+            add("command.otherworldinn.team.point_locked", "已锁定地图点：%s (队伍：%s)");
             
             // 保护提示
             add("message.otherworldinn.protection.deny", "你不能修改城镇内的方块");
@@ -116,6 +118,8 @@ public class ModLanguageProvider extends LanguageProvider {
             add("command.otherworldinn.team.edit_mode_disabled", "Edit mode disabled.");
             add("command.otherworldinn.team.edit_mode_fail", "Cannot enable edit mode! Ensure Inn is closed and has no guests.");
             add("command.otherworldinn.team.open_status_set", "Inn open status set to: %s");
+            add("command.otherworldinn.team.point_unlocked", "Unlocked map point: %s (Team: %s)");
+            add("command.otherworldinn.team.point_locked", "Locked map point: %s (Team: %s)");
             
             // Protection Messages
             add("message.otherworldinn.protection.deny", "You cannot modify blocks in the Town!");
