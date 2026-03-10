@@ -6,7 +6,6 @@ import com.otherworldinn.world.map.MapPoint;
 import com.otherworldinn.world.map.TownDataProvider;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -40,21 +39,27 @@ public class RecallScrollItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
+        ItemStack itemstack = player.getItemInHand(usedHand);
         // 如果在城镇维度，不允许使用
         if (level.dimension() == TownDimensions.TOWN_LEVEL) {
             if (!level.isClientSide) {
                 player.displayClientMessage(Component.translatable("item.otherworldinn.recall_scroll.fail_in_town"), true);
             }
-            return InteractionResultHolder.fail(player.getItemInHand(usedHand));
+            return InteractionResultHolder.fail(itemstack);
         }
 
         player.startUsingItem(usedHand);
-        return InteractionResultHolder.consume(player.getItemInHand(usedHand));
+        return InteractionResultHolder.consume(itemstack);
     }
 
     @Override
-    public void onUseTick(Level level, LivingEntity livingEntity, ItemStack stack, int remainingUseDuration) {
-        super.onUseTick(level, livingEntity, stack, remainingUseDuration);
+    public int getUseDuration(ItemStack stack, LivingEntity entity) {
+        return 60; // 3秒
+    }
+
+    @Override
+    public UseAnim getUseAnimation(ItemStack stack) {
+        return UseAnim.BOW;
     }
 
     @Override
@@ -97,15 +102,5 @@ public class RecallScrollItem extends Item {
         }
         
         return stack;
-    }
-
-    @Override
-    public int getUseDuration(ItemStack stack, LivingEntity entity) {
-        return 60; // 3秒 = 60 ticks
-    }
-
-    @Override
-    public UseAnim getUseAnimation(ItemStack stack) {
-        return UseAnim.BOW; // 使用类似拉弓或吃的动画
     }
 }

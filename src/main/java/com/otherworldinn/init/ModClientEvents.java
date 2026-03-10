@@ -16,6 +16,6 @@ public class ModClientEvents {
 
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
-        event.register(ModKeyBindings.TOGGLE_STRATEGY_MODE);
+        event.register(ModKeyBindings.TOGGLE_MAP_MODE);
     }
 }

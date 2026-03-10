@@ -21,6 +21,7 @@ public class ModCreativeModeTabs {
                 // 在这里手动添加物品
                 output.accept(ModItems.RECALL_SCROLL.get());
                 output.accept(ModBlocks.OVERWORLD_PORTAL.get());
+                output.accept(ModItems.ROOM_REGISTER.get());
                 
 
             }).build());

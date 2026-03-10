@@ -1,4 +1,6 @@
 {
+  "biome.otherworldinn.town": "城镇",
+  "block.otherworldinn.overworld_portal": "主世界传送门",
   "command.otherworldinn.team.already_in_team": "你已经在一个队伍中了！",
   "command.otherworldinn.team.created": "已创建队伍：%s",
   "command.otherworldinn.team.joined": "已加入队伍：%s",
@@ -13,17 +15,17 @@
   "command.otherworldinn.team.teleport_set": "队伍传送功能已设置为：%s",
   "command.otherworldinn.team.transferred": "队长职位已移交给 %s",
   "command.otherworldinn.team.you_were_kicked": "你已被踢出队伍。",
-  "gui.otherworldinn.teleport_overworld.message": "确定要前往主世界吗？你将被传送到一个随机的安全位置。",
-  "gui.otherworldinn.teleport_overworld.title": "前往主世界",
   "item.otherworldinn.recall_scroll": "回程卷轴",
-  "item.otherworldinn.recall_scroll.fail_in_town": "卷轴的魔力被城镇的气息压制了。",
+  "item.otherworldinn.recall_scroll.fail_in_town": "回程卷轴无法在城镇中使用！",
   "itemGroup.otherworldinn": "异界旅社",
   "key.categories.otherworldinn": "异界旅社",
-  "key.otherworldinn.strategy_mode": "地图视图",
+  "key.otherworldinn.map_mode": "地图视图",
   "map_point.otherworldinn.blacksmith": "铁匠铺",
   "map_point.otherworldinn.cant_teleport": "无法传送至",
   "map_point.otherworldinn.inn": "旅社",
   "map_point.otherworldinn.locked": "未解锁",
   "map_point.otherworldinn.town_gate": "城镇大门",
-  "screen.otherworldinn.map_view": "城镇地图"
+  "message.otherworldinn.protection.banned_item": "此物品在城镇维度被禁用！",
+  "message.otherworldinn.protection.deny": "你不能修改城镇内的方块",
+  "tooltip.otherworldinn.banned_in_town": "§c当前维度内禁用"
 }

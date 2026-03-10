@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.otherworldinn.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MixinContraption"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

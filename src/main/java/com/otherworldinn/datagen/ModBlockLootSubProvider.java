@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -41,6 +42,11 @@ public class ModBlockLootSubProvider extends BlockLootSubProvider {
     protected void generate() {
         for (Map.Entry<DeferredBlock<?>, BlockDataGenInfo> entry : ModBlocks.BLOCK_INFOS.entrySet()) {
             DeferredBlock<?> block = entry.getKey();
+
+            if (block.get().getLootTable() == BuiltInLootTables.EMPTY) {
+                continue;
+            }
+
             BlockDataGenInfo info = entry.getValue();
             LootConfig lootConfig = info.lootConfig();
 

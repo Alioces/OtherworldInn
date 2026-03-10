@@ -51,9 +51,16 @@ public class DataGenerators {
         // 服务端数据提供者 (Server Providers)
         
         // Block Tags
+        ModBlockTagProvider blockTagProvider = new ModBlockTagProvider(packOutput, lookupProvider, existingFileHelper);
         event.getGenerator().addProvider(
                 event.includeServer(),
-                new ModBlockTagProvider(packOutput, lookupProvider, existingFileHelper)
+                blockTagProvider
+        );
+        
+        // Item Tags
+        event.getGenerator().addProvider(
+                event.includeServer(),
+                new ModItemTagProvider(packOutput, lookupProvider, blockTagProvider.contentsGetter(), existingFileHelper)
         );
         
         // Loot Tables

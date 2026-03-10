@@ -1,5 +1,6 @@
 package com.otherworldinn.world.team;
 
+import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.map.MapPoint;
 import com.otherworldinn.world.map.TownDataProvider;
 import net.minecraft.nbt.CompoundTag;
@@ -26,6 +27,10 @@ public class TeamData {
     private final Set<UUID> members = new HashSet<>();
     private final Set<ResourceLocation> unlockedMapPoints = new HashSet<>();
     private boolean teleportUnlocked = false;
+    private int coins = 0; // 队伍金币
+    private net.minecraft.core.BlockPos innZoneCenter = new net.minecraft.core.BlockPos(0, 70, 0); // 旅社中心
+    private int innZoneRadius = 15; // 旅社半径
+    private final InnData innData = new InnData(); // 旅社数据管理系统
 
     public TeamData(UUID teamId) {
         this.teamId = teamId;
@@ -111,6 +116,28 @@ public class TeamData {
         this.teleportUnlocked = unlocked;
     }
 
+    public int getCoins() {
+        return coins;
+    }
+
+    public void setCoins(int coins) {
+        this.coins = Math.max(0, coins);
+    }
+
+    public void addCoins(int amount) {
+        if (amount > 0) {
+            this.coins += amount;
+        }
+    }
+
+    public boolean removeCoins(int amount) {
+        if (amount > 0 && this.coins >= amount) {
+            this.coins -= amount;
+            return true;
+        }
+        return false;
+    }
+
     public Set<ResourceLocation> getUnlockedMapPoints() {
         return unlockedMapPoints;
     }
@@ -123,6 +150,26 @@ public class TeamData {
     public void setMembers(Set<UUID> newMembers) {
         this.members.clear();
         this.members.addAll(newMembers);
+    }
+
+    public net.minecraft.core.BlockPos getInnZoneCenter() {
+        return innZoneCenter;
+    }
+
+    public void setInnZoneCenter(net.minecraft.core.BlockPos center) {
+        this.innZoneCenter = center;
+    }
+
+    public int getInnZoneRadius() {
+        return innZoneRadius;
+    }
+
+    public void setInnZoneRadius(int radius) {
+        this.innZoneRadius = radius;
+    }
+
+    public InnData getInnData() {
+        return innData;
     }
 
     // --- NBT 序列化 ---
@@ -157,7 +204,17 @@ public class TeamData {
         tag.put("UnlockedPoints", pointsTag);
 
         tag.putBoolean("TeleportUnlocked", teleportUnlocked);
+        tag.putInt("Coins", coins);
+
+        // 旅社区域
+        if (innZoneCenter != null) {
+            tag.putLong("InnCenter", innZoneCenter.asLong());
+        }
+        tag.putInt("InnRadius", innZoneRadius);
         
+        // 旅社数据
+        tag.put("InnData", innData.save(new CompoundTag()));
+
         return tag;
     }
 
@@ -188,5 +245,27 @@ public class TeamData {
         }
 
         teleportUnlocked = tag.getBoolean("TeleportUnlocked");
+        if (tag.contains("Coins")) {
+            coins = tag.getInt("Coins");
+        } else {
+            coins = 0;
+        }
+        
+        if (tag.contains("InnCenter")) {
+            innZoneCenter = net.minecraft.core.BlockPos.of(tag.getLong("InnCenter"));
+        } else {
+            // 默认值
+            innZoneCenter = new net.minecraft.core.BlockPos(0, 70, 0);
+        }
+        
+        if (tag.contains("InnRadius")) {
+            innZoneRadius = tag.getInt("InnRadius");
+        } else {
+            innZoneRadius = 15;
+        }
+        
+        if (tag.contains("InnData")) {
+            innData.load(tag.getCompound("InnData"));
+        }
     }
 }

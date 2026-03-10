@@ -1,0 +1,107 @@
+package com.otherworldinn.mixin;
+
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Redirect;
+
+import com.otherworldinn.world.event.TownProtectionHandler;
+import com.otherworldinn.world.dimension.TownDimensions;
+import com.otherworldinn.world.team.TeamManager;
+import com.simibubi.create.content.contraptions.Contraption;
+
+import com.otherworldinn.world.team.TeamData;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.Containers;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate.StructureBlockInfo;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
+
+/**
+ * Mixin 类，用于修改 Contraption 的行为。
+ * <p>
+ * 主要功能：
+ * 1. 捕获当前的 StructureBlockInfo，用于在 customBlockPlacement 中判断是否在合法区域。
+ * 2. 拦截 customBlockPlacement 方法，在城镇维度且不在任何旅社范围内时，禁止放置。
+ */
+@Mixin(Contraption.class)
+public class MixinContraption {
+
+    @Unique
+    private final ThreadLocal<StructureBlockInfo> currentBlockInfo = new ThreadLocal<>();
+
+    @Shadow
+    protected boolean customBlockPlacement(LevelAccessor world, BlockPos pos, BlockState state) {
+        return false;
+    }
+
+    // 1. 捕获当前的 StructureBlockInfo
+    @ModifyVariable(
+        method = "addBlocksToWorld",
+        at = @At("LOAD"), // 在加载 block 变量时捕获
+        ordinal = 0
+    )
+    private StructureBlockInfo captureCurrentBlock(StructureBlockInfo block) {
+        currentBlockInfo.set(block);
+        return block;
+    }
+
+    // 2. 拦截 customBlockPlacement
+    @Redirect(
+        method = "addBlocksToWorld",
+        at = @At(
+            value = "INVOKE",
+            target = "Lcom/simibubi/create/content/contraptions/Contraption;customBlockPlacement(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)Z"
+        )
+    )
+    private boolean interceptPlacement(Contraption instance, LevelAccessor worldAccessor, BlockPos pos, BlockState state) {
+        if (worldAccessor instanceof Level world && !world.isClientSide) {
+            // 仅在城镇维度生效
+            if (world.dimension() == TownDimensions.TOWN_LEVEL) {
+                // 检查该位置是否属于某个队伍的旅社区域
+                TeamData team = TeamManager.getInstance().getTeamAt(pos, world.getServer());
+
+                // 如果在城镇维度，且 (不在任何旅社范围内 或 该旅社未开启编辑模式)，则禁止放置
+                if (team == null || !team.getInnData().isEditMode()) {
+                    // 非法区域！
+                    
+                    // 执行掉落
+                    Block.dropResources(state, world, pos, null);
+                
+                // 处理容器掉落
+                StructureBlockInfo info = currentBlockInfo.get();
+                if (info != null && info.nbt() != null && state.getBlock() instanceof EntityBlock entityBlock) {
+                    try {
+                        BlockEntity be = entityBlock.newBlockEntity(pos, state);
+                        if (be != null) {
+                            be.loadWithComponents(info.nbt(), world.registryAccess());
+                            
+                            // 尝试提取物品
+                            // 检查 Inventory 接口
+                            if (be instanceof net.minecraft.world.Container container) {
+                                Containers.dropContents(world, pos, container);
+                            }
+                        }
+                    } catch (Exception e) {
+                        // 忽略错误，防止崩服
+                        e.printStackTrace();
+                    }
+                    return true;
+                }
+            }
+        }
+    }
+        
+        // 合法区域，执行默认逻辑
+        return this.customBlockPlacement(worldAccessor, pos, state);
+    }
+}

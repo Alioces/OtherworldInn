@@ -9,6 +9,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import com.otherworldinn.item.RecallScrollItem;
+import com.otherworldinn.item.RoomRegisterItem;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +34,12 @@ public class ModItems {
             .fireResistant()
             .lang("Recall Scroll", "回程卷轴");
     public static final DeferredItem<RecallScrollItem> RECALL_SCROLL = RECALL_SCROLL_REG.register();
+
+    public static final ItemReg<RoomRegisterItem> ROOM_REGISTER_REG = new ItemReg<>("room_register", RoomRegisterItem::new)
+            .rarity(Rarity.UNCOMMON)
+            .stacksTo(1)
+            .lang("Room Register", "房间登记册");
+    public static final DeferredItem<RoomRegisterItem> ROOM_REGISTER = ROOM_REGISTER_REG.register();
 
     // --- 辅助方法 ---
 

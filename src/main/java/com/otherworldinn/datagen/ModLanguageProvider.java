@@ -34,7 +34,7 @@ public class ModLanguageProvider extends LanguageProvider {
         if (isZh) {
             add("itemGroup.otherworldinn", "异界旅社");
             add("key.categories.otherworldinn", "异界旅社");
-            add("key.otherworldinn.strategy_mode", "地图视图");
+            add("key.otherworldinn.map_mode", "地图视图");
             
             // 地图点名称
             add("map_point.otherworldinn.inn", "旅社");
@@ -58,13 +58,37 @@ public class ModLanguageProvider extends LanguageProvider {
             add("command.otherworldinn.team.transferred", "队长职位已移交给 %s");
             add("command.otherworldinn.team.renamed", "队伍已重命名为：%s");
             add("command.otherworldinn.team.teleport_set", "队伍传送功能已设置为：%s");
+            add("command.otherworldinn.team.edit_mode_enabled", "已开启编辑模式。");
+            add("command.otherworldinn.team.edit_mode_disabled", "已关闭编辑模式。");
+            add("command.otherworldinn.team.edit_mode_fail", "无法开启编辑模式！请确保旅社未营业且无客人。");
+            add("command.otherworldinn.team.open_status_set", "旅社营业状态已设置为：%s");
+            
+            // 保护提示
+            add("message.otherworldinn.protection.deny", "你不能修改城镇内的方块");
+            add("message.otherworldinn.protection.banned_item", "此物品在城镇维度被禁用！");
             
             // 物品提示
             add("item.otherworldinn.recall_scroll.fail_in_town", "回程卷轴无法在城镇中使用！");
+            add("tooltip.otherworldinn.banned_in_town", "§c当前维度内禁用");
+
+            // 房间登记册
+            add("message.otherworldinn.room_register.not_edit_mode", "旅社未处于编辑模式！");
+            add("message.otherworldinn.room_register.pos1_set", "位置1已设置：%s");
+            add("message.otherworldinn.room_register.create_success", "房间创建成功！ID：%s");
+            add("message.otherworldinn.room_register.remove_success", "房间已移除！ID：%s");
+            add("message.otherworldinn.room_register.invalid_room", "无效的房间结构！");
+            
+            // 生物群系
+            add("biome.otherworldinn.town", "城镇");
+
+            // 家具属性
+            add("tooltip.otherworldinn.furniture.comfort", "舒适度: %s");
+            add("tooltip.otherworldinn.furniture.light", "光照度: %s");
+            add("tooltip.otherworldinn.furniture.humidity", "湿度: %s");
         } else {
             add("itemGroup.otherworldinn", "Otherworld Inn");
             add("key.categories.otherworldinn", "Otherworld Inn");
-            add("key.otherworldinn.strategy_mode", "Map View");
+            add("key.otherworldinn.map_mode", "Map View");
             
             // 地图点名称 (Map Point Names)
             add("map_point.otherworldinn.inn", "Otherworld Inn");
@@ -88,9 +112,33 @@ public class ModLanguageProvider extends LanguageProvider {
             add("command.otherworldinn.team.transferred", "Transferred leadership to %s");
             add("command.otherworldinn.team.renamed", "Renamed team to: %s");
             add("command.otherworldinn.team.teleport_set", "Team teleport capability set to: %s");
+            add("command.otherworldinn.team.edit_mode_enabled", "Edit mode enabled.");
+            add("command.otherworldinn.team.edit_mode_disabled", "Edit mode disabled.");
+            add("command.otherworldinn.team.edit_mode_fail", "Cannot enable edit mode! Ensure Inn is closed and has no guests.");
+            add("command.otherworldinn.team.open_status_set", "Inn open status set to: %s");
             
-            // 物品提示 (Item Messages)
+            // Protection Messages
+            add("message.otherworldinn.protection.deny", "You cannot modify blocks in the Town!");
+            add("message.otherworldinn.protection.banned_item", "This item is banned in the Town dimension!");
+            
+            // Item Messages
             add("item.otherworldinn.recall_scroll.fail_in_town", "Recall Scroll cannot be used in Town!");
+            add("tooltip.otherworldinn.banned_in_town", "§cBanned in this dimension");
+
+            // Room Register
+            add("message.otherworldinn.room_register.not_edit_mode", "Inn is not in edit mode!");
+            add("message.otherworldinn.room_register.pos1_set", "Position 1 set: %s");
+            add("message.otherworldinn.room_register.create_success", "Room created successfully! ID: %s");
+            add("message.otherworldinn.room_register.remove_success", "Room removed! ID: %s");
+            add("message.otherworldinn.room_register.invalid_room", "Invalid room structure!");
+            
+            // Biomes
+            add("biome.otherworldinn.town", "Town");
+
+            // Furniture Stats
+            add("tooltip.otherworldinn.furniture.comfort", "Comfort: %s");
+            add("tooltip.otherworldinn.furniture.light", "Light: %s");
+            add("tooltip.otherworldinn.furniture.humidity", "Humidity: %s");
         }
 
         // 生成方块语言键

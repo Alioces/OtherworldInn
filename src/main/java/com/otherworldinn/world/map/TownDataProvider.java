@@ -51,7 +51,7 @@ public class TownDataProvider {
         POINTS.add(new MapPoint(
                 ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "town_gate"),
                 new Vec3(-30, 71, 0),
-                Vec2.ZERO,
+                new Vec2(30, 20),
                 ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "textures/gui/map/icon_gate.png"),
                 Component.translatable("map_point.otherworldinn.town_gate"),
                 MapPoint.MapPointType.EXIT_GATE,

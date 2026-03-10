@@ -13,13 +13,27 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import org.slf4j.Logger;
 
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import com.otherworldinn.compat.CreateCompat;
+
 /**
  * 模组主类
+ * <p>
+ * 模组的入口点，负责初始化和注册。
  */
 @Mod(OtherworldInn.MODID)
 public class OtherworldInn {
     public static final String MODID = "otherworldinn";
     public static final Logger LOGGER = LogUtils.getLogger();
+
+    // 定义标签
+    public static final TagKey<Item> BANNED_IN_TOWN = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "banned_in_town"));
 
     public OtherworldInn(IEventBus modEventBus, ModContainer modContainer) {
         // 注册物品和方块
@@ -30,6 +44,16 @@ public class OtherworldInn {
 
         // 注册配置
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
+        
+        // 注册生命周期事件
+        modEventBus.addListener(this::commonSetup);
+    }
+
+    private void commonSetup(final FMLCommonSetupEvent event) {
+        // Create 兼容性初始化
+        if (ModList.get().isLoaded("create")) {
+            event.enqueueWork(CreateCompat::init);
+        }
     }
 }
 

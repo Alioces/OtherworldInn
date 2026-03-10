@@ -16,6 +16,9 @@ import net.neoforged.neoforge.registries.DeferredItem;
 
 import java.util.Map;
 
+import com.otherworldinn.world.dimension.TownDimensions;
+import net.minecraft.client.Minecraft;
+
 /**
  * 客户端工具提示处理器
  * 自动为注册的物品和方块添加工具提示
@@ -26,6 +29,13 @@ public class ModTooltips {
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
         Item item = event.getItemStack().getItem();
+
+        // 检查是否在城镇维度且物品被禁用
+        if (Minecraft.getInstance().level != null && Minecraft.getInstance().level.dimension() == TownDimensions.TOWN_LEVEL) {
+            if (event.getItemStack().is(OtherworldInn.BANNED_IN_TOWN)) {
+                event.getToolTip().add(Component.translatable("tooltip.otherworldinn.banned_in_town"));
+            }
+        }
 
         // 检查物品注册表
         for (Map.Entry<DeferredItem<?>, ItemDataGenInfo> entry : ModItems.ITEM_INFOS.entrySet()) {

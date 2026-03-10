@@ -81,11 +81,11 @@ public class PlayerEventHandler {
     /**
      * 处理玩家重生事件
      * <p>
-     * 如果玩家没有重生点，且未击败末影龙，则尝试将其传送到旅社。
+     * 如果玩家没有重生点，则尝试将其传送到旅社。
      */
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && !event.isEndConquered()) {
+        if (event.getEntity() instanceof ServerPlayer player) {
              if (player.getRespawnPosition() == null) {
                  ServerLevel townLevel = player.getServer().getLevel(TownDimensions.TOWN_LEVEL);
                  if (townLevel != null) {

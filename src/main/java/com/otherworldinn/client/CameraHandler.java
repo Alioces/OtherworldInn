@@ -20,6 +20,8 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
 import com.otherworldinn.client.gui.MapViewScreen;
+import com.otherworldinn.client.map.MapPageManager;
+import com.otherworldinn.world.dimension.TownDimensions;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 
@@ -32,19 +34,25 @@ import net.minecraft.world.phys.Vec3;
  */
 public class CameraHandler {
 
-    private static boolean isStrategyMode = false;
+    private static boolean isMapMode = false;
     private static Entity dummyCameraEntity;
     private static Entity originalCameraEntity;
     
     private static boolean isTransitioning = false;
     private static float transitionProgress = 0.0f;
+    private static float prevTransitionProgress = 0.0f;
     private static final float TRANSITION_DURATION = 5.0f;
-    private static boolean transitionToStrategy = false;
+    private static boolean transitionToMap = false;
     
     private static Vec3 startPos;
     private static Vec3 targetPos;
     private static float startYaw, startPitch;
     private static float targetYaw, targetPitch;
+
+    private static int currentGridX = 0;
+    private static int currentGridZ = 0;
+    private static int prevGridX = 0;
+    private static int prevGridZ = 0;
 
     /**
      * 处理按键输入事件
@@ -52,11 +60,16 @@ public class CameraHandler {
      */
     @SubscribeEvent
     public static void onKeyInput(InputEvent.Key event) {
-        if (ModKeyBindings.TOGGLE_STRATEGY_MODE.consumeClick()) {
-            if (isStrategyMode) {
-                disableStrategyMode();
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null && mc.level.dimension() != TownDimensions.TOWN_LEVEL) {
+             return;
+        }
+
+        if (ModKeyBindings.TOGGLE_MAP_MODE.consumeClick()) {
+            if (isMapMode) {
+                disableMapMode();
             } else {
-                enableStrategyMode();
+                enableMapMode();
             }
         }
     }
@@ -64,13 +77,18 @@ public class CameraHandler {
     /**
      * 打开地图
      */
-    public static void enableStrategyMode() {
+    public static void enableMapMode() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
         
         isTransitioning = true;
         transitionProgress = 0.0f;
-        transitionToStrategy = true;
+        prevTransitionProgress = 0.0f;
+        transitionToMap = true;
+        currentGridX = 0;
+        currentGridZ = 0;
+        prevGridX = 0;
+        prevGridZ = 0;
         
         originalCameraEntity = mc.getCameraEntity();
         
@@ -80,12 +98,14 @@ public class CameraHandler {
             dummyCameraEntity.setNoGravity(true);
             mc.level.addEntity(dummyCameraEntity);
         }
-        double x = ClientConfig.INSTANCE.cameraX.get();
-        double y = ClientConfig.INSTANCE.cameraY.get();
-        double z = ClientConfig.INSTANCE.cameraZ.get();
-        targetPos = new Vec3(x, y, z);
+        
+        targetPos = getCurrentPageTargetPos();
         targetYaw = ClientConfig.INSTANCE.cameraYaw.get().floatValue();
         targetPitch = ClientConfig.INSTANCE.cameraPitch.get().floatValue();
+        
+        double x = targetPos.x;
+        double y = targetPos.y;
+        double z = targetPos.z;
         
         startPos = new Vec3(x, y - 5.0, z);
         startYaw = targetYaw;
@@ -99,40 +119,117 @@ public class CameraHandler {
         
         mc.setScreen(new MapViewScreen());
         
-        isStrategyMode = true;
+        isMapMode = true;
+    }
+    
+    /**
+     * 移动到指定页面
+     * @param gridX 页面网格 X
+     * @param gridZ 页面网格 Z
+     */
+    public static void moveToPage(int gridX, int gridZ) {
+        if (!isMapMode) return;
+        
+        prevGridX = currentGridX;
+        prevGridZ = currentGridZ;
+        currentGridX = gridX;
+        currentGridZ = gridZ;
+        
+        isTransitioning = true;
+        transitionProgress = 0.0f;
+        prevTransitionProgress = 0.0f;
+        transitionToMap = true; // Use ease-out for smooth arrival
+        
+        if (dummyCameraEntity != null) {
+            startPos = dummyCameraEntity.position();
+        } else {
+            startPos = getCurrentPageTargetPos(); // Fallback
+        }
+        
+        targetPos = getCurrentPageTargetPos();
+        // Yaw/Pitch remain same
+        startYaw = targetYaw;
+        startPitch = targetPitch;
     }
 
     /**
      * 关闭地图
      */
-    public static void disableStrategyMode() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || mc.player == null) return;
-
+    public static void disableMapMode() {
         isTransitioning = true;
         transitionProgress = 0.0f;
-        transitionToStrategy = false;
+        prevTransitionProgress = 0.0f;
+        transitionToMap = false;
         
-        double x = ClientConfig.INSTANCE.cameraX.get();
-        double y = ClientConfig.INSTANCE.cameraY.get();
-        double z = ClientConfig.INSTANCE.cameraZ.get();
-        startPos = new Vec3(x, y, z);
+        Minecraft mc = Minecraft.getInstance();
+        
+        startPos = getCurrentPageTargetPos();
         startYaw = ClientConfig.INSTANCE.cameraYaw.get().floatValue();
         startPitch = ClientConfig.INSTANCE.cameraPitch.get().floatValue();
         
-        targetPos = new Vec3(x, y - 5.0, z);
+        // Move down relative to current page center, keep rotation same
+        targetPos = new Vec3(startPos.x, startPos.y - 5.0, startPos.z);
         targetYaw = startYaw;
         targetPitch = startPitch;
         
-        if (mc.screen instanceof MapViewScreen mapScreen) {
-            // 不立即关闭屏幕，而是通知屏幕开始关闭动画
-            mapScreen.startClosing();
-        } else {
-            // 如果不是地图屏幕（异常情况），则直接关闭
-            if (mc.screen instanceof MapViewScreen) {
-                mc.setScreen(null);
-            }
+        if (mc.screen instanceof MapViewScreen) {
+            mc.setScreen(null);
         }
+    }
+    
+    /**
+     * 获取当前页面中心目标位置
+     */
+    private static Vec3 getCurrentPageTargetPos() {
+        double baseX = ClientConfig.INSTANCE.cameraX.get();
+        double baseY = ClientConfig.INSTANCE.cameraY.get();
+        double baseZ = ClientConfig.INSTANCE.cameraZ.get();
+        
+        return new Vec3(
+            baseX + currentGridX * MapPageManager.PAGE_SPACING,
+            baseY,
+            baseZ + currentGridZ * MapPageManager.PAGE_SPACING
+        );
+    }
+    
+    public static int getCurrentGridX() {
+        return currentGridX;
+    }
+    
+    public static int getCurrentGridZ() {
+        return currentGridZ;
+    }
+    
+    public static int getPrevGridX() {
+        return prevGridX;
+    }
+    
+    public static int getPrevGridZ() {
+        return prevGridZ;
+    }
+
+    public static float getTransitionProgress() {
+        return transitionProgress;
+    }
+    
+    /**
+     * 获取平滑插值的过渡进度
+     * @param partialTick 渲染部分刻
+     */
+    public static float getSmoothTransitionProgress(float partialTick) {
+        if (!isTransitioning) return isMapMode ? 1.0f : 0.0f;
+        return Mth.lerp(partialTick, prevTransitionProgress, transitionProgress);
+    }
+    
+    public static boolean isTransitioning() {
+        return isTransitioning;
+    }
+
+    /**
+     * 检查是否处于地图模式
+     */
+    public static boolean isMapMode() {
+        return isMapMode;
     }
     
     /**
@@ -161,7 +258,7 @@ public class CameraHandler {
      */
     @SubscribeEvent
     public static void onRenderHand(RenderHandEvent event) {
-        if (isStrategyMode) {
+        if (isMapMode) {
             event.setCanceled(true);
         }
     }
@@ -176,7 +273,7 @@ public class CameraHandler {
      */
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
-        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY && isStrategyMode) {
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY && isMapMode) {
             double size = ClientConfig.INSTANCE.orthoSize.get();
             double aspectRatio = (double) Minecraft.getInstance().getWindow().getWidth() / (double) Minecraft.getInstance().getWindow().getHeight();
             
@@ -204,7 +301,7 @@ public class CameraHandler {
      */
     @SubscribeEvent
     public static void onRenderGuiLayer(RenderGuiLayerEvent.Pre event) {
-        if (isStrategyMode) {
+        if (isMapMode) {
              if (event.getName().getPath().equals("crosshair")) {
                  event.setCanceled(true);
              }
@@ -217,19 +314,20 @@ public class CameraHandler {
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         if (isTransitioning) {
+            prevTransitionProgress = transitionProgress;
             transitionProgress += 1.0f / TRANSITION_DURATION;
             if (transitionProgress >= 1.0f) {
                 transitionProgress = 1.0f;
                 isTransitioning = false;
                 
-                if (!transitionToStrategy) {
-                    finishDisableStrategyMode();
+                if (!transitionToMap) {
+                    finishDisableMapMode();
                     return;
                 }
             }
             
             float t;
-            if (transitionToStrategy) {
+            if (transitionToMap) {
                 float f = 1.0f - transitionProgress;
                 t = 1.0f - f * f * f;
             } else {
@@ -244,16 +342,15 @@ public class CameraHandler {
             float pitch = Mth.rotLerp(t, startPitch, targetPitch);
             
             updateDummyEntity(new Vec3(x, y, z), yaw, pitch);
-        } else if (isStrategyMode) {
+        } else if (isMapMode) {
             Minecraft mc = Minecraft.getInstance();
             if (dummyCameraEntity != null) {
-                double x = ClientConfig.INSTANCE.cameraX.get();
-                double y = ClientConfig.INSTANCE.cameraY.get();
-                double z = ClientConfig.INSTANCE.cameraZ.get();
+                Vec3 target = getCurrentPageTargetPos();
+                
                 float yaw = ClientConfig.INSTANCE.cameraYaw.get().floatValue();
                 float pitch = ClientConfig.INSTANCE.cameraPitch.get().floatValue();
                 
-                updateDummyEntity(new Vec3(x, y, z), yaw, pitch);
+                updateDummyEntity(target, yaw, pitch);
                 
                 if (mc.getCameraEntity() != dummyCameraEntity) {
                     mc.setCameraEntity(dummyCameraEntity);
@@ -287,9 +384,9 @@ public class CameraHandler {
     /**
      * 完成退出地图视角
      */
-    private static void finishDisableStrategyMode() {
+    private static void finishDisableMapMode() {
         Minecraft mc = Minecraft.getInstance();
-        isStrategyMode = false;
+        isMapMode = false;
         
         if (originalCameraEntity != null) {
             mc.setCameraEntity(originalCameraEntity);

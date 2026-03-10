@@ -29,19 +29,31 @@ public record S2CTeamSyncPacket(
         UUID leaderId,
         List<UUID> members,
         List<ResourceLocation> unlockedPoints,
-        boolean teleportUnlocked
+        boolean teleportUnlocked,
+        int coins
 ) implements CustomPacketPayload {
 
     public static final Type<S2CTeamSyncPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "team_sync"));
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, S2CTeamSyncPacket> STREAM_CODEC = StreamCodec.composite(
-            UUIDUtil.STREAM_CODEC, S2CTeamSyncPacket::teamId,
-            ByteBufCodecs.STRING_UTF8, S2CTeamSyncPacket::teamName,
-            UUIDUtil.STREAM_CODEC, S2CTeamSyncPacket::leaderId,
-            ByteBufCodecs.collection(ArrayList::new, UUIDUtil.STREAM_CODEC), S2CTeamSyncPacket::members,
-            ByteBufCodecs.collection(ArrayList::new, ResourceLocation.STREAM_CODEC), S2CTeamSyncPacket::unlockedPoints,
-            ByteBufCodecs.BOOL, S2CTeamSyncPacket::teleportUnlocked,
-            S2CTeamSyncPacket::new
+    public static final StreamCodec<RegistryFriendlyByteBuf, S2CTeamSyncPacket> STREAM_CODEC = StreamCodec.of(
+            (buf, packet) -> {
+                UUIDUtil.STREAM_CODEC.encode(buf, packet.teamId());
+                ByteBufCodecs.STRING_UTF8.encode(buf, packet.teamName());
+                UUIDUtil.STREAM_CODEC.encode(buf, packet.leaderId());
+                ByteBufCodecs.collection(ArrayList::new, UUIDUtil.STREAM_CODEC).encode(buf, new ArrayList<>(packet.members()));
+                ByteBufCodecs.collection(ArrayList::new, ResourceLocation.STREAM_CODEC).encode(buf, new ArrayList<>(packet.unlockedPoints()));
+                ByteBufCodecs.BOOL.encode(buf, packet.teleportUnlocked());
+                ByteBufCodecs.INT.encode(buf, packet.coins());
+            },
+            buf -> new S2CTeamSyncPacket(
+                    UUIDUtil.STREAM_CODEC.decode(buf),
+                    ByteBufCodecs.STRING_UTF8.decode(buf),
+                    UUIDUtil.STREAM_CODEC.decode(buf),
+                    ByteBufCodecs.collection(ArrayList::new, UUIDUtil.STREAM_CODEC).decode(buf),
+                    ByteBufCodecs.collection(ArrayList::new, ResourceLocation.STREAM_CODEC).decode(buf),
+                    ByteBufCodecs.BOOL.decode(buf),
+                    ByteBufCodecs.INT.decode(buf)
+            )
     );
 
     @Override
@@ -65,7 +77,8 @@ public record S2CTeamSyncPacket(
                     leaderId(),
                     memberSet,
                     pointSet,
-                    teleportUnlocked()
+                    teleportUnlocked(),
+                    coins()
             );
         });
     }

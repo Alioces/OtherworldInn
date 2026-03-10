@@ -29,7 +29,7 @@ public class TeamManager {
         return INSTANCE;
     }
 
-    private TeamSavedData getData(MinecraftServer server) {
+    public TeamSavedData getData(MinecraftServer server) {
         return TeamSavedData.get(server.overworld());
     }
 
@@ -190,7 +190,8 @@ public class TeamManager {
                 team.getLeaderId(),
                 new java.util.ArrayList<>(team.getMembers()),
                 new java.util.ArrayList<>(team.getUnlockedMapPoints()),
-                unlocked
+                unlocked,
+                team.getCoins()
         );
         
         for (UUID memberId : team.getMembers()) {
@@ -214,7 +215,8 @@ public class TeamManager {
                 team.getLeaderId(),
                 new java.util.ArrayList<>(team.getMembers()),
                 new java.util.ArrayList<>(team.getUnlockedMapPoints()),
-                team.isTeleportUnlocked()
+                team.isTeleportUnlocked(),
+                team.getCoins()
         );
         ModMessages.sendToPlayer(packet, player);
     }
@@ -228,6 +230,30 @@ public class TeamManager {
      */
     public TeamData getTeam(UUID teamId, MinecraftServer server) {
         return getData(server).getTeams().get(teamId);
+    }
+    
+    /**
+     * 获取包含指定坐标的队伍数据
+     * <p>
+     * 检查该坐标是否位于某个队伍的旅社区域内。
+     * 
+     * @param pos 检查的坐标
+     * @param server 服务器实例
+     * @return 包含该坐标的队伍，如果没有则返回 null
+     */
+    public TeamData getTeamAt(net.minecraft.core.BlockPos pos, MinecraftServer server) {
+        TeamSavedData data = getData(server);
+        for (TeamData team : data.getTeams().values()) {
+            net.minecraft.core.BlockPos center = team.getInnZoneCenter();
+            int radius = team.getInnZoneRadius();
+            
+            if (Math.abs(pos.getX() - center.getX()) <= radius &&
+                Math.abs(pos.getY() - center.getY()) <= radius &&
+                Math.abs(pos.getZ() - center.getZ()) <= radius) {
+                return team;
+            }
+        }
+        return null;
     }
     
     // --- 辅助修改方法 ---
@@ -269,7 +295,7 @@ public class TeamManager {
     /**
      * 更新客户端缓存 (由网络包调用)
      */
-    public void updateClientTeamData(UUID teamId, String name, UUID leaderId, Set<UUID> members, Set<ResourceLocation> unlockedPoints, boolean teleportUnlocked) {
+    public void updateClientTeamData(UUID teamId, String name, UUID leaderId, Set<UUID> members, Set<ResourceLocation> unlockedPoints, boolean teleportUnlocked, int coins) {
         if (clientTeamCache == null || !clientTeamCache.getTeamId().equals(teamId)) {
             clientTeamCache = new TeamData(teamId);
         }
@@ -279,5 +305,6 @@ public class TeamManager {
         clientTeamCache.setLeaderId(leaderId);
         clientTeamCache.setUnlockedMapPoints(unlockedPoints);
         clientTeamCache.setTeleportUnlocked(teleportUnlocked);
+        clientTeamCache.setCoins(coins);
     }
 }

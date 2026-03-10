@@ -4,6 +4,7 @@ import com.otherworldinn.world.teleport.TeleportUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BarrierBlock;
@@ -11,6 +12,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -33,7 +35,12 @@ public class OverworldPortalBlock extends Block {
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        // 始终返回完整方块形状以便在创造模式下被选中
+        // 在非创造模式下不可被选中
+        if (context instanceof EntityCollisionContext entityContext && 
+            entityContext.getEntity() instanceof Player player && 
+            !player.isCreative()) {
+            return Shapes.empty();
+        }
         return Shapes.block();
     }
 
