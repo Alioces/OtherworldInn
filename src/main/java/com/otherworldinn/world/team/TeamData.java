@@ -127,6 +127,12 @@ public class TeamData {
 
     // --- NBT 序列化 ---
 
+    /**
+     * 将队伍数据保存到 NBT
+     *
+     * @param tag 目标 NBT 标签
+     * @return 包含数据的 NBT 标签
+     */
     public CompoundTag save(CompoundTag tag) {
         tag.putUUID("TeamId", teamId);
         if (name != null) {
@@ -155,6 +161,11 @@ public class TeamData {
         return tag;
     }
 
+    /**
+     * 从 NBT 加载队伍数据
+     *
+     * @param tag 源 NBT 标签
+     */
     public void load(CompoundTag tag) {
         if (tag.contains("Name")) {
             name = tag.getString("Name");

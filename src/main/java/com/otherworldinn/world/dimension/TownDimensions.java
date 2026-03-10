@@ -9,7 +9,10 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 
 /**
- * 城镇维度注册
+ * 城镇维度定义
+ * <p>
+ * 定义城镇维度的 ResourceKey。
+ * 包含 LevelStem、Dimension 和 DimensionType。
  */
 public class TownDimensions {
     public static final ResourceKey<LevelStem> TOWN_LEVEL_STEM = ResourceKey.create(Registries.LEVEL_STEM, 
@@ -18,6 +21,7 @@ public class TownDimensions {
             ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "town"));
     public static final ResourceKey<DimensionType> TOWN_DIM_TYPE = ResourceKey.create(Registries.DIMENSION_TYPE, 
             ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "town_type"));
+
 
     public static void register() {}
 }

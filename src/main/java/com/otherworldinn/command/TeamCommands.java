@@ -25,6 +25,7 @@ import java.util.UUID;
  * /innteam transfer <player> - 转让队长（仅队长）
  * /innteam rename <name> - 重命名队伍（仅队长）
  * /innteam info - 查看队伍信息
+ * /innteam teleport <enabled> - 开启/关闭队伍传送（管理员）
  * </p>
  */
 public class TeamCommands {

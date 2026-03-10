@@ -13,6 +13,10 @@
   "command.otherworldinn.team.teleport_set": "Team teleport capability set to: %s",
   "command.otherworldinn.team.transferred": "Transferred leadership to %s",
   "command.otherworldinn.team.you_were_kicked": "You were kicked from the team.",
+  "gui.otherworldinn.teleport_overworld.message": "Are you sure you want to travel to the Overworld? You will be teleported to a random safe location.",
+  "gui.otherworldinn.teleport_overworld.title": "Travel to Overworld",
+  "item.otherworldinn.recall_scroll": "Recall Scroll",
+  "item.otherworldinn.recall_scroll.fail_in_town": "The scroll's magic is suppressed by the town's aura.",
   "itemGroup.otherworldinn": "Otherworld Inn",
   "key.categories.otherworldinn": "Otherworld Inn",
   "key.otherworldinn.strategy_mode": "Map View",
@@ -20,5 +24,6 @@
   "map_point.otherworldinn.cant_teleport": "Cannot teleport to",
   "map_point.otherworldinn.inn": "Otherworld Inn",
   "map_point.otherworldinn.locked": "Locked",
-  "map_point.otherworldinn.town_gate": "Town Gate"
+  "map_point.otherworldinn.town_gate": "Town Gate",
+  "screen.otherworldinn.map_view": "Town Map"
 }

@@ -8,6 +8,11 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 
+/**
+ * 维度注册中心
+ * <p>
+ * 负责注册自定义维度的 ChunkGenerator。
+ */
 public class ModDimensions {
     public static final DeferredRegister<MapCodec<? extends ChunkGenerator>> CHUNK_GENERATORS = 
             DeferredRegister.create(Registries.CHUNK_GENERATOR, OtherworldInn.MODID);

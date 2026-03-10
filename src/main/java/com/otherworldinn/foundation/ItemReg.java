@@ -24,7 +24,7 @@ public class ItemReg<T extends Item> {
     private Item.Properties properties = new Item.Properties();
     
     private boolean generateModel = true;
-    private String modelType = "generated"; // generated (default) or handheld
+    private String modelType = "generated"; // 默认为 "generated"，也可选 "handheld"
     
     private String enName = "";
     private String cnName = "";

@@ -6,6 +6,9 @@ import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.client.settings.KeyModifier;
 import org.lwjgl.glfw.GLFW;
 
+/**
+ * 客户端按键绑定
+ */
 public class ModKeyBindings {
     public static final KeyMapping TOGGLE_STRATEGY_MODE = new KeyMapping(
             "key.otherworldinn.strategy_mode",

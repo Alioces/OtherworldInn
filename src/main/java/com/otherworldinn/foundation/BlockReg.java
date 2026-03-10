@@ -28,7 +28,7 @@ public class BlockReg<T extends Block> {
     private final Function<BlockBehaviour.Properties, T> blockFactory;
     private BlockBehaviour.Properties properties = BlockBehaviour.Properties.of();
     
-    private boolean hasItem = false;
+    private boolean hasItem = true;
     private Item.Properties itemProperties = new Item.Properties();
     
     private boolean generateModel = true;
@@ -83,12 +83,6 @@ public class BlockReg<T extends Block> {
 
     public BlockReg<T> sound(SoundType soundType) {
         this.properties.sound(soundType);
-        return this;
-    }
-
-    public BlockReg<T> copySound(Block block) {
-        // 实际上 BlockBehaviour.Properties.ofFullCopy 已经复制了声音
-        // 此方法作为占位符，如果需要单独设置声音，请使用 sound(SoundType)
         return this;
     }
     
@@ -146,7 +140,24 @@ public class BlockReg<T extends Block> {
         return this;
     }
 
+    public BlockReg<T> stacksTo(int size) {
+        this.hasItem = true;
+        this.itemProperties.stacksTo(size);
+        return this;
+    }
+
+    public BlockReg<T> fireResistant() {
+        this.hasItem = true;
+        this.itemProperties.fireResistant();
+        return this;
+    }
+
     // --- DataGen配置 (DataGen) ---
+
+    public BlockReg<T> noBlockItem() {
+        this.hasItem = false;
+        return this;
+    }
 
     public BlockReg<T> translucent() {
         this.renderType = "translucent";

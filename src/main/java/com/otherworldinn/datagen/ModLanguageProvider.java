@@ -15,7 +15,9 @@ import java.util.Map;
 
 /**
  * 语言文件生成器
- * 负责生成 en_us.json 和 zh_cn.json
+ * <p>
+ * 负责生成 en_us.json 和 zh_cn.json 语言文件。
+ * 根据传入的 locale 参数决定生成哪种语言。
  */
 public class ModLanguageProvider extends LanguageProvider {
     private final String locale;
@@ -56,19 +58,22 @@ public class ModLanguageProvider extends LanguageProvider {
             add("command.otherworldinn.team.transferred", "队长职位已移交给 %s");
             add("command.otherworldinn.team.renamed", "队伍已重命名为：%s");
             add("command.otherworldinn.team.teleport_set", "队伍传送功能已设置为：%s");
+            
+            // 物品提示
+            add("item.otherworldinn.recall_scroll.fail_in_town", "回程卷轴无法在城镇中使用！");
         } else {
             add("itemGroup.otherworldinn", "Otherworld Inn");
             add("key.categories.otherworldinn", "Otherworld Inn");
             add("key.otherworldinn.strategy_mode", "Map View");
             
-            // Map Point Names
+            // 地图点名称 (Map Point Names)
             add("map_point.otherworldinn.inn", "Otherworld Inn");
             add("map_point.otherworldinn.blacksmith", "Blacksmith");
             add("map_point.otherworldinn.town_gate", "Town Gate");
             add("map_point.otherworldinn.locked", "Locked");
             add("map_point.otherworldinn.cant_teleport", "Cannot teleport to");
             
-            // Team Commands
+            // 队伍命令 (Team Commands)
             add("command.otherworldinn.team.already_in_team", "You are already in a team!");
             add("command.otherworldinn.team.created", "Created team: %s");
             add("command.otherworldinn.team.target_no_team", "Target player is not in a team!");
@@ -83,6 +88,9 @@ public class ModLanguageProvider extends LanguageProvider {
             add("command.otherworldinn.team.transferred", "Transferred leadership to %s");
             add("command.otherworldinn.team.renamed", "Renamed team to: %s");
             add("command.otherworldinn.team.teleport_set", "Team teleport capability set to: %s");
+            
+            // 物品提示 (Item Messages)
+            add("item.otherworldinn.recall_scroll.fail_in_town", "Recall Scroll cannot be used in Town!");
         }
 
         // 生成方块语言键

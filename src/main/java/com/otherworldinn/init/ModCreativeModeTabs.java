@@ -9,17 +9,19 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
- * 创造模式选项卡注册中心
+ * 创造模式选项卡注册
  */
 public class ModCreativeModeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, OtherworldInn.MODID);
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> OTHERWORLD_INN_TAB = CREATIVE_MODE_TABS.register("otherworld_inn_tab", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.otherworldinn"))
-            .icon(() -> new ItemStack(ModItems.ITEMS.getEntries().stream().findFirst().<net.minecraft.world.item.Item>map(deferredItem -> deferredItem.get()).orElse(net.minecraft.world.item.Items.AIR))) // 默认使用第一个注册的物品作为图标，稍后可修改
+            .icon(() -> new ItemStack(ModItems.RECALL_SCROLL.get()))
             .displayItems((parameters, output) -> {
-                // 在这里手动添加物品以控制顺序
-                // output.accept(ModItems.EXAMPLE_ITEM.get());
-                // output.accept(ModBlocks.EXAMPLE_BLOCK.get());
+                // 在这里手动添加物品
+                output.accept(ModItems.RECALL_SCROLL.get());
+                output.accept(ModBlocks.OVERWORLD_PORTAL.get());
+                
+
             }).build());
 }

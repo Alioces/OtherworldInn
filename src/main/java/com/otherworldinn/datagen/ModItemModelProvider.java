@@ -11,9 +11,13 @@ import net.neoforged.neoforge.registries.DeferredItem;
 
 import java.util.Map;
 
+import com.otherworldinn.init.ModBlocks;
+
 /**
  * 物品模型生成器
- * 负责生成 models/item JSON 文件
+ * <p>
+ * 负责生成 items 的 JSON 模型文件。
+ * 大多数方块物品的模型由 BlockStateProvider 处理，此处主要处理独立物品。
  */
 public class ModItemModelProvider extends ItemModelProvider {
     public ModItemModelProvider(PackOutput output, ExistingFileHelper existingFileHelper) {
@@ -24,6 +28,9 @@ public class ModItemModelProvider extends ItemModelProvider {
     protected void registerModels() {
         // 大多数方块物品的模型由 ModBlockStateProvider.simpleBlockWithItem 处理
         // 此处主要处理独立物品
+        
+        // 特殊处理：主世界传送门物品模型设为草方块（但好像实际上是纯白，算了不管他）
+        withExistingParent(ModBlocks.OVERWORLD_PORTAL.getId().getPath(), ResourceLocation.withDefaultNamespace("block/grass_block"));
         
         // 注册 ModItems 中的物品
         for (Map.Entry<DeferredItem<?>, ItemDataGenInfo> entry : ModItems.ITEM_INFOS.entrySet()) {

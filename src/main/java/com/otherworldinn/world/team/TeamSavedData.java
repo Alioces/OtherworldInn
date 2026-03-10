@@ -11,6 +11,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * 队伍保存数据
+ * <p>
+ * 负责将所有队伍数据持久化到 World SavedData。
+ * 数据存储在 Overworld 级别。
+ */
 public class TeamSavedData extends SavedData {
     private static final String DATA_NAME = "otherworldinn_teams";
     

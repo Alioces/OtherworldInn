@@ -35,7 +35,12 @@ public class TeamManager {
 
     /**
      * 获取玩家所在的队伍
-     * 如果玩家没有队伍，返回 null
+     * <p>
+     * 如果玩家没有队伍，返回 null。
+     * 客户端逻辑会返回本地缓存的队伍数据。
+     *
+     * @param player 目标玩家
+     * @return 队伍数据或 null
      */
     public TeamData getPlayerTeam(Player player) {
         if (player instanceof ServerPlayer serverPlayer) {
@@ -53,8 +58,12 @@ public class TeamManager {
     
     /**
      * 处理玩家加入世界
+     * <p>
      * 无论单人多人，如果这是该服务器的第一个玩家，则自动建队。
-     * 后续加入的玩家将自动加入已存在的第一个队伍（临时逻辑）。多个队伍得动态创建维度，这个有点复杂先不做
+     * 后续加入的玩家将自动加入已存在的第一个队伍（临时逻辑）。
+     *
+     * @param player 加入的玩家
+     * @param server 服务器实例
      */
     public void onPlayerJoin(Player player, MinecraftServer server) {
         UUID playerId = player.getUUID();
@@ -93,6 +102,10 @@ public class TeamManager {
     
     /**
      * 创建队伍
+     *
+     * @param player 创建者（队长）
+     * @param name   队伍名称
+     * @return 创建的队伍数据
      */
     public TeamData createTeam(Player player, String name) {
         UUID playerId = player.getUUID();
@@ -118,6 +131,10 @@ public class TeamManager {
     
     /**
      * 加入队伍
+     *
+     * @param player 玩家
+     * @param teamId 队伍ID
+     * @return 是否成功加入
      */
     public boolean joinTeam(Player player, UUID teamId) {
         if (!(player instanceof ServerPlayer serverPlayer)) return false;
@@ -134,6 +151,8 @@ public class TeamManager {
     
     /**
      * 离开当前队伍
+     *
+     * @param player 玩家
      */
     public void leaveTeam(Player player) {
         if (!(player instanceof ServerPlayer serverPlayer)) return;
@@ -154,6 +173,10 @@ public class TeamManager {
 
     /**
      * 更新队伍传送状态并同步给所有成员
+     *
+     * @param team     队伍
+     * @param unlocked 是否解锁
+     * @param server   服务器实例
      */
     public void setTeamTeleportUnlocked(TeamData team, boolean unlocked, MinecraftServer server) {
         team.setTeleportUnlocked(unlocked);
@@ -180,6 +203,9 @@ public class TeamManager {
     
     /**
      * 同步队伍传送状态给特定玩家
+     *
+     * @param team   队伍
+     * @param player 目标玩家
      */
     public void syncTeamTeleport(TeamData team, ServerPlayer player) {
         S2CTeamSyncPacket packet = new S2CTeamSyncPacket(
@@ -195,6 +221,10 @@ public class TeamManager {
 
     /**
      * 获取指定 ID 的队伍 (需要 Server 实例)
+     *
+     * @param teamId 队伍ID
+     * @param server 服务器实例
+     * @return 队伍数据
      */
     public TeamData getTeam(UUID teamId, MinecraftServer server) {
         return getData(server).getTeams().get(teamId);
@@ -222,6 +252,8 @@ public class TeamManager {
 
     /**
      * 客户端获取当前玩家的队伍数据
+     *
+     * @return 客户端缓存的队伍数据
      */
     public TeamData getClientPlayerTeam() {
         if (clientTeamCache == null) {

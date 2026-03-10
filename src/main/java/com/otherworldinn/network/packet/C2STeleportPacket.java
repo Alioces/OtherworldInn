@@ -21,8 +21,10 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import java.util.Optional;
 
 /**
- * 客户端 -> 服务端
- * 请求传送到指定的地图点
+ * 客户端 -> 服务端 数据包
+ * <p>
+ * 请求传送到指定的地图点。
+ * 包含目标点的 ResourceLocation ID。
  */
 public record C2STeleportPacket(ResourceLocation pointId) implements CustomPacketPayload {
 
@@ -39,10 +41,15 @@ public record C2STeleportPacket(ResourceLocation pointId) implements CustomPacke
         return TYPE;
     }
 
+    /**
+     * 处理数据包
+     *
+     * @param context 数据包上下文
+     */
     public void handle(IPayloadContext context) {
         context.enqueueWork(() -> {
             if (context.player() instanceof ServerPlayer player) {
-                // 验证
+                // 验证玩家队伍信息
                 TeamData team = TeamManager.getInstance().getPlayerTeam(player);
 
                 // 验证地图点是否解锁
@@ -50,11 +57,7 @@ public record C2STeleportPacket(ResourceLocation pointId) implements CustomPacke
                     return;
                 }
 
-                // 特殊处理：城镇大门
-                // 城镇大门有特殊处理逻辑，暂时留空
-                if (pointId.equals(ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "town_gate"))) {
-                    return;
-                }
+
 
                 // 执行传送
                 Optional<MapPoint> pointOpt = TownDataProvider.getPoint(pointId);

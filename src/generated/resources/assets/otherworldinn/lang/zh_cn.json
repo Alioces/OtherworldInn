@@ -13,6 +13,10 @@
   "command.otherworldinn.team.teleport_set": "队伍传送功能已设置为：%s",
   "command.otherworldinn.team.transferred": "队长职位已移交给 %s",
   "command.otherworldinn.team.you_were_kicked": "你已被踢出队伍。",
+  "gui.otherworldinn.teleport_overworld.message": "确定要前往主世界吗？你将被传送到一个随机的安全位置。",
+  "gui.otherworldinn.teleport_overworld.title": "前往主世界",
+  "item.otherworldinn.recall_scroll": "回程卷轴",
+  "item.otherworldinn.recall_scroll.fail_in_town": "卷轴的魔力被城镇的气息压制了。",
   "itemGroup.otherworldinn": "异界旅社",
   "key.categories.otherworldinn": "异界旅社",
   "key.otherworldinn.strategy_mode": "地图视图",
@@ -20,5 +24,6 @@
   "map_point.otherworldinn.cant_teleport": "无法传送至",
   "map_point.otherworldinn.inn": "旅社",
   "map_point.otherworldinn.locked": "未解锁",
-  "map_point.otherworldinn.town_gate": "城镇大门"
+  "map_point.otherworldinn.town_gate": "城镇大门",
+  "screen.otherworldinn.map_view": "城镇地图"
 }

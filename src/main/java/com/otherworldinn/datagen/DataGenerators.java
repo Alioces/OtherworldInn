@@ -9,7 +9,9 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 /**
  * DataGen 入口类
- * 监听 GatherDataEvent 事件以注册各种数据提供者
+ * <p>
+ * 监听 GatherDataEvent 事件以注册各种数据提供者（Provider）。
+ * 包含客户端（模型、语言）和服务端（标签、战利品表）数据的生成。
  */
 @EventBusSubscriber(modid = OtherworldInn.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class DataGenerators {
