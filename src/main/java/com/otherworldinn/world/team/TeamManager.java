@@ -221,15 +221,18 @@ public class TeamManager {
         ModMessages.sendToPlayer(packet, player);
     }
 
+
     /**
-     * 获取指定 ID 的队伍 (需要 Server 实例)
+     * 根据 ID 获取队伍
      *
-     * @param teamId 队伍ID
+     * @param teamId 队伍 ID
      * @param server 服务器实例
-     * @return 队伍数据
+     * @return 队伍数据或 null
      */
     public TeamData getTeam(UUID teamId, MinecraftServer server) {
-        return getData(server).getTeams().get(teamId);
+        if (server == null) return null;
+        TeamSavedData data = getData(server);
+        return data.getTeams().get(teamId);
     }
     
     /**

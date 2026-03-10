@@ -7,11 +7,17 @@ import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import com.otherworldinn.world.team.TeamData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import com.otherworldinn.entity.GuestEntity;
 
 /**
  * 旅社数据
@@ -23,7 +29,7 @@ public class InnData {
     private String name = "My Inn";
     private boolean open = false; // 默认为歇业
     private boolean editMode = false; // 默认为非编辑模式
-    private final Map<UUID, GuestData> guests = new HashMap<>();
+    private final Set<UUID> guestIds = new HashSet<>();
     private final Map<Integer, RoomData> rooms = new HashMap<>();
 
     public InnData() {
@@ -63,7 +69,7 @@ public class InnData {
         if (this.open) {
             return false; // 营业中不能编辑
         }
-        if (!this.guests.isEmpty()) {
+        if (!this.guestIds.isEmpty()) {
             return false; // 有客人不能编辑
         }
         this.editMode = true;
@@ -76,22 +82,39 @@ public class InnData {
 
     // --- 旅客管理 ---
 
-    public Map<UUID, GuestData> getGuests() {
-        return this.guests;
+    public Set<UUID> getGuestIds() {
+        return this.guestIds;
     }
 
-    public void addGuest(GuestData guest) {
-        this.guests.put(guest.getUuid(), guest);
+    public void addGuest(UUID guestId) {
+        this.guestIds.add(guestId);
         // 有客人时自动关闭编辑模式
         this.editMode = false;
     }
 
     public void removeGuest(UUID uuid) {
-        guests.remove(uuid);
+        guestIds.remove(uuid);
     }
     
-    public GuestData getGuest(UUID uuid) {
-        return guests.get(uuid);
+    /**
+     * 获取旅客数据
+     * <p>
+     * 通过 UUID 在服务器等级中查找实体并获取数据。
+     * </p>
+     * 
+     * @param uuid 旅客 UUID
+     * @param level 服务器等级
+     * @return 旅客数据，如果找不到实体则返回 null
+     */
+    public GuestData getGuestData(UUID uuid, ServerLevel level) {
+        if (!guestIds.contains(uuid)) {
+            return null;
+        }
+        Entity entity = level.getEntity(uuid);
+        if (entity instanceof GuestEntity guestEntity) {
+            return guestEntity.getGuestData();
+        }
+        return null;
     }
 
     // --- 房间管理 ---
@@ -125,9 +148,10 @@ public class InnData {
         return null;
     }
     
-    public void tick() {
+    public void tick(ServerLevel level) {
         // 更新所有旅客状态
-        guests.values().forEach(GuestData::tick);
+        // 实际上旅客实体自己会 tick，这里如果需要做全局管理（例如统计）可以在此遍历
+        // 如果要遍历，需要从 world 获取实体
         
         // 移除时间耗尽的旅客 (可选，或者仅标记)
         // guests.values().removeIf(g -> g.getRemainingTime() <= 0);
@@ -218,11 +242,12 @@ public class InnData {
      * 如果旅客已在其他房间，会自动先执行退房。
      * </p>
      *
-     * @param guest  旅客数据
-     * @param roomId 目标房间ID
+     * @param guestId 旅客 UUID
+     * @param roomId  目标房间ID
+     * @param level   服务器等级
      * @return 是否成功入住
      */
-    public boolean checkIn(GuestData guest, int roomId) {
+    public boolean checkIn(UUID guestId, int roomId, ServerLevel level) {
         RoomData room = rooms.get(roomId);
         if (room == null) {
             return false; // 房间不存在
@@ -233,16 +258,20 @@ public class InnData {
             return false;
         }
 
+        GuestData guest = getGuestData(guestId, level);
+        if (guest == null) {
+            return false; // 找不到旅客实体
+        }
+
         // 如果旅客已经在某个房间，先退房
         if (guest.getRoomId() != -1) {
-            checkOut(guest.getUuid());
+            checkOut(guestId, level);
         }
 
         // 执行入住逻辑
-        if (room.addGuest(guest.getUuid())) {
+        if (room.addGuest(guestId)) {
             guest.setRoomId(roomId);
-            // 更新旅客列表，确保使用最新的 GuestData 实例
-            this.guests.put(guest.getUuid(), guest);
+            this.addGuest(guestId);
             return true;
         }
         
@@ -256,9 +285,10 @@ public class InnData {
      * </p>
      *
      * @param guestId 旅客UUID
+     * @param level   服务器等级
      */
-    public void checkOut(UUID guestId) {
-        GuestData guest = guests.get(guestId);
+    public void checkOut(UUID guestId, ServerLevel level) {
+        GuestData guest = getGuestData(guestId, level);
         if (guest != null) {
             int currentRoomId = guest.getRoomId();
             if (currentRoomId != -1) {
@@ -268,7 +298,22 @@ public class InnData {
                 }
                 guest.setRoomId(-1);
             }
+        } else {
+            // 如果找不到实体（可能未加载），尝试从房间记录中清理
+            // 这是一种防御性编程，防止僵尸数据
+            for (RoomData room : rooms.values()) {
+                if (room.hasGuest(guestId)) {
+                    room.removeGuest(guestId);
+                    break;
+                }
+            }
         }
+        // 从活跃旅客列表中移除
+        // 注意：这里是否移除取决于业务逻辑。如果是退房离开旅社，则移除。
+        // 如果只是换房，则不应在此移除，而是在 checkIn 中处理。
+        // 但根据方法名 checkOut，通常意味着离开房间。
+        // 为了安全起见，仅在完全离开旅社时调用 removeGuest(uuid)。
+        // 这里的 checkOut 更像是 "checkOutOfRoom"。
     }
 
     // --- NBT 序列化 ---
@@ -279,8 +324,10 @@ public class InnData {
         tag.putBoolean("EditMode", editMode);
 
         ListTag guestsTag = new ListTag();
-        for (GuestData guest : guests.values()) {
-            guestsTag.add(guest.save(new CompoundTag()));
+        for (UUID guestId : guestIds) {
+            CompoundTag guestTag = new CompoundTag();
+            guestTag.putUUID("UUID", guestId);
+            guestsTag.add(guestTag);
         }
         tag.put("Guests", guestsTag);
 
@@ -304,13 +351,12 @@ public class InnData {
             editMode = tag.getBoolean("EditMode");
         }
 
-        guests.clear();
+        guestIds.clear();
         if (tag.contains("Guests")) {
             ListTag guestsTag = tag.getList("Guests", Tag.TAG_COMPOUND);
             for (Tag t : guestsTag) {
                 if (t instanceof CompoundTag guestTag) {
-                    GuestData guest = GuestData.load(guestTag);
-                    guests.put(guest.getUuid(), guest);
+                    guestIds.add(guestTag.getUUID("UUID"));
                 }
             }
         }
