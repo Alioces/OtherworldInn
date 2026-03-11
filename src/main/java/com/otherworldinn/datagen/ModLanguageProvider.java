@@ -32,8 +32,8 @@ public class ModLanguageProvider extends LanguageProvider {
         boolean isZh = "zh_cn".equals(locale);
         
         if (isZh) {
-            add("itemGroup.otherworldinn", "异界旅社");
-            add("key.categories.otherworldinn", "异界旅社");
+            add("itemGroup.otherworldinn", "旅社物语");
+            add("key.categories.otherworldinn", "旅社物语");
             add("key.otherworldinn.map_mode", "地图视图");
             
             // 地图点名称

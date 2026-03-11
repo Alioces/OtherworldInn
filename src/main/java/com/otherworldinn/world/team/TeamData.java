@@ -1,5 +1,8 @@
 package com.otherworldinn.world.team;
 
+import lombok.Data;
+import lombok.Setter;
+import lombok.AccessLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -24,6 +27,7 @@ import com.otherworldinn.world.map.TownDataProvider;
  * 存储队伍的成员、解锁状态（地图点、功能）等信息。
  * </p>
  */
+@Data
 public class TeamData {
     
     public record InnRegion(int minX, int minZ, int maxX, int maxZ) {
@@ -64,8 +68,13 @@ public class TeamData {
     private String name;
     private UUID leaderId;
     private final Set<UUID> members = new HashSet<>();
+    
+    @Setter(AccessLevel.NONE)
     private final Set<ResourceLocation> unlockedMapPoints = new HashSet<>();
+    
     private boolean teleportUnlocked = false;
+    
+    @Setter(AccessLevel.NONE)
     private int coins = 0; // 队伍金币
     
     // 旅社区域列表 (替代原有的中心点+半径)
@@ -73,8 +82,10 @@ public class TeamData {
     
     // 过时字段，仅用于数据迁移或特定逻辑
     @Deprecated
+    @Setter(AccessLevel.NONE)
     private BlockPos innZoneCenter = new BlockPos(0, 70, 0); 
     @Deprecated
+    @Setter(AccessLevel.NONE)
     private int innZoneRadius = 15; 
     
     private final InnData innData = new InnData(); // 旅社数据管理系统
@@ -85,31 +96,6 @@ public class TeamData {
         // 初始化默认区域 (以原点为中心，半径15)
         // -15 ~ 15 -> 31x31
         addRegion(new InnRegion(-15, -15, 15, 15));
-    }
-
-    public UUID getTeamId() {
-        return teamId;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public UUID getLeaderId() {
-        return leaderId;
-    }
-    
-    public void setLeaderId(UUID leaderId) {
-        // 服务端逻辑检查成员存在性，客户端同步时直接设置
-        this.leaderId = leaderId;
-    }
-
-    public Set<UUID> getMembers() {
-        return members;
     }
 
     public void addMember(UUID playerId) {
@@ -162,18 +148,6 @@ public class TeamData {
         unlockedMapPoints.remove(pointId);
     }
 
-    public boolean isTeleportUnlocked() {
-        return teleportUnlocked;
-    }
-
-    public void setTeleportUnlocked(boolean unlocked) {
-        this.teleportUnlocked = unlocked;
-    }
-
-    public int getCoins() {
-        return coins;
-    }
-
     public void setCoins(int coins) {
         this.coins = Math.max(0, coins);
     }
@@ -192,10 +166,6 @@ public class TeamData {
         return false;
     }
 
-    public Set<ResourceLocation> getUnlockedMapPoints() {
-        return unlockedMapPoints;
-    }
-
     public void setUnlockedMapPoints(Set<ResourceLocation> points) {
         this.unlockedMapPoints.clear();
         this.unlockedMapPoints.addAll(points);
@@ -204,10 +174,6 @@ public class TeamData {
     public void setMembers(Set<UUID> newMembers) {
         this.members.clear();
         this.members.addAll(newMembers);
-    }
-
-    public BlockPos getInnZoneCenter() {
-        return innZoneCenter;
     }
 
     // 兼容性方法：返回第一个区域的中心，或者默认中心
@@ -234,10 +200,6 @@ public class TeamData {
         }
         
         return maxDist;
-    }
-
-    public List<InnRegion> getInnRegions() {
-        return innRegions;
     }
 
     public void addRegion(InnRegion region) {
@@ -404,11 +366,6 @@ public class TeamData {
     }
 
     @Deprecated
-    public int getInnZoneRadius() {
-        return innZoneRadius;
-    }
-
-    @Deprecated
     public void setInnZoneRadius(int radius) {
         this.innZoneRadius = radius;
         // 迁移逻辑
@@ -417,10 +374,6 @@ public class TeamData {
             addRegion(new InnRegion(innZoneCenter.getX() - radius, innZoneCenter.getZ() - radius, 
                                     innZoneCenter.getX() + radius, innZoneCenter.getZ() + radius));
         }
-    }
-
-    public InnData getInnData() {
-        return innData;
     }
 
     // --- NBT 序列化 ---

@@ -1,10 +1,23 @@
 package com.otherworldinn.entity;
 
 import com.otherworldinn.world.inn.GuestData;
+import lombok.Getter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.Level;
+
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
+import net.minecraft.world.entity.player.Player;
+
+import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.TeamData;
+import com.otherworldinn.world.inn.InnData;
+import net.minecraft.server.level.ServerLevel;
 
 /**
  * 旅客实体
@@ -17,13 +30,85 @@ public abstract class GuestEntity extends PathfinderMob {
     /**
      * 旅客数据
      */
+    @Getter
     private GuestData guestData;
 
     protected GuestEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
-        // 初始化旅客数据，默认退房时间为当前时间 + 1 Minecraft 天 (24000 ticks)
+        // 初始化旅客数据
         long currentTime = level.getGameTime();
-        this.guestData = new GuestData(this.getUUID(), currentTime + 24000L);
+        this.guestData = new GuestData(this.getUUID(), currentTime + getStayDuration());
+        // 初始化默认偏好
+        this.initGuestPreferences();
+        // 初始化奖励物品
+        this.initRewardItems();
+    }
+
+    /**
+     * 获取旅客停留时长（ticks）
+     * <p>
+     * 默认为 1 Minecraft 天 (24000 ticks)。
+     * 子类可覆盖此方法以设定特定的停留时间。
+     * </p>
+     *
+     * @return 停留时长 (ticks)
+     */
+    protected long getStayDuration() {
+        return 24000L;
+    }
+
+    /**
+     * 初始化旅客偏好
+     * <p>
+     * 子类可覆盖此方法以设定特定的房间偏好。
+     * 默认所有属性偏好均为 0-100 (无限制)。
+     * </p>
+     */
+    protected void initGuestPreferences() {
+        this.guestData.setComfortPreference(0, 100);
+        this.guestData.setLightPreference(0, 100);
+        this.guestData.setHumidityPreference(0, 100);
+    }
+
+    /**
+     * 初始化奖励物品
+     * <p>
+     * 子类可覆盖此方法以添加特定的奖励物品。
+     * 默认无奖励。
+     * 示例：this.guestData.addRewardItem(Items.EMERALD, 1, 3);
+     * </p>
+     */
+    protected void initRewardItems() {
+        // 默认无奖励，由子类实现
+    }
+
+    @Override
+    protected void registerGoals() {
+        super.registerGoals();
+        this.goalSelector.addGoal(0, new FloatGoal(this));
+        this.goalSelector.addGoal(1, new RandomStrollGoal(this, 0.6D));
+        this.goalSelector.addGoal(2, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(3, new RandomLookAroundGoal(this));
+    }
+
+    @Override
+    public boolean isInvulnerableTo(DamageSource source) {
+        // 旅客不可被伤害，除非是创造模式玩家或虚空伤害
+        return source != this.damageSources().fellOutOfWorld() && !source.isCreativePlayer();
+    }
+
+    @Override
+    public void die(DamageSource damageSource) {
+        super.die(damageSource);
+        if (!this.level().isClientSide && this.level() instanceof ServerLevel serverLevel) {
+            // 获取当前位置的队伍/旅社
+            TeamData team = TeamManager.getInstance().getTeamAt(this.blockPosition(), serverLevel.getServer());
+            if (team != null) {
+                InnData innData = team.getInnData();
+                // 强制退房
+                innData.checkOut(this.getUUID(), serverLevel);
+            }
+        }
     }
 
     @Override
@@ -51,14 +136,5 @@ public abstract class GuestEntity extends PathfinderMob {
             CompoundTag guestTag = compound.getCompound("GuestData");
             this.guestData = GuestData.load(guestTag);
         }
-    }
-
-    /**
-     * 获取旅客数据
-     *
-     * @return 旅客数据对象
-     */
-    public GuestData getGuestData() {
-        return guestData;
     }
 }

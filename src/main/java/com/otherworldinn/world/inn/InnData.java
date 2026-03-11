@@ -1,5 +1,8 @@
 package com.otherworldinn.world.inn;
 
+import lombok.Data;
+import lombok.Setter;
+import lombok.AccessLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -8,9 +11,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
 
 import com.otherworldinn.foundation.ModColors;
+import com.otherworldinn.mixin.BedBlockExtension;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
@@ -22,6 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.otherworldinn.world.team.TeamData;
+import com.otherworldinn.world.team.TeamManager;
 import com.otherworldinn.entity.GuestEntity;
 
 /**
@@ -30,28 +38,27 @@ import com.otherworldinn.entity.GuestEntity;
  * 存储旅社的运营状态、旅客列表等信息。
  * </p>
  */
+@Data
 public class InnData {
     private String name = "My Inn";
+    
+    @Setter(AccessLevel.NONE)
+    private int rating = 0; // 旅社评级 (0-5)
+    
+    @Setter(AccessLevel.NONE)
     private boolean open = false; // 默认为歇业
+    
+    @Setter(AccessLevel.NONE)
     private boolean editMode = false; // 默认为非编辑模式
+    
     private final Set<UUID> guestIds = new HashSet<>();
     private final Map<Integer, RoomData> rooms = new HashMap<>();
 
     public InnData() {
     }
 
-    // --- 属性访问 ---
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isOpen() {
-        return open;
+    public void setRating(int rating) {
+        this.rating = Math.max(0, Math.min(5, rating));
     }
 
     public void setOpen(boolean open) {
@@ -60,10 +67,6 @@ public class InnData {
         if (open) {
             this.editMode = false;
         }
-    }
-
-    public boolean isEditMode() {
-        return this.editMode;
     }
 
     /**
@@ -85,12 +88,6 @@ public class InnData {
         this.editMode = false;
     }
 
-    // --- 旅客管理 ---
-
-    public Set<UUID> getGuestIds() {
-        return this.guestIds;
-    }
-
     public void addGuest(UUID guestId) {
         this.guestIds.add(guestId);
         // 有客人时自动关闭编辑模式
@@ -100,7 +97,7 @@ public class InnData {
     public void removeGuest(UUID uuid) {
         guestIds.remove(uuid);
     }
-    
+
     /**
      * 获取旅客数据
      * <p>
@@ -120,12 +117,6 @@ public class InnData {
             return guestEntity.getGuestData();
         }
         return null;
-    }
-
-    // --- 房间管理 ---
-
-    public Map<Integer, RoomData> getRooms() {
-        return this.rooms;
     }
 
     public void addRoom(RoomData room) {
@@ -236,6 +227,16 @@ public class InnData {
     public void updateAllRoomsStats(Level level) {
         for (Integer roomId : rooms.keySet()) {
             calculateRoomStats(roomId, level);
+            // 更新房间内所有旅客的偏好分数
+            RoomData room = rooms.get(roomId);
+            if (room != null && level instanceof ServerLevel serverLevel) {
+                for (UUID guestId : room.getCurrentGuests()) {
+                    GuestData guest = getGuestData(guestId, serverLevel);
+                    if (guest != null) {
+                        guest.updatePreferenceScore(room);
+                    }
+                }
+            }
         }
     }
 
@@ -305,14 +306,16 @@ public class InnData {
             return false; // 找不到旅客实体
         }
 
-        // 如果旅客已经在某个房间，先退房
+        // 检查旅客是否已在其他房间
         if (guest.getRoomId() != -1) {
-            checkOut(guestId, level);
+            return false;
         }
 
         // 执行入住逻辑
         if (room.addGuest(guestId)) {
             guest.setRoomId(roomId);
+            // 更新偏好分数
+            guest.updatePreferenceScore(room);
             this.addGuest(guestId);
             return true;
         }
@@ -320,20 +323,104 @@ public class InnData {
         return false;
     }
 
+    // --- 辅助方法 ---
+    
+    /**
+     * 将房间内的一张干净的床设置为脏乱状态
+     *
+     * @param roomId 房间ID
+     * @param level  服务器等级
+     * @return 是否成功弄乱了一张床
+     */
+    private boolean setRoomBedMessy(int roomId, ServerLevel level) {
+        RoomData room = rooms.get(roomId);
+        if (room == null) return false;
+        
+        BlockPos min = room.getMinPos();
+        BlockPos max = room.getMaxPos();
+        
+        for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
+            BlockState state = level.getBlockState(pos);
+            if (state.getBlock() instanceof BedBlock) {
+                // 确保我们设置的是床头，或者两部分都设置
+                // 实际上只需要设置一部分，因为床通常是联动的，但为了保险起见，或者只设置床头
+                // 这里我们简单地找到第一张床并设置其为脏乱
+                if (state.hasProperty(BedBlockExtension.MESSY)) {
+                    // 检查是否已经是脏乱的，我们只弄乱干净的床
+                    if (!state.getValue(BedBlockExtension.MESSY)) {
+                        level.setBlock(pos, state.setValue(BedBlockExtension.MESSY, true), 3);
+                        
+                        // 如果是床头，还需要处理床脚，反之亦然。
+                        BedPart part = state.getValue(BedBlock.PART);
+                        // 根据 Facing 和 Part 来推断另一半
+                        Direction facing = state.getValue(BedBlock.FACING);
+                        BlockPos otherPos = pos.relative(part == BedPart.HEAD ? facing.getOpposite() : facing);
+                        
+                        BlockState otherState = level.getBlockState(otherPos);
+                        // 检查另一半是否也是床且也是正确的部分
+                        if (otherState.getBlock() instanceof BedBlock && 
+                            otherState.hasProperty(BedBlockExtension.MESSY)) {
+                            // 简单的双重检查，确保是同一张床
+                            if (otherState.getValue(BedBlock.PART) != part) {
+                                level.setBlock(otherPos, otherState.setValue(BedBlockExtension.MESSY, true), 3);
+                            }
+                        }
+                        
+                        // 只弄乱一张床即可，并返回成功
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * 旅客退房
      * <p>
-     * 将旅客从当前房间移除。
+     * 将旅客从当前房间移除，并从旅社旅客名单中删除。
+     * 如果旅客实体存在，会触发奖励物品掉落。
+     * 此外，会将房间内的一张床标记为脏乱。
      * </p>
      *
      * @param guestId 旅客UUID
      * @param level   服务器等级
      */
     public void checkOut(UUID guestId, ServerLevel level) {
-        GuestData guest = getGuestData(guestId, level);
+        // 尝试获取实体（如果已加载）
+        Entity entity = level.getEntity(guestId);
+        GuestData guest = null;
+        
+        if (entity instanceof GuestEntity guestEntity) {
+            guest = guestEntity.getGuestData();
+            
+            // 触发奖励掉落
+            if (guest != null) {
+                guest.dropRewards(level, entity.blockPosition());
+            }
+        }
+        
+        // 1. 清理房间记录
+        // 如果能获取到 GuestData，直接定位房间清理
         if (guest != null) {
             int currentRoomId = guest.getRoomId();
             if (currentRoomId != -1) {
+                // 将一张干净的床弄乱
+                if (setRoomBedMessy(currentRoomId, level)) {
+                    // 如果成功弄乱了床，说明可用床位减少了一个
+                    // 直接减少最大可入住人数，避免全量重新计算
+                    RoomData room = rooms.get(currentRoomId);
+                    if (room != null) {
+                        room.setMaxGuests(Math.max(0, room.getMaxGuests() - 1));
+                        
+                        // 同步数据
+                        TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
+                        if (team != null) {
+                            TeamManager.getInstance().syncTeam(team, level.getServer());
+                        }
+                    }
+                }
+                
                 RoomData room = rooms.get(currentRoomId);
                 if (room != null) {
                     room.removeGuest(guestId);
@@ -341,21 +428,29 @@ public class InnData {
                 guest.setRoomId(-1);
             }
         } else {
-            // 如果找不到实体（可能未加载），尝试从房间记录中清理
-            // 这是一种防御性编程，防止僵尸数据
+            // 如果无法获取 GuestData，也尝试清理（我不知道这种情况到底发生在什么场景，但是这样写一下好了）
             for (RoomData room : rooms.values()) {
                 if (room.hasGuest(guestId)) {
+                    // 将一张干净的床弄乱
+                    if (setRoomBedMessy(room.getId(), level)) {
+                        room.setMaxGuests(Math.max(0, room.getMaxGuests() - 1));
+                        
+                        // 同步数据
+                        TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
+                        if (team != null) {
+                            TeamManager.getInstance().syncTeam(team, level.getServer());
+                        }
+                    }
+                    
                     room.removeGuest(guestId);
+                    // 找到并移除后即可停止遍历，因为一个旅客只能住一个房间
                     break;
                 }
             }
         }
-        // 从活跃旅客列表中移除
-        // 注意：这里是否移除取决于业务逻辑。如果是退房离开旅社，则移除。
-        // 如果只是换房，则不应在此移除，而是在 checkIn 中处理。
-        // 但根据方法名 checkOut，通常意味着离开房间。
-        // 为了安全起见，仅在完全离开旅社时调用 removeGuest(uuid)。
-        // 这里的 checkOut 更像是 "checkOutOfRoom"。
+
+        // 2. 从旅社旅客名单中彻底移除
+        removeGuest(guestId);
     }
 
     // --- NBT 序列化 ---
@@ -368,6 +463,7 @@ public class InnData {
      */
     public CompoundTag save(CompoundTag tag) {
         tag.putString("Name", name);
+        tag.putInt("Rating", rating);
         tag.putBoolean("Open", open);
         tag.putBoolean("EditMode", editMode);
 
@@ -396,6 +492,9 @@ public class InnData {
     public void load(CompoundTag tag) {
         if (tag.contains("Name")) {
             name = tag.getString("Name");
+        }
+        if (tag.contains("Rating")) {
+            rating = tag.getInt("Rating");
         }
         if (tag.contains("Open")) {
             open = tag.getBoolean("Open");

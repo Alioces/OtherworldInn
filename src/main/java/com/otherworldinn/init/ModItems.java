@@ -8,6 +8,7 @@ import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import com.otherworldinn.item.BedSheetItem;
 import com.otherworldinn.item.RecallScrollItem;
 import com.otherworldinn.item.RoomRegisterItem;
 
@@ -40,8 +41,16 @@ public class ModItems {
             .rarity(Rarity.UNCOMMON)
             .stacksTo(1)
             .noModel()
-            .lang("Room Register", "房间登记册");
+            .lang("Room Register", "房间登记册")
+            .tooltip("Hold in off-hand to edit room", "副手手持来编辑房间");
     public static final DeferredItem<RoomRegisterItem> ROOM_REGISTER = ROOM_REGISTER_REG.register();
+
+    public static final ItemReg<BedSheetItem> BED_SHEET_REG = new ItemReg<>("bed_sheet", BedSheetItem::new)
+            .stacksTo(16)
+            .durability(64)
+            .noModel()
+            .lang("Bed Sheet", "床单");
+    public static final DeferredItem<BedSheetItem> BED_SHEET = BED_SHEET_REG.register();
 
     // --- 辅助方法 ---
 

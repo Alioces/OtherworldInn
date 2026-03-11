@@ -22,6 +22,7 @@ public class ModCreativeModeTabs {
                 output.accept(ModItems.RECALL_SCROLL.get());
                 output.accept(ModBlocks.OVERWORLD_PORTAL.get());
                 output.accept(ModItems.ROOM_REGISTER.get());
+                output.accept(ModItems.BED_SHEET.get());
                 
 
             }).build());

@@ -1,6 +1,7 @@
 package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.item.BedSheetItem;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
@@ -25,6 +26,12 @@ public class ModClientEvents {
                     (stack, level, entity, seed) -> {
                         if (entity == null) return 0.0F;
                         return entity.getOffhandItem() == stack ? 1.0F : 0.0F;
+                    });
+
+            ItemProperties.register(ModItems.BED_SHEET.get(), 
+                    ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "messy"), 
+                    (stack, level, entity, seed) -> {
+                        return BedSheetItem.isMessy(stack) ? 1.0F : 0.0F;
                     });
         });
     }

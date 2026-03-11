@@ -1,5 +1,8 @@
 package com.otherworldinn.world.inn;
 
+import lombok.Data;
+import lombok.Setter;
+import lombok.AccessLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -16,6 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.otherworldinn.mixin.BedBlockExtension;
 import com.otherworldinn.world.team.TeamData;
 
 /**
@@ -24,18 +28,24 @@ import com.otherworldinn.world.team.TeamData;
  * 存储旅社中单个房间的信息，包括空间范围、编号和属性。
  * </p>
  */
+@Data
 public class RoomData {
     private final int id;
     private final BlockPos minPos;
     private final BlockPos maxPos;
     
     // 房间属性 (0-100)
+    @Setter(AccessLevel.NONE)
     private int comfort;
+    @Setter(AccessLevel.NONE)
     private int light;
+    @Setter(AccessLevel.NONE)
     private int humidity;
 
     // 旅客信息
+    @Setter(AccessLevel.NONE)
     private int maxGuests = 1; // 默认最大可居住1人
+    
     private final Set<UUID> currentGuests = new HashSet<>();
 
     /**
@@ -54,54 +64,20 @@ public class RoomData {
         this.humidity = 0;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public BlockPos getMinPos() {
-        return minPos;
-    }
-
-    public BlockPos getMaxPos() {
-        return maxPos;
-    }
-
-    public int getComfort() {
-        return comfort;
-    }
-
     public void setComfort(int comfort) {
         this.comfort = Math.max(0, Math.min(100, comfort));
-    }
-
-    public int getLight() {
-        return light;
     }
 
     public void setLight(int light) {
         this.light = Math.max(0, Math.min(100, light));
     }
 
-    public int getHumidity() {
-        return humidity;
-    }
-
     public void setHumidity(int humidity) {
         this.humidity = Math.max(0, Math.min(100, humidity));
     }
 
-    // --- 旅客管理 ---
-
-    public int getMaxGuests() {
-        return maxGuests;
-    }
-
     public void setMaxGuests(int maxGuests) {
         this.maxGuests = Math.max(0, maxGuests);
-    }
-
-    public Set<UUID> getCurrentGuests() {
-        return currentGuests;
     }
 
     public boolean addGuest(UUID guestId) {
@@ -157,6 +133,7 @@ public class RoomData {
 
     /**
      * 并统计床位数量。
+     * 仅统计干净的床位 (MESSY=false)。
      */
     
     public static int countBeds(BlockPos minPos, BlockPos maxPos, Level level) {
@@ -167,6 +144,12 @@ public class RoomData {
                 // 只统计床头，避免重复
                 if (state.hasProperty(BedBlock.PART) && 
                     state.getValue(BedBlock.PART) == BedPart.HEAD) {
+                    
+                    // 检查是否脏乱，只有干净的床才算数
+                    if (state.hasProperty(BedBlockExtension.MESSY) && state.getValue(BedBlockExtension.MESSY)) {
+                        continue;
+                    }
+                    
                     bedCount++;
                 }
             }
@@ -324,7 +307,11 @@ public class RoomData {
                     if (state.is(BlockTags.BEDS)) {
                         if (state.hasProperty(BedBlock.PART) && 
                             state.getValue(BedBlock.PART) == BedPart.HEAD) {
-                            bedCount++;
+                            
+                            // 检查是否脏乱
+                            if (!state.hasProperty(BedBlockExtension.MESSY) || !state.getValue(BedBlockExtension.MESSY)) {
+                                bedCount++;
+                            }
                         }
                     }
                     
