@@ -32,12 +32,14 @@ public class ModItems {
             .rarity(Rarity.EPIC)
             .stacksTo(1)
             .fireResistant()
-            .lang("Recall Scroll", "回程卷轴");
+            .lang("Recall Scroll", "回程卷轴")
+            .tooltip("Teleports back to the inn after using for 3 seconds", "持续使用3秒后传送回旅社位置");
     public static final DeferredItem<RecallScrollItem> RECALL_SCROLL = RECALL_SCROLL_REG.register();
 
     public static final ItemReg<RoomRegisterItem> ROOM_REGISTER_REG = new ItemReg<>("room_register", RoomRegisterItem::new)
             .rarity(Rarity.UNCOMMON)
             .stacksTo(1)
+            .noModel()
             .lang("Room Register", "房间登记册");
     public static final DeferredItem<RoomRegisterItem> ROOM_REGISTER = ROOM_REGISTER_REG.register();
 

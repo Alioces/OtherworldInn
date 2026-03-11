@@ -6,8 +6,12 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
+
+import com.otherworldinn.foundation.ModColors;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -129,7 +133,31 @@ public class InnData {
     }
 
     public void removeRoom(int roomId) {
+        removeRoom(roomId, null, null, null);
+    }
+
+    public void removeRoom(int roomId, Level level, TeamData team) {
+        removeRoom(roomId, level, team, null);
+    }
+
+    public void removeRoom(int roomId, Level level, TeamData team, Component reason) {
         this.rooms.remove(roomId);
+        
+        // 通知队伍所有成员
+        if (level != null && team != null) {
+            team.getMembers().forEach(uuid -> {
+                Player player = level.getPlayerByUUID(uuid);
+                if (player != null) {
+                    if (reason != null) {
+                        player.displayClientMessage(Component.translatable("message.otherworldinn.room_register.remove_success_with_reason", roomId, reason)
+                                .withStyle(style -> style.withColor(ModColors.ERROR)), false);
+                    } else {
+                        player.displayClientMessage(Component.translatable("message.otherworldinn.room_register.remove_success", roomId)
+                                .withStyle(style -> style.withColor(ModColors.ERROR)), false);
+                    }
+                }
+            });
+        }
     }
 
     public RoomData getRoom(int roomId) {
@@ -149,13 +177,17 @@ public class InnData {
         return null;
     }
     
+    /**
+     * 每 tick 更新逻辑
+     * <p>
+     * 处理旅社的全局逻辑，例如统计或批量更新。
+     * 旅客个体的逻辑由 GuestEntity 自身处理。
+     * </p>
+     *
+     * @param level 服务器等级
+     */
     public void tick(ServerLevel level) {
-        // 更新所有旅客状态
-        // 实际上旅客实体自己会 tick，这里如果需要做全局管理（例如统计）可以在此遍历
-        // 如果要遍历，需要从 world 获取实体
-        
-        // 移除时间耗尽的旅客 (可选，或者仅标记)
-        // guests.values().removeIf(g -> g.getRemainingTime() <= 0);
+        // 全局旅客管理逻辑（如自动退房检查）可在此处实现
     }
 
     /**
@@ -219,16 +251,25 @@ public class InnData {
      */
     public List<Integer> checkAllRoomsValidity(Level level, TeamData team) {
         List<Integer> removedRooms = new ArrayList<>();
-        // 收集需要删除的房间ID，避免在遍历时修改集合
+        // 收集需要删除的房间ID和原因，避免在遍历时修改集合
+        Map<Integer, RoomData.ValidationResult> failureReasons = new HashMap<>();
+
         for (RoomData room : rooms.values()) {
-            if (!RoomData.isRoomValid(room.getMinPos(), room.getMaxPos(), level, team)) {
+            RoomData.ValidationResult result = RoomData.validate(room.getMinPos(), room.getMaxPos(), level, team, room.getId());
+            if (!result.isSuccess()) {
                 removedRooms.add(room.getId());
+                failureReasons.put(room.getId(), result);
+            } else {
+                // 如果验证通过，更新床的数量
+                int bedCount = RoomData.countBeds(room.getMinPos(), room.getMaxPos(), level);
+                room.setMaxGuests(bedCount);
             }
         }
         
         // 删除无效房间
         for (Integer roomId : removedRooms) {
-            removeRoom(roomId);
+            RoomData.ValidationResult reason = failureReasons.get(roomId);
+            removeRoom(roomId, level, team, Component.translatable(reason.getTranslationKey()));
         }
         
         return removedRooms;
@@ -319,6 +360,12 @@ public class InnData {
 
     // --- NBT 序列化 ---
 
+    /**
+     * 保存数据到 NBT
+     *
+     * @param tag 目标标签
+     * @return 写入数据的标签
+     */
     public CompoundTag save(CompoundTag tag) {
         tag.putString("Name", name);
         tag.putBoolean("Open", open);
@@ -341,6 +388,11 @@ public class InnData {
         return tag;
     }
 
+    /**
+     * 从 NBT 加载数据
+     *
+     * @param tag 源标签
+     */
     public void load(CompoundTag tag) {
         if (tag.contains("Name")) {
             name = tag.getString("Name");

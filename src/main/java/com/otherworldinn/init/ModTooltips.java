@@ -42,7 +42,8 @@ public class ModTooltips {
             if (entry.getKey().get() == item) {
                 int count = entry.getValue().enTooltips().size();
                 for (int i = 0; i < count; i++) {
-                    event.getToolTip().add(Component.translatable(item.getDescriptionId() + ".tooltip." + i));
+                    event.getToolTip().add(Component.translatable(item.getDescriptionId() + ".tooltip." + i)
+                            .withStyle(style -> style.withColor(0x97FFFF)));
                 }
                 return;
             }
@@ -55,7 +56,8 @@ public class ModTooltips {
                 if (entry.getKey().get() == block) {
                     int count = entry.getValue().enTooltips().size();
                     for (int i = 0; i < count; i++) {
-                        event.getToolTip().add(Component.translatable(block.getDescriptionId() + ".tooltip." + i));
+                        event.getToolTip().add(Component.translatable(block.getDescriptionId() + ".tooltip." + i)
+                                .withStyle(style -> style.withColor(0x97FFFF)));
                     }
                     return;
                 }

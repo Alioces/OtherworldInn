@@ -6,12 +6,22 @@ import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
+import com.otherworldinn.init.ModItems;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.minecraft.network.chat.Component;
+
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -112,6 +122,62 @@ public class InnEventHandler {
             if (team != null) {
                 // 执行房间合法性检查
                 team.getInnData().checkAllRoomsValidity(level, team);
+                
+                // 更新房间属性 (家具统计)
+                team.getInnData().updateAllRoomsStats(level);
+                // 同步数据给客户端
+                teamManager.syncTeam(team, level.getServer());
+            }
+        }
+    }
+
+    /**
+     * 处理玩家左键点击方块事件 (服务器端)
+     * <p>
+     * 用于“房间登记册”在副手手持时的房间删除功能。
+     * </p>
+     */
+    @SubscribeEvent
+    public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+        handleLeftClick(event.getEntity(), event.getPos(), event.getLevel());
+    }
+
+    /**
+     * 处理左键点击方块的公共逻辑
+     * <p>
+     * 检查玩家副手是否持有房间登记册，且处于编辑模式下。
+     * 如果条件满足，则删除点击位置所在的房间。
+     * </p>
+     *
+     * @param player 玩家实体
+     * @param pos    点击的方块坐标
+     * @param level  世界实例
+     */
+    private static void handleLeftClick(Player player, BlockPos pos, Level level) {
+        if (level.isClientSide || !(player instanceof ServerPlayer serverPlayer)) {
+            return;
+        }
+
+        ItemStack offhandItem = player.getItemInHand(InteractionHand.OFF_HAND);
+        if (!offhandItem.is(ModItems.ROOM_REGISTER.get())) {
+            return;
+        }
+
+        // 检查是否在城镇维度
+        if (level.dimension() != TownDimensions.TOWN_LEVEL) return;
+
+        TeamData team = TeamManager.getInstance().getPlayerTeam(serverPlayer);
+        if (team != null && team.getInnData().isEditMode()) {
+            InnData innData = team.getInnData();
+
+            RoomData room = innData.getRoomAt(pos);
+            
+            if (room != null) {
+                // 执行删除
+                innData.removeRoom(room.getId(), level, team, Component.translatable("message.otherworldinn.room_register.manual_removal"));
+                
+                // 同步数据给客户端
+                TeamManager.getInstance().syncTeam(team, serverPlayer.getServer());
             }
         }
     }

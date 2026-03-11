@@ -77,8 +77,19 @@ public class ModLanguageProvider extends LanguageProvider {
             add("message.otherworldinn.room_register.not_edit_mode", "旅社未处于编辑模式！");
             add("message.otherworldinn.room_register.pos1_set", "位置1已设置：%s");
             add("message.otherworldinn.room_register.create_success", "房间创建成功！ID：%s");
-            add("message.otherworldinn.room_register.remove_success", "房间已移除！ID：%s");
+            add("message.otherworldinn.room_register.remove_success", "ID为%s的房间已被移除");
             add("message.otherworldinn.room_register.invalid_room", "无效的房间结构！");
+            add("message.otherworldinn.room_register.validation.too_small", "房间空间太小！");
+            add("message.otherworldinn.room_register.validation.out_of_bounds", "房间超出旅社范围！");
+            add("message.otherworldinn.room_register.validation.hole_in_floor", "房间的地板有漏洞！");
+            add("message.otherworldinn.room_register.validation.hole_in_ceiling", "房间的天花板有漏洞！");
+            add("message.otherworldinn.room_register.validation.hole_in_wall", "房间的墙壁有漏洞！");
+            add("message.otherworldinn.room_register.validation.missing_door", "房间缺少门！");
+            add("message.otherworldinn.room_register.validation.missing_bed", "房间缺少床！");
+            add("message.otherworldinn.room_register.validation.overlap", "房间与已有房间重叠！");
+            add("message.otherworldinn.room_register.remove_success_with_reason", "ID为%s的房间已被移除。原因：%s");
+            add("message.otherworldinn.room_register.manual_removal", "手动移除");
+            add("message.otherworldinn.room_register.validation.too_crowded", "房间过于拥挤！");
             
             // 生物群系
             add("biome.otherworldinn.town", "城镇");
@@ -133,8 +144,19 @@ public class ModLanguageProvider extends LanguageProvider {
             add("message.otherworldinn.room_register.not_edit_mode", "Inn is not in edit mode!");
             add("message.otherworldinn.room_register.pos1_set", "Position 1 set: %s");
             add("message.otherworldinn.room_register.create_success", "Room created successfully! ID: %s");
-            add("message.otherworldinn.room_register.remove_success", "Room removed! ID: %s");
+            add("message.otherworldinn.room_register.remove_success", "Room with ID %s has been removed");
             add("message.otherworldinn.room_register.invalid_room", "Invalid room structure!");
+            add("message.otherworldinn.room_register.validation.too_small", "Room is too small!");
+            add("message.otherworldinn.room_register.validation.out_of_bounds", "Room is out of inn bounds!");
+            add("message.otherworldinn.room_register.validation.hole_in_floor", "Hole in the floor!");
+            add("message.otherworldinn.room_register.validation.hole_in_ceiling", "Hole in the ceiling!");
+            add("message.otherworldinn.room_register.validation.hole_in_wall", "Hole in the walls!");
+            add("message.otherworldinn.room_register.validation.missing_door", "Missing door!");
+            add("message.otherworldinn.room_register.validation.missing_bed", "Missing bed!");
+            add("message.otherworldinn.room_register.validation.overlap", "Room overlaps with existing room!");
+            add("message.otherworldinn.room_register.remove_success_with_reason", "Room with ID %s has been removed. Reason: %s");
+            add("message.otherworldinn.room_register.manual_removal", "Manual Removal");
+            add("message.otherworldinn.room_register.validation.too_crowded", "Room is too crowded!");
             
             // Biomes
             add("biome.otherworldinn.town", "Town");

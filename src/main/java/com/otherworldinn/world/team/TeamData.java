@@ -433,9 +433,7 @@ public class TeamData {
      */
     public CompoundTag save(CompoundTag tag) {
         tag.putUUID("TeamId", teamId);
-        if (name != null) {
-            tag.putString("Name", name);
-        }
+        tag.putString("Name", name != null ? name : "");
         if (leaderId != null) {
             tag.putUUID("LeaderId", leaderId);
         }
@@ -456,22 +454,17 @@ public class TeamData {
 
         tag.putBoolean("TeleportUnlocked", teleportUnlocked);
         tag.putInt("Coins", coins);
+        
+        // 旅社数据 (包含 EditMode)
+        tag.put("InnData", innData.save(new CompoundTag()));
 
         // 旅社区域
         ListTag regionsTag = new ListTag();
         for (InnRegion region : innRegions) {
-            regionsTag.add(region.save());
+            CompoundTag regionTag = region.save();
+            regionsTag.add(regionTag);
         }
         tag.put("InnRegions", regionsTag);
-
-        // 兼容旧数据
-        if (innZoneCenter != null) {
-            tag.putLong("InnCenter", innZoneCenter.asLong());
-        }
-        tag.putInt("InnRadius", innZoneRadius);
-        
-        // 旅社数据
-        tag.put("InnData", innData.save(new CompoundTag()));
 
         return tag;
     }
@@ -482,6 +475,9 @@ public class TeamData {
      * @param tag 源 NBT 标签
      */
     public void load(CompoundTag tag) {
+        if (tag.contains("TeamId")) {
+            // teamId is final and passed in constructor, usually not overwritten here unless we are loading into a dummy
+        }
         if (tag.contains("Name")) {
             name = tag.getString("Name");
         }
@@ -490,16 +486,21 @@ public class TeamData {
         }
         
         members.clear();
-        ListTag membersTag = tag.getList("Members", Tag.TAG_COMPOUND);
-        for (Tag t : membersTag) {
-            CompoundTag memberTag = (CompoundTag) t;
-            members.add(memberTag.getUUID("UUID"));
+        if (tag.contains("Members")) {
+            ListTag membersTag = tag.getList("Members", Tag.TAG_COMPOUND);
+            for (Tag t : membersTag) {
+                if (t instanceof CompoundTag memberTag) {
+                    members.add(memberTag.getUUID("UUID"));
+                }
+            }
         }
 
         unlockedMapPoints.clear();
-        ListTag pointsTag = tag.getList("UnlockedPoints", Tag.TAG_STRING);
-        for (Tag t : pointsTag) {
-            unlockedMapPoints.add(ResourceLocation.parse(t.getAsString()));
+        if (tag.contains("UnlockedPoints")) {
+            ListTag pointsTag = tag.getList("UnlockedPoints", Tag.TAG_STRING);
+            for (Tag t : pointsTag) {
+                unlockedMapPoints.add(ResourceLocation.parse(t.getAsString()));
+            }
         }
 
         teleportUnlocked = tag.getBoolean("TeleportUnlocked");
@@ -509,6 +510,11 @@ public class TeamData {
             coins = 0;
         }
         
+        // 优先加载 InnData，因为后续可能需要用到它
+        if (tag.contains("InnData")) {
+            innData.load(tag.getCompound("InnData"));
+        }
+
         // 加载区域
         innRegions.clear();
         if (tag.contains("InnRegions")) {
@@ -520,19 +526,17 @@ public class TeamData {
             }
         } else {
             // 尝试从旧数据迁移
+            BlockPos center = innZoneCenter;
+            int radius = innZoneRadius;
             if (tag.contains("InnCenter")) {
-                innZoneCenter = BlockPos.of(tag.getLong("InnCenter"));
+                center = BlockPos.of(tag.getLong("InnCenter"));
             }
             if (tag.contains("InnRadius")) {
-                innZoneRadius = tag.getInt("InnRadius");
+                radius = tag.getInt("InnRadius");
             }
             // 生成默认区域
-            addRegion(new InnRegion(innZoneCenter.getX() - innZoneRadius, innZoneCenter.getZ() - innZoneRadius, 
-                                    innZoneCenter.getX() + innZoneRadius, innZoneCenter.getZ() + innZoneRadius));
-        }
-        
-        if (tag.contains("InnData")) {
-            innData.load(tag.getCompound("InnData"));
+            addRegion(new InnRegion(center.getX() - radius, center.getZ() - radius, 
+                                    center.getX() + radius, center.getZ() + radius));
         }
     }
 }

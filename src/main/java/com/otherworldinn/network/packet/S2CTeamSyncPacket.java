@@ -10,18 +10,19 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.ResourceLocation;
 
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.minecraft.nbt.CompoundTag;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import java.util.UUID;
 
 /**
  * 服务端 -> 客户端 数据包
  * <p>
  * 用于同步队伍数据到客户端。
- * 包含队伍ID、名称、队长ID、成员列表、解锁点列表、传送功能状态。
+ * 包含队伍ID、名称、队长ID、成员列表、解锁点列表、传送功能状态、金币数、旅社数据。
  */
 public record S2CTeamSyncPacket(
         UUID teamId,
@@ -30,7 +31,8 @@ public record S2CTeamSyncPacket(
         List<UUID> members,
         List<ResourceLocation> unlockedPoints,
         boolean teleportUnlocked,
-        int coins
+        int coins,
+        CompoundTag innData
 ) implements CustomPacketPayload {
 
     public static final Type<S2CTeamSyncPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "team_sync"));
@@ -44,6 +46,7 @@ public record S2CTeamSyncPacket(
                 ByteBufCodecs.collection(ArrayList::new, ResourceLocation.STREAM_CODEC).encode(buf, new ArrayList<>(packet.unlockedPoints()));
                 ByteBufCodecs.BOOL.encode(buf, packet.teleportUnlocked());
                 ByteBufCodecs.INT.encode(buf, packet.coins());
+                ByteBufCodecs.COMPOUND_TAG.encode(buf, packet.innData());
             },
             buf -> new S2CTeamSyncPacket(
                     UUIDUtil.STREAM_CODEC.decode(buf),
@@ -52,7 +55,8 @@ public record S2CTeamSyncPacket(
                     ByteBufCodecs.collection(ArrayList::new, UUIDUtil.STREAM_CODEC).decode(buf),
                     ByteBufCodecs.collection(ArrayList::new, ResourceLocation.STREAM_CODEC).decode(buf),
                     ByteBufCodecs.BOOL.decode(buf),
-                    ByteBufCodecs.INT.decode(buf)
+                    ByteBufCodecs.INT.decode(buf),
+                    ByteBufCodecs.COMPOUND_TAG.decode(buf)
             )
     );
 
@@ -69,16 +73,15 @@ public record S2CTeamSyncPacket(
     public void handle(IPayloadContext context) {
         context.enqueueWork(() -> {
             // 在客户端主线程执行
-            Set<UUID> memberSet = new HashSet<>(members());
-            Set<ResourceLocation> pointSet = new HashSet<>(unlockedPoints());
             TeamManager.getInstance().updateClientTeamData(
                     teamId(),
                     teamName(),
                     leaderId(),
-                    memberSet,
-                    pointSet,
+                    new HashSet<>(members()),
+                    new HashSet<>(unlockedPoints()),
                     teleportUnlocked(),
-                    coins()
+                    coins(),
+                    innData()
             );
         });
     }

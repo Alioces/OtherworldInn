@@ -14,12 +14,16 @@ import net.minecraft.world.level.Level;
  */
 public abstract class GuestEntity extends PathfinderMob {
 
+    /**
+     * 旅客数据
+     */
     private GuestData guestData;
 
     protected GuestEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
-        // 初始化旅客数据，默认居住时间为 1 Minecraft 天 (24000 ticks)
-        this.guestData = new GuestData(this.getUUID(), 24000L);
+        // 初始化旅客数据，默认退房时间为当前时间 + 1 Minecraft 天 (24000 ticks)
+        long currentTime = level.getGameTime();
+        this.guestData = new GuestData(this.getUUID(), currentTime + 24000L);
     }
 
     @Override
@@ -34,7 +38,6 @@ public abstract class GuestEntity extends PathfinderMob {
     public void addAdditionalSaveData(CompoundTag compound) {
         super.addAdditionalSaveData(compound);
         // 将 GuestData 保存到 NBT 中
-        // 使用子标签避免键冲突
         CompoundTag guestTag = new CompoundTag();
         this.guestData.save(guestTag);
         compound.put("GuestData", guestTag);
@@ -50,6 +53,11 @@ public abstract class GuestEntity extends PathfinderMob {
         }
     }
 
+    /**
+     * 获取旅客数据
+     *
+     * @return 旅客数据对象
+     */
     public GuestData getGuestData() {
         return guestData;
     }

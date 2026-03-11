@@ -7,8 +7,10 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -117,7 +119,61 @@ public class RoomData {
         return currentGuests.contains(guestId);
     }
 
+    public enum ValidationResult {
+        SUCCESS("success"),
+        TOO_SMALL("too_small"),
+        OUT_OF_BOUNDS("out_of_bounds"),
+        HOLE_IN_FLOOR("hole_in_floor"),
+        HOLE_IN_CEILING("hole_in_ceiling"),
+        HOLE_IN_WALL("hole_in_wall"),
+        MISSING_DOOR("missing_door"),
+        MISSING_BED("missing_bed"),
+        OVERLAP("overlap"),
+        TOO_CROWDED("too_crowded");
+
+        private final String translationKeySuffix;
+
+        ValidationResult(String translationKeySuffix) {
+            this.translationKeySuffix = translationKeySuffix;
+        }
+
+        public String getTranslationKey() {
+            return "message.otherworldinn.room_register.validation." + translationKeySuffix;
+        }
+
+        public boolean isSuccess() {
+            return this == SUCCESS;
+        }
+    }
+
     // --- 静态验证方法 ---
+    /**
+     * 判定区域是否能作为房间。
+     * 详情见 {@link #validate(BlockPos, BlockPos, Level, TeamData, Integer)}
+     */
+    public static ValidationResult validate(BlockPos minPos, BlockPos maxPos, Level level, TeamData team) {
+        return validate(minPos, maxPos, level, team, null);
+    }
+
+    /**
+     * 并统计床位数量。
+     */
+    
+    public static int countBeds(BlockPos minPos, BlockPos maxPos, Level level) {
+        int bedCount = 0;
+        for (BlockPos pos : BlockPos.betweenClosed(minPos, maxPos)) {
+            BlockState state = level.getBlockState(pos);
+            if (state.is(BlockTags.BEDS)) {
+                // 只统计床头，避免重复
+                if (state.hasProperty(BedBlock.PART) && 
+                    state.getValue(BedBlock.PART) == BedPart.HEAD) {
+                    bedCount++;
+                }
+            }
+        }
+        return bedCount;
+    }
+
     /**
      * 判定区域是否能作为房间
      * <p>
@@ -127,19 +183,39 @@ public class RoomData {
      * 3. 顶面（最高点再高一格）所有方块不能为无碰撞体积的方块。
      * 4. 侧面（四个侧面）外层方块中，至少 3/4 的方块必须有碰撞体积。
      * 5. 所有侧面的最外层方块中，至少包含一扇门。
+     * 6. 房间内部必须至少包含一张床。
+     * 7. 房间不能与已有房间重叠。
+     * 8. 房间内必须至少包含一个 2x2x2 的无碰撞箱空间。
      * </p>
      * 
      * @param minPos 房间最小坐标
      * @param maxPos 房间最大坐标
      * @param level 世界实例
      * @param team 所属队伍（用于检查区域范围）
+     * @param ignoreRoomId 需要忽略的房间ID（用于自身检查时避免重叠误判），可为 null
      */
-    public static boolean isRoomValid(BlockPos minPos, BlockPos maxPos, Level level, TeamData team) {
+    public static ValidationResult validate(BlockPos minPos, BlockPos maxPos, Level level, TeamData team, Integer ignoreRoomId) {
         // 0. 检查是否在旅社区域内
         if (team != null) {
             // 检查 minPos 和 maxPos 是否都在旅社区域内
             if (!team.isInInnZone(minPos) || !team.isInInnZone(maxPos)) {
-                return false;
+                return ValidationResult.OUT_OF_BOUNDS;
+            }
+            
+            // 0.1 检查是否与现有房间重叠
+            InnData innData = team.getInnData();
+            for (RoomData existingRoom : innData.getRooms().values()) {
+                // 如果是自身检查，跳过
+                if (ignoreRoomId != null && existingRoom.getId() == ignoreRoomId) {
+                    continue;
+                }
+
+                // 简单的 AABB 重叠检查
+                if (Math.max(minPos.getX(), existingRoom.getMinPos().getX()) <= Math.min(maxPos.getX(), existingRoom.getMaxPos().getX()) &&
+                    Math.max(minPos.getY(), existingRoom.getMinPos().getY()) <= Math.min(maxPos.getY(), existingRoom.getMaxPos().getY()) &&
+                    Math.max(minPos.getZ(), existingRoom.getMinPos().getZ()) <= Math.min(maxPos.getZ(), existingRoom.getMaxPos().getZ())) {
+                    return ValidationResult.OVERLAP;
+                }
             }
         }
 
@@ -150,6 +226,11 @@ public class RoomData {
         int maxY = maxPos.getY();
         int maxZ = maxPos.getZ();
 
+        // 检查房间大小 (至少 3x3x3)
+        if ((maxX - minX + 1) < 3 || (maxY - minY + 1) < 3 || (maxZ - minZ + 1) < 3) {
+            return ValidationResult.TOO_SMALL;
+        }
+
         // 1. 检查底面 (minY - 1)
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
@@ -157,7 +238,7 @@ public class RoomData {
                 BlockState state = level.getBlockState(floorPos);
                 // 检查是否有完整上表面支持站立 (isFaceSturdy with UP)
                 if (!state.isFaceSturdy(level, floorPos, Direction.UP)) {
-                    return false;
+                    return ValidationResult.HOLE_IN_FLOOR;
                 }
             }
         }
@@ -169,60 +250,129 @@ public class RoomData {
                 BlockState state = level.getBlockState(ceilingPos);
                 // 检查是否有碰撞体积 (getCollisionShape not empty)
                 if (state.getCollisionShape(level, ceilingPos).isEmpty()) {
-                    return false;
+                    return ValidationResult.HOLE_IN_CEILING;
                 }
             }
         }
 
         // 3. 检查侧面
-        int totalWallBlocks = 0;
-        int solidWallBlocks = 0;
         boolean hasDoor = false;
 
-        // 遍历所有可能的墙壁坐标
-        // 墙壁位于 minX-1, maxX+1, minZ-1, maxZ+1 所在的平面 (即房间标记区域的外围一圈)，高度范围 [minY, maxY]
+        int northTotal = 0, northSolid = 0;
+        int southTotal = 0, southSolid = 0;
+        int westTotal = 0, westSolid = 0;
+        int eastTotal = 0, eastSolid = 0;
         
-        // Z轴固定的墙面 (minZ-1 和 maxZ+1)
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                // 北面 (minZ - 1)
-                BlockPos northPos = new BlockPos(x, y, minZ - 1);
-                if (checkWallBlock(level, northPos)) solidWallBlocks++;
-                if (isDoor(level, northPos)) hasDoor = true;
-                totalWallBlocks++;
+        BlockPos.MutableBlockPos mPos = new BlockPos.MutableBlockPos();
 
-                // 南面 (maxZ + 1)
-                BlockPos southPos = new BlockPos(x, y, maxZ + 1);
-                if (checkWallBlock(level, southPos)) solidWallBlocks++;
-                if (isDoor(level, southPos)) hasDoor = true;
-                totalWallBlocks++;
+        // 遍历墙壁
+        for (int y = minY; y <= maxY; y++) {
+            // 北墙 (minZ - 1) 和 南墙 (maxZ + 1)
+            for (int x = minX; x <= maxX; x++) {
+                mPos.set(x, y, minZ - 1);
+                if (checkWallBlock(level, mPos)) northSolid++;
+                if (isDoor(level, mPos)) hasDoor = true;
+                northTotal++;
+
+                mPos.set(x, y, maxZ + 1);
+                if (checkWallBlock(level, mPos)) southSolid++;
+                if (isDoor(level, mPos)) hasDoor = true;
+                southTotal++;
+            }
+            
+            // 西墙 (minX - 1) 和 东墙 (maxX + 1)
+            for (int z = minZ; z <= maxZ; z++) {
+                mPos.set(minX - 1, y, z);
+                if (checkWallBlock(level, mPos)) westSolid++;
+                if (isDoor(level, mPos)) hasDoor = true;
+                westTotal++;
+
+                mPos.set(maxX + 1, y, z);
+                if (checkWallBlock(level, mPos)) eastSolid++;
+                if (isDoor(level, mPos)) hasDoor = true;
+                eastTotal++;
             }
         }
 
-        // X轴固定的墙面 (minX-1 和 maxX+1)
-        for (int z = minZ; z <= maxZ; z++) {
-            for (int y = minY; y <= maxY; y++) {
-                // 西面 (minX - 1)
-                BlockPos westPos = new BlockPos(minX - 1, y, z);
-                if (checkWallBlock(level, westPos)) solidWallBlocks++;
-                if (isDoor(level, westPos)) hasDoor = true;
-                totalWallBlocks++;
-
-                // 东面 (maxX + 1)
-                BlockPos eastPos = new BlockPos(maxX + 1, y, z);
-                if (checkWallBlock(level, eastPos)) solidWallBlocks++;
-                if (isDoor(level, eastPos)) hasDoor = true;
-                totalWallBlocks++;
-            }
-        }
-
-        // 3/4 的方块必须有碰撞体积
-        if ((double) solidWallBlocks / totalWallBlocks < 0.75) {
-            return false;
-        }
+        if ((double) northSolid / northTotal < 0.75) return ValidationResult.HOLE_IN_WALL;
+        if ((double) southSolid / southTotal < 0.75) return ValidationResult.HOLE_IN_WALL;
+        if ((double) westSolid / westTotal < 0.75) return ValidationResult.HOLE_IN_WALL;
+        if ((double) eastSolid / eastTotal < 0.75) return ValidationResult.HOLE_IN_WALL;
 
         // 必须包含至少一扇门
-        return hasDoor;
+        if (!hasDoor) {
+            return ValidationResult.MISSING_DOOR;
+        }
+        
+        // 4. 内部检查：统计床位数量 + 检查是否存在 2x2x2 的空闲空间
+        // 合并遍历以优化性能
+        int bedCount = 0;
+        boolean hasSpace = false;
+        
+        // 用于快速检查 2x2x2 空间的计数器 (X轴连续无碰撞方块计数)
+        // 这种优化需要更复杂的逻辑，这里采用一种简化版的“滑动窗口”思想：
+        // 如果当前点是空的，尝试以此为起点的 2x2x2。
+        // 为了减少重复检查，只有当 hasSpace 为 false 时才进行检查。
+        
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    mPos.set(x, y, z);
+                    BlockState state = level.getBlockState(mPos);
+                    
+                    // 统计床位
+                    if (state.is(BlockTags.BEDS)) {
+                        if (state.hasProperty(BedBlock.PART) && 
+                            state.getValue(BedBlock.PART) == BedPart.HEAD) {
+                            bedCount++;
+                        }
+                    }
+                    
+                    // 检查 2x2x2 空间 (如果尚未找到)
+                    // 只有当 x, y, z 都在允许作为 2x2x2 起点的范围内时才检查
+                    // 优化：2x2x2 空间必须位于最低处 (y == minY)
+                    if (!hasSpace && y == minY && x < maxX && z < maxZ) {
+                        // 快速预检：如果当前方块有碰撞箱，则以其为起点的 2x2x2 肯定无效
+                        if (state.getCollisionShape(level, mPos).isEmpty()) {
+                            if (check2x2x2Space(level, x, y, z)) {
+                                hasSpace = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (bedCount == 0) {
+            return ValidationResult.MISSING_BED;
+        }
+
+        if (!hasSpace) {
+            return ValidationResult.TOO_CROWDED;
+        }
+
+        return ValidationResult.SUCCESS;
+    }
+    
+    /**
+     * 检查指定坐标为起点的 2x2x2 区域是否无碰撞箱
+     */
+    private static boolean check2x2x2Space(Level level, int startX, int startY, int startZ) {
+        BlockPos.MutableBlockPos mPos = new BlockPos.MutableBlockPos();
+        for (int dx = 0; dx <= 1; dx++) {
+            for (int dy = 0; dy <= 1; dy++) {
+                for (int dz = 0; dz <= 1; dz++) {
+                    // 起点已经检查过了，可以跳过 (dx=0, dy=0, dz=0)
+                    if (dx == 0 && dy == 0 && dz == 0) continue;
+                    
+                    mPos.set(startX + dx, startY + dy, startZ + dz);
+                    if (!level.getBlockState(mPos).getCollisionShape(level, mPos).isEmpty()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     // --- NBT 序列化 ---

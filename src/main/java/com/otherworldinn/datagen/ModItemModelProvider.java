@@ -31,7 +31,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         
         // 特殊处理：主世界传送门物品模型设为草方块（但好像实际上是纯白，算了不管他）
         withExistingParent(ModBlocks.OVERWORLD_PORTAL.getId().getPath(), ResourceLocation.withDefaultNamespace("block/grass_block"));
-        
+
         // 注册 ModItems 中的物品
         for (Map.Entry<DeferredItem<?>, ItemDataGenInfo> entry : ModItems.ITEM_INFOS.entrySet()) {
             DeferredItem<?> item = entry.getKey();

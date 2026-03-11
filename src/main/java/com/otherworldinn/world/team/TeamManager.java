@@ -1,6 +1,7 @@
 package com.otherworldinn.world.team;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -179,20 +180,21 @@ public class TeamManager {
      */
     public void setTeamTeleportUnlocked(TeamData team, boolean unlocked, MinecraftServer server) {
         team.setTeleportUnlocked(unlocked);
+        syncTeam(team, server);
+    }
+
+    /**
+     * 同步队伍数据给所有成员
+     *
+     * @param team   队伍
+     * @param server 服务器实例
+     */
+    public void syncTeam(TeamData team, MinecraftServer server) {
         getData(server).markDirty();
-        
+
         // 同步给所有在线成员
-        // 使用完整同步包，确保所有数据一致
-        S2CTeamSyncPacket packet = new S2CTeamSyncPacket(
-                team.getTeamId(),
-                team.getName(),
-                team.getLeaderId(),
-                new ArrayList<>(team.getMembers()),
-                new ArrayList<>(team.getUnlockedMapPoints()),
-                unlocked,
-                team.getCoins()
-        );
-        
+        S2CTeamSyncPacket packet = createSyncPacket(team);
+
         for (UUID memberId : team.getMembers()) {
             ServerPlayer member = server.getPlayerList().getPlayer(memberId);
             if (member != null) {
@@ -208,16 +210,27 @@ public class TeamManager {
      * @param player 目标玩家
      */
     public void syncTeamTeleport(TeamData team, ServerPlayer player) {
-        S2CTeamSyncPacket packet = new S2CTeamSyncPacket(
+        S2CTeamSyncPacket packet = createSyncPacket(team);
+        ModMessages.sendToPlayer(packet, player);
+    }
+
+    /**
+     * 创建同步数据包
+     *
+     * @param team 队伍数据
+     * @return 同步数据包
+     */
+    private S2CTeamSyncPacket createSyncPacket(TeamData team) {
+        return new S2CTeamSyncPacket(
                 team.getTeamId(),
                 team.getName(),
                 team.getLeaderId(),
                 new ArrayList<>(team.getMembers()),
                 new ArrayList<>(team.getUnlockedMapPoints()),
                 team.isTeleportUnlocked(),
-                team.getCoins()
+                team.getCoins(),
+                team.getInnData().save(new CompoundTag())
         );
-        ModMessages.sendToPlayer(packet, player);
     }
 
 
@@ -257,28 +270,22 @@ public class TeamManager {
     
     public void renameTeam(TeamData team, String newName, MinecraftServer server) {
         team.setName(newName);
-        getData(server).markDirty();
-        // 同步... 这里简化处理，理论上应该广播同步包
-        // 目前 setTeamTeleportUnlocked 会广播全量包，可以复用
-        setTeamTeleportUnlocked(team, team.isTeleportUnlocked(), server);
+        syncTeam(team, server);
     }
     
     public void transferLeader(TeamData team, UUID newLeader, MinecraftServer server) {
         team.setLeaderId(newLeader);
-        getData(server).markDirty();
-        setTeamTeleportUnlocked(team, team.isTeleportUnlocked(), server);
+        syncTeam(team, server);
     }
 
     public void unlockMapPoint(TeamData team, ResourceLocation pointId, MinecraftServer server) {
         team.unlockMapPoint(pointId);
-        getData(server).markDirty();
-        setTeamTeleportUnlocked(team, team.isTeleportUnlocked(), server);
+        syncTeam(team, server);
     }
 
     public void lockMapPoint(TeamData team, ResourceLocation pointId, MinecraftServer server) {
         team.lockMapPoint(pointId);
-        getData(server).markDirty();
-        setTeamTeleportUnlocked(team, team.isTeleportUnlocked(), server);
+        syncTeam(team, server);
     }
 
     // --- 客户端同步逻辑 ---
@@ -304,7 +311,7 @@ public class TeamManager {
     /**
      * 更新客户端缓存 (由网络包调用)
      */
-    public void updateClientTeamData(UUID teamId, String name, UUID leaderId, Set<UUID> members, Set<ResourceLocation> unlockedPoints, boolean teleportUnlocked, int coins) {
+    public void updateClientTeamData(UUID teamId, String name, UUID leaderId, Set<UUID> members, Set<ResourceLocation> unlockedPoints, boolean teleportUnlocked, int coins, CompoundTag innDataTag) {
         if (clientTeamCache == null || !clientTeamCache.getTeamId().equals(teamId)) {
             clientTeamCache = new TeamData(teamId);
         }
@@ -315,5 +322,10 @@ public class TeamManager {
         clientTeamCache.setUnlockedMapPoints(unlockedPoints);
         clientTeamCache.setTeleportUnlocked(teleportUnlocked);
         clientTeamCache.setCoins(coins);
+        
+        // 更新旅社数据
+        if (innDataTag != null) {
+            clientTeamCache.getInnData().load(innDataTag);
+        }
     }
 }

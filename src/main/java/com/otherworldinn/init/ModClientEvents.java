@@ -1,9 +1,12 @@
 package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 
 /**
@@ -13,6 +16,18 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
  */
 @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class ModClientEvents {
+
+    @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            ItemProperties.register(ModItems.ROOM_REGISTER.get(), 
+                    ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "offhand"), 
+                    (stack, level, entity, seed) -> {
+                        if (entity == null) return 0.0F;
+                        return entity.getOffhandItem() == stack ? 1.0F : 0.0F;
+                    });
+        });
+    }
 
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {

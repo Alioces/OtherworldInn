@@ -12,7 +12,7 @@ import java.util.UUID;
  */
 public class GuestData {
     private final UUID uuid;
-    private long remainingTime; // 剩余居住时间 (ticks)
+    private long checkoutTime; // 预计退房时间 (GameTime)
     private int roomId = -1; // 居住的房间ID (-1 表示无房间)
 
     // 房间属性偏好 (区间)
@@ -20,23 +20,39 @@ public class GuestData {
     private IntRange lightPreference = new IntRange(0, 100);
     private IntRange humidityPreference = new IntRange(0, 100);
 
-    public GuestData(UUID uuid, long remainingTime) {
+    /**
+     * 构造一个新的旅客数据
+     *
+     * @param uuid         旅客UUID
+     * @param checkoutTime 预计退房时间 (GameTime)
+     */
+    public GuestData(UUID uuid, long checkoutTime) {
         this.uuid = uuid;
-        this.remainingTime = remainingTime;
+        this.checkoutTime = checkoutTime;
     }
 
     public UUID getUuid() {
         return uuid;
     }
 
-    public long getRemainingTime() {
-        return remainingTime;
+    /**
+     * 获取预计退房时间
+     *
+     * @return 退房时间 (GameTime)
+     */
+    public long getCheckoutTime() {
+        return checkoutTime;
     }
 
-    public void setRemainingTime(long remainingTime) {
-        this.remainingTime = remainingTime;
+    /**
+     * 设置预计退房时间
+     *
+     * @param checkoutTime 退房时间 (GameTime)
+     */
+    public void setCheckoutTime(long checkoutTime) {
+        this.checkoutTime = checkoutTime;
     }
-    
+
     public int getRoomId() {
         return roomId;
     }
@@ -71,17 +87,28 @@ public class GuestData {
         this.humidityPreference = new IntRange(min, max);
     }
 
+    /**
+     * 每 tick 更新逻辑
+     * <p>
+     * 可以在此检查是否到达退房时间。
+     * 目前留空，暂不实现自动退房逻辑。
+     * </p>
+     */
     public void tick() {
-        if (this.remainingTime > 0) {
-            this.remainingTime--;
-        }
+        // 退房逻辑暂不实现
     }
 
     // --- NBT 序列化 ---
 
+    /**
+     * 保存数据到 NBT
+     *
+     * @param tag 目标标签
+     * @return 写入数据的标签
+     */
     public CompoundTag save(CompoundTag tag) {
         tag.putUUID("UUID", uuid);
-        tag.putLong("RemainingTime", remainingTime);
+        tag.putLong("CheckoutTime", checkoutTime);
         tag.putInt("RoomId", roomId);
         
         tag.put("ComfortPref", comfortPreference.save());
@@ -91,10 +118,17 @@ public class GuestData {
         return tag;
     }
 
+    /**
+     * 从 NBT 加载数据
+     *
+     * @param tag 源标签
+     * @return 加载的旅客数据
+     */
     public static GuestData load(CompoundTag tag) {
         UUID uuid = tag.getUUID("UUID");
-        long remainingTime = tag.getLong("RemainingTime");
-        GuestData guest = new GuestData(uuid, remainingTime);
+        long checkoutTime = tag.getLong("CheckoutTime");
+        
+        GuestData guest = new GuestData(uuid, checkoutTime);
         if (tag.contains("RoomId")) {
             guest.setRoomId(tag.getInt("RoomId"));
         }
@@ -114,8 +148,17 @@ public class GuestData {
     
     /**
      * 整数区间记录类
+     * <p>
+     * 用于存储属性偏好范围 (min, max)。
+     * </p>
      */
     public record IntRange(int min, int max) {
+        /**
+         * 检查值是否在区间内
+         *
+         * @param value 待检查值
+         * @return 是否包含
+         */
         public boolean contains(int value) {
             return value >= min && value <= max;
         }
