@@ -22,6 +22,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.joml.Matrix4f;
 
+import java.util.List;
+
 @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT)
 public class InnRenderer {
 
@@ -37,8 +39,7 @@ public class InnRenderer {
         TeamData team = TeamManager.getInstance().getPlayerTeam(player);
         if (team == null) return;
 
-        BlockPos center = team.getInnZoneCenter();
-        int radius = team.getInnZoneRadius();
+        List<TeamData.InnRegion> regions = team.getInnRegions();
 
         PoseStack poseStack = event.getPoseStack();
         poseStack.pushPose();
@@ -47,14 +48,14 @@ public class InnRenderer {
         Vec3 cameraPos = event.getCamera().getPosition();
         poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-        // 渲染旅社范围 (水平矩形)
+        // 渲染旅社范围
         boolean isEditMode = team.getInnData().isEditMode();
-        renderInnZone(poseStack, center, radius, isEditMode);
+        renderInnZones(poseStack, regions, isEditMode);
 
         poseStack.popPose();
     }
 
-    private static void renderInnZone(PoseStack poseStack, BlockPos center, int radius, boolean isEditMode) {
+    private static void renderInnZones(PoseStack poseStack, List<TeamData.InnRegion> regions, boolean isEditMode) {
         Tesselator tesselator = Tesselator.getInstance();
         
         // 渲染设置
@@ -64,13 +65,7 @@ public class InnRenderer {
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.disableCull();
 
-        // 1. 渲染半透明填充
-        // Y 轴高度稍微抬高一点，防止 Z-fighting (虽然在正交视角下可能不明显，但为了以防万一)
         float y = 70.01f; // 假设地面在 70
-        float minX = center.getX() - radius;
-        float maxX = center.getX() + radius + 1; // +1 覆盖完整方块
-        float minZ = center.getZ() - radius;
-        float maxZ = center.getZ() + radius + 1;
         
         // 颜色设置
         float red, green, blue;
@@ -89,40 +84,120 @@ public class InnRenderer {
 
         Matrix4f matrix = poseStack.last().pose();
         
-        // 绘制填充
+        // 1. 批量绘制所有填充
         try {
             BufferBuilder buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             
-            buffer.addVertex(matrix, minX, y, minZ).setColor(red, green, blue, alpha);
-            buffer.addVertex(matrix, minX, y, maxZ).setColor(red, green, blue, alpha);
-            buffer.addVertex(matrix, maxX, y, maxZ).setColor(red, green, blue, alpha);
-            buffer.addVertex(matrix, maxX, y, minZ).setColor(red, green, blue, alpha);
+            for (TeamData.InnRegion region : regions) {
+                float minX = region.minX();
+                float maxX = region.maxX() + 1; // +1 覆盖完整方块
+                float minZ = region.minZ();
+                float maxZ = region.maxZ() + 1;
+                
+                buffer.addVertex(matrix, minX, y, minZ).setColor(red, green, blue, alpha);
+                buffer.addVertex(matrix, minX, y, maxZ).setColor(red, green, blue, alpha);
+                buffer.addVertex(matrix, maxX, y, maxZ).setColor(red, green, blue, alpha);
+                buffer.addVertex(matrix, maxX, y, minZ).setColor(red, green, blue, alpha);
+            }
             
             BufferUploader.drawWithShader(buffer.buildOrThrow());
         } catch (Exception e) {
             // 忽略可能的异常 (API 变动)
         }
 
-        // 绘制边框 (线条)
+        // 2. 绘制边框 (仅绘制外轮廓)
         RenderSystem.lineWidth(2.0f);
         alpha = 0.8f;
         
         try {
-            BufferBuilder lineBuffer = tesselator.begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+            // 使用 DEBUG_LINES 模式绘制所有线段
+            BufferBuilder lineBuffer = tesselator.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
             
-            lineBuffer.addVertex(matrix, minX, y, minZ).setColor(red, green, blue, alpha);
-            lineBuffer.addVertex(matrix, minX, y, maxZ).setColor(red, green, blue, alpha);
-            lineBuffer.addVertex(matrix, maxX, y, maxZ).setColor(red, green, blue, alpha);
-            lineBuffer.addVertex(matrix, maxX, y, minZ).setColor(red, green, blue, alpha);
-            lineBuffer.addVertex(matrix, minX, y, minZ).setColor(red, green, blue, alpha); // 闭合
+            for (TeamData.InnRegion region : regions) {
+                // North (z = minZ)
+                drawEdge(lineBuffer, matrix, region.minX(), region.maxX() + 1, region.minZ(), 
+                    regions, (r) -> r.maxZ() + 1 == region.minZ(), 
+                    (r) -> new Interval(r.minX(), r.maxX() + 1), true, red, green, blue, alpha, y);
+
+                // South (z = maxZ + 1)
+                drawEdge(lineBuffer, matrix, region.minX(), region.maxX() + 1, region.maxZ() + 1, 
+                    regions, (r) -> r.minZ() == region.maxZ() + 1, 
+                    (r) -> new Interval(r.minX(), r.maxX() + 1), true, red, green, blue, alpha, y);
+
+                // West (x = minX)
+                drawEdge(lineBuffer, matrix, region.minZ(), region.maxZ() + 1, region.minX(), 
+                    regions, (r) -> r.maxX() + 1 == region.minX(), 
+                    (r) -> new Interval(r.minZ(), r.maxZ() + 1), false, red, green, blue, alpha, y);
+
+                // East (x = maxX + 1)
+                drawEdge(lineBuffer, matrix, region.minZ(), region.maxZ() + 1, region.maxX() + 1, 
+                    regions, (r) -> r.minX() == region.maxX() + 1, 
+                    (r) -> new Interval(r.minZ(), r.maxZ() + 1), false, red, green, blue, alpha, y);
+            }
             
             BufferUploader.drawWithShader(lineBuffer.buildOrThrow());
         } catch (Exception e) {
-            // 忽略可能的异常
+            // 忽略
         }
         
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
+    }
+
+    private record Interval(int start, int end) {
+        boolean intersects(Interval other) {
+            return this.start < other.end && this.end > other.start;
+        }
+    }
+
+    private static void drawEdge(BufferBuilder buffer, Matrix4f matrix, int start, int end, int constantCoord, 
+                                 List<TeamData.InnRegion> allRegions, 
+                                 java.util.function.Predicate<TeamData.InnRegion> isNeighbor,
+                                 java.util.function.Function<TeamData.InnRegion, Interval> getNeighborInterval,
+                                 boolean isXAxis,
+                                 float r, float g, float b, float a, float y) {
+        
+        java.util.List<Interval> segments = new java.util.ArrayList<>();
+        segments.add(new Interval(start, end));
+        
+        for (TeamData.InnRegion region : allRegions) {
+            if (isNeighbor.test(region)) {
+                segments = subtract(segments, getNeighborInterval.apply(region));
+                if (segments.isEmpty()) return;
+            }
+        }
+        
+        for (Interval seg : segments) {
+            if (isXAxis) {
+                buffer.addVertex(matrix, seg.start, y, constantCoord).setColor(r, g, b, a);
+                buffer.addVertex(matrix, seg.end, y, constantCoord).setColor(r, g, b, a);
+            } else {
+                buffer.addVertex(matrix, constantCoord, y, seg.start).setColor(r, g, b, a);
+                buffer.addVertex(matrix, constantCoord, y, seg.end).setColor(r, g, b, a);
+            }
+        }
+    }
+
+    private static java.util.List<Interval> subtract(java.util.List<Interval> current, Interval remove) {
+        java.util.List<Interval> result = new java.util.ArrayList<>();
+        for (Interval i : current) {
+            // No intersection
+            if (!i.intersects(remove)) {
+                result.add(i);
+                continue;
+            }
+            
+            // Left part
+            if (i.start < remove.start) {
+                result.add(new Interval(i.start, remove.start));
+            }
+            
+            // Right part
+            if (i.end > remove.end) {
+                result.add(new Interval(remove.end, i.end));
+            }
+        }
+        return result;
     }
 }

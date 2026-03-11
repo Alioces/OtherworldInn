@@ -246,12 +246,7 @@ public class TeamManager {
     public TeamData getTeamAt(BlockPos pos, MinecraftServer server) {
         TeamSavedData data = getData(server);
         for (TeamData team : data.getTeams().values()) {
-            BlockPos center = team.getInnZoneCenter();
-            int radius = team.getInnZoneRadius();
-            
-            if (Math.abs(pos.getX() - center.getX()) <= radius &&
-                Math.abs(pos.getY() - center.getY()) <= radius &&
-                Math.abs(pos.getZ() - center.getZ()) <= radius) {
+            if (team.isInInnZone(pos)) {
                 return team;
             }
         }

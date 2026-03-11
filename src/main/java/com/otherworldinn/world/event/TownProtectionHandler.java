@@ -102,15 +102,7 @@ public class TownProtectionHandler {
      * 检查坐标是否在队伍的旅社区域内
      */
     private static boolean isInsideInnZone(TeamData team, BlockPos pos) {
-        BlockPos center = team.getInnZoneCenter();
-        int radius = team.getInnZoneRadius();
-
-        // 仅检查水平坐标 (X, Z)，忽略 Y 轴高度限制
-        // x: [center.x - radius, center.x + radius]
-        // z: [center.z - radius, center.z + radius]
-        
-        return Math.abs(pos.getX() - center.getX()) <= radius &&
-               Math.abs(pos.getZ() - center.getZ()) <= radius;
+        return team.isInInnZone(pos);
     }
 
     private static void sendDenyMessage(Player player) {

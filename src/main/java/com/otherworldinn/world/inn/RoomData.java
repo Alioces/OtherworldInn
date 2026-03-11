@@ -137,13 +137,8 @@ public class RoomData {
     public static boolean isRoomValid(BlockPos minPos, BlockPos maxPos, Level level, TeamData team) {
         // 0. 检查是否在旅社区域内
         if (team != null) {
-            BlockPos center = team.getInnZoneCenter();
-            int radius = team.getInnZoneRadius();
-            
-            // 检查 minPos 和 maxPos 是否都在半径范围内
-            // 简单盒式判定: |x - cx| <= r && |z - cz| <= r
-            // Y轴通常不做严格限制，或者也可以限制
-            if (!isPosInZone(minPos, center, radius) || !isPosInZone(maxPos, center, radius)) {
+            // 检查 minPos 和 maxPos 是否都在旅社区域内
+            if (!team.isInInnZone(minPos) || !team.isInInnZone(maxPos)) {
                 return false;
             }
         }
@@ -230,11 +225,8 @@ public class RoomData {
         return hasDoor;
     }
 
-    private static boolean isPosInZone(BlockPos pos, BlockPos center, int radius) {
-        return Math.abs(pos.getX() - center.getX()) <= radius &&
-               Math.abs(pos.getZ() - center.getZ()) <= radius;
-    }
-
+    // --- NBT 序列化 ---
+    
     private static boolean checkWallBlock(Level level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
         // 有碰撞体积 或 是门 (门通常有碰撞体积，但打开时可能变化，这里视为有效墙体的一部分)
@@ -245,8 +237,6 @@ public class RoomData {
         BlockState state = level.getBlockState(pos);
         return state.getBlock() instanceof DoorBlock || state.is(BlockTags.DOORS);
     }
-
-    // --- NBT 序列化 ---
 
     /**
      * 将房间数据保存到 NBT
