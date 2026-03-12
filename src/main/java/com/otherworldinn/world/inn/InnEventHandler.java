@@ -1,7 +1,9 @@
 package com.otherworldinn.world.inn;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.init.ModItems;
+import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
@@ -27,6 +29,7 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -187,14 +190,29 @@ public class InnEventHandler {
                     tag.remove("Pos1");
                     tag.remove("Pos2");
                     mainHandItem.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
-                    player.displayClientMessage(Component.translatable("message.otherworldinn.land_deed.selection_cleared"), true);
+                    player.displayClientMessage(Component.translatable("message.otherworldinn.land_deed.selection_cleared")
+                            .withStyle(style -> style.withColor(ModColors.INFO)), true);
                 }
                 event.setCanceled(true); // 取消方块破坏
                 return;
             }
         }
 
-        // 2. 处理房间登记册逻辑 (副手)
+        // 2. 处理房间钥匙逻辑 (主手)
+        if (mainHandItem.is(ModItems.ROOM_KEY.get())) {
+            Optional<Integer> roomId = RoomKeyItem.getBoundRoomId(mainHandItem);
+            if (roomId.isPresent()) {
+                if (!level.isClientSide) {
+                    RoomKeyItem.unbindRoom(mainHandItem);
+                    player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.unbound")
+                            .withStyle(style -> style.withColor(ModColors.INFO)), true);
+                }
+                event.setCanceled(true); // 取消方块破坏
+                return;
+            }
+        }
+
+        // 3. 处理房间登记册逻辑 (副手)
         ItemStack offhandItem = player.getItemInHand(InteractionHand.OFF_HAND);
         if (offhandItem.is(ModItems.ROOM_REGISTER.get())) {
             // 只要副手持有房间登记册，就取消方块破坏，尝试执行删除房间逻辑

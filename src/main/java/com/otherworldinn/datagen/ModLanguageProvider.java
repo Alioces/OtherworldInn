@@ -113,9 +113,9 @@ public class ModLanguageProvider extends LanguageProvider {
             add("biome.otherworldinn.town", "城镇");
 
             // 家具属性
-            add("tooltip.otherworldinn.furniture.comfort", "舒适度: %s");
-            add("tooltip.otherworldinn.furniture.light", "光照度: %s");
-            add("tooltip.otherworldinn.furniture.humidity", "湿度: %s");
+            add("tooltip.otherworldinn.furniture.comfort", "§f\uE002§r 舒适度: %s");
+            add("tooltip.otherworldinn.furniture.light", "§f\uE003§r 光照度: %s");
+            add("tooltip.otherworldinn.furniture.humidity", "§f\uE004§r 湿度: %s");
 
             // 地契
             add("message.otherworldinn.land_deed.pos1_set", "位置1已设置：%s");
@@ -144,6 +144,15 @@ public class ModLanguageProvider extends LanguageProvider {
             add("tooltip.otherworldinn.room_key.pos", "位置: %s -> %s");
             add("tooltip.otherworldinn.room_key.beds", "床位: %d/%d");
             add("tooltip.otherworldinn.room_key.price", "床位价格: §f\uE001§r %d");
+            
+            // 旅客入住
+            add("message.otherworldinn.room_key.checkin_success", "旅客成功入住到 %d 号房间！");
+            add("message.otherworldinn.room_key.checkin_fail_guest_busy", "该旅客已经住在其他房间了");
+            add("message.otherworldinn.room_key.checkin_fail_checked_out", "该旅客已经退房，准备离开了");
+            add("message.otherworldinn.room_key.checkin_fail_no_room", "房间不存在或已被拆除");
+            add("message.otherworldinn.room_key.checkin_fail_id_mismatch", "房间信息不匹配 请重新绑定钥匙");
+            add("message.otherworldinn.room_key.checkin_fail_full", "这间房似乎满了...");
+            add("message.otherworldinn.room_key.overlay.checkin", "安排入住 (消耗钥匙)");
         } else {
             add("itemGroup.otherworldinn", "Otherworld Inn");
             add("key.categories.otherworldinn", "Otherworld Inn");
@@ -226,9 +235,9 @@ public class ModLanguageProvider extends LanguageProvider {
             add("biome.otherworldinn.town", "Town");
 
             // Furniture Stats
-            add("tooltip.otherworldinn.furniture.comfort", "Comfort: %s");
-            add("tooltip.otherworldinn.furniture.light", "Light: %s");
-            add("tooltip.otherworldinn.furniture.humidity", "Humidity: %s");
+            add("tooltip.otherworldinn.furniture.comfort", "§f\uE002§r Comfort: %s");
+            add("tooltip.otherworldinn.furniture.light", "§f\uE003§r Light: %s");
+            add("tooltip.otherworldinn.furniture.humidity", "§f\uE004§r Humidity: %s");
 
             // Land Deed
             add("message.otherworldinn.land_deed.pos1_set", "Position 1 set: %s");
@@ -257,7 +266,17 @@ public class ModLanguageProvider extends LanguageProvider {
             add("tooltip.otherworldinn.room_key.pos", "Pos: %s -> %s");
             add("tooltip.otherworldinn.room_key.beds", "Beds: %d/%d");
             add("tooltip.otherworldinn.room_key.price", "Price: §f\uE001§r %d");
+
+            // Check In
+            add("message.otherworldinn.room_key.checkin_success", "Guest checked into room %d!");
+            add("message.otherworldinn.room_key.checkin_fail_guest_busy", "Guest is already in a room!");
+            add("message.otherworldinn.room_key.checkin_fail_checked_out", "Guest has already checked out!");
+            add("message.otherworldinn.room_key.checkin_fail_no_room", "Room does not exist!");
+            add("message.otherworldinn.room_key.checkin_fail_id_mismatch", "Room mismatch! Please re-bind the key.");
+            add("message.otherworldinn.room_key.checkin_fail_full", "Room is full!");
+            add("message.otherworldinn.room_key.overlay.checkin", "Check In (Consumes Key)");
         }
+
 
         // 生成方块语言键
         for (Map.Entry<DeferredBlock<?>, BlockDataGenInfo> entry : ModBlocks.BLOCK_INFOS.entrySet()) {

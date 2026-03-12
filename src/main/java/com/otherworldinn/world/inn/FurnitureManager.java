@@ -121,13 +121,13 @@ public class FurnitureManager {
                 Block block = blockItem.getBlock();
                 getStats(block).ifPresent(stats -> {
                     if (stats.comfort != 0) {
-                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.comfort", String.format("%+d", stats.comfort)).withStyle(ChatFormatting.GRAY));
+                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.comfort", String.format("%+d", stats.comfort)).withStyle(style -> style.withColor(ModColors.COMFORT)));
                     }
                     if (stats.light != 0) {
-                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.light", String.format("%+d", stats.light)).withStyle(ChatFormatting.YELLOW));
+                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.light", String.format("%+d", stats.light)).withStyle(style -> style.withColor(ModColors.LIGHT)));
                     }
                     if (stats.humidity != 0) {
-                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.humidity", String.format("%+d", stats.humidity)).withStyle(ChatFormatting.BLUE));
+                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.humidity", String.format("%+d", stats.humidity)).withStyle(style -> style.withColor(ModColors.HUMIDITY)));
                     }
                 });
             }

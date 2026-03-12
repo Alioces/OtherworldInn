@@ -81,20 +81,24 @@ public class RoomOutlineRenderer {
                             ;
                 }
             } else if (holdingRoomKey) {
-                // 如果手持房间钥匙，仅渲染绑定的房间
-                RoomKeyItem.getBoundRoomId(stack).ifPresent(roomId -> {
-                    RoomData room = innData.getRoom(roomId);
-                    if (room != null) {
-                        AABB box = new AABB(
-                                room.getMinPos().getX(), room.getMinPos().getY(), room.getMinPos().getZ(),
-                                room.getMaxPos().getX() + 1.0, room.getMaxPos().getY() + 1.0, room.getMaxPos().getZ() + 1.0
-                        );
-                        Outliner.getInstance().showAABB(room.getId(), box)
-                                .colored(0xFFD700) // 金色
-                                .lineWidth(1/16f)
-                                .withFaceTextures(AllSpecialTextures.CUTOUT_CHECKERED, AllSpecialTextures.CUTOUT_CHECKERED);
-                    }
-                });
+                // 手持房间钥匙：渲染所有房间
+                // 绑定的房间：蓝色 (0x4682B4)
+                // 其他房间：灰色 (0xA9A9A9)
+                java.util.Optional<java.util.UUID> boundRoomUUID = RoomKeyItem.getBoundRoomUUID(stack);
+                
+                for (RoomData room : innData.getRooms().values()) {
+                    boolean isBound = boundRoomUUID.isPresent() && boundRoomUUID.get().equals(room.getUuid());
+                    int color = isBound ? 0x4682B4 : 0xA9A9A9;
+                    
+                    AABB box = new AABB(
+                            room.getMinPos().getX(), room.getMinPos().getY(), room.getMinPos().getZ(),
+                            room.getMaxPos().getX() + 1.0, room.getMaxPos().getY() + 1.0, room.getMaxPos().getZ() + 1.0
+                    );
+                    Outliner.getInstance().showAABB(room.getId(), box)
+                            .colored(color)
+                            .lineWidth(1/16f)
+                            .withFaceTextures(AllSpecialTextures.CUTOUT_CHECKERED, AllSpecialTextures.CUTOUT_CHECKERED);
+                }
             }
 
             // 3. 渲染旅社范围 (青色) - 手持房间登记册或地契时都显示

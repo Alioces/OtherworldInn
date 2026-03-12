@@ -12,6 +12,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -23,18 +24,104 @@ import net.minecraft.world.level.Level;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.InteractionHand;
+import com.otherworldinn.entity.GuestEntity;
+import com.otherworldinn.world.inn.GuestData;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import com.otherworldinn.foundation.ModColors;
 
 /**
  * 房间钥匙
  * <p>
  * 用于绑定特定房间。
  * 右键房间内方块绑定，左键点击取消绑定。
+ * 右键旅客可将其分配到绑定房间（需消耗钥匙）。
  * </p>
  */
 public class RoomKeyItem extends Item {
 
     public RoomKeyItem(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity interactionTarget, InteractionHand usedHand) {
+        if (interactionTarget.level().isClientSide) {
+            return InteractionResult.PASS;
+        }
+
+        if (interactionTarget instanceof GuestEntity guestEntity && player instanceof ServerPlayer serverPlayer) {
+            Optional<Integer> roomIdOpt = getBoundRoomId(stack);
+            if (roomIdOpt.isEmpty()) {
+                return InteractionResult.PASS;
+            }
+
+            int roomId = roomIdOpt.get();
+            GuestData guestData = guestEntity.getGuestData();
+            
+            // 检查旅客是否已入住
+            if (guestData.getRoomId() != -1) {
+                player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.checkin_fail_guest_busy")
+                        .withStyle(style -> style.withColor(ModColors.ERROR)), true);
+                return InteractionResult.FAIL;
+            }
+
+            // 检查是否已退房
+            if (guestData.isCheckedOut()) {
+                player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.checkin_fail_checked_out")
+                        .withStyle(style -> style.withColor(ModColors.ERROR)), true);
+                return InteractionResult.FAIL;
+            }
+
+            TeamData team = TeamManager.getInstance().getTeamAt(interactionTarget.blockPosition(), serverPlayer.getServer());
+            if (team == null) {
+                return InteractionResult.FAIL;
+            }
+
+            InnData innData = team.getInnData();
+            RoomData room = innData.getRoom(roomId);
+            
+            // 检查房间是否存在
+            if (room == null) {
+                player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.checkin_fail_no_room")
+                        .withStyle(style -> style.withColor(ModColors.ERROR)), true);
+                return InteractionResult.FAIL;
+            }
+
+            // 校验房间UUID（防止 ID 复用导致的错误）
+            Optional<UUID> boundUuidOpt = getBoundRoomUUID(stack);
+            if (boundUuidOpt.isPresent() && !boundUuidOpt.get().equals(room.getUuid())) {
+                player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.checkin_fail_id_mismatch")
+                        .withStyle(style -> style.withColor(ModColors.ERROR)), true);
+                return InteractionResult.FAIL;
+            }
+
+            // 检查房间是否有空床位
+            if (room.getCurrentGuests().size() >= room.getMaxGuests()) {
+                player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.checkin_fail_full")
+                        .withStyle(style -> style.withColor(ModColors.ERROR)), true);
+                return InteractionResult.FAIL;
+            }
+
+            // 执行入住
+            if (innData.checkIn(guestData.getUuid(), roomId, serverPlayer.serverLevel())) {
+                // 消耗钥匙
+                stack.shrink(1);
+                
+                // 播放音效
+                player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.5F, 1.0F);
+                
+                player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.checkin_success", roomId)
+                        .withStyle(style -> style.withColor(ModColors.SUCCESS)), true);
+                return InteractionResult.SUCCESS;
+            }
+        }
+
+        return InteractionResult.PASS;
     }
 
     @Override
@@ -54,13 +141,15 @@ public class RoomKeyItem extends Item {
                 RoomData room = team.getInnData().getRoomAt(pos);
                 if (room != null) {
                     // 绑定到该房间
-                    bindRoom(stack, room.getId());
-                    player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.bound", room.getId()), true);
+                    bindRoom(stack, room.getId(), room.getUuid());
+                    player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.bound", room.getId())
+                            .withStyle(style -> style.withColor(ModColors.SUCCESS)), true);
                     return InteractionResult.SUCCESS;
                 }
             }
             
-            player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.no_room"), true);
+            player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.no_room")
+                    .withStyle(style -> style.withColor(ModColors.ERROR)), true);
         }
 
         return InteractionResult.FAIL;
@@ -104,6 +193,11 @@ public class RoomKeyItem extends Item {
                     int maxGuests = room.getMaxGuests();
                     int currentGuests = room.getCurrentGuests().size();
                     tooltipComponents.add(Component.translatable("tooltip.otherworldinn.room_key.beds", currentGuests, maxGuests).withStyle(ChatFormatting.BLUE));
+
+                    // 房间属性
+                    tooltipComponents.add(Component.translatable("tooltip.otherworldinn.furniture.comfort", room.getComfort()).withStyle(style -> style.withColor(ModColors.COMFORT)));
+                    tooltipComponents.add(Component.translatable("tooltip.otherworldinn.furniture.light", room.getLight()).withStyle(style -> style.withColor(ModColors.LIGHT)));
+                    tooltipComponents.add(Component.translatable("tooltip.otherworldinn.furniture.humidity", room.getHumidity()).withStyle(style -> style.withColor(ModColors.HUMIDITY)));
                 }
             }
         });
@@ -112,15 +206,17 @@ public class RoomKeyItem extends Item {
 
     // --- 辅助方法 ---
 
-    public static void bindRoom(ItemStack stack, int roomId) {
+    public static void bindRoom(ItemStack stack, int roomId, UUID roomUuid) {
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         tag.putInt("RoomId", roomId);
+        tag.putUUID("RoomUUID", roomUuid);
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
 
     public static void unbindRoom(ItemStack stack) {
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         tag.remove("RoomId");
+        tag.remove("RoomUUID");
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
 
@@ -128,6 +224,14 @@ public class RoomKeyItem extends Item {
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).getUnsafe();
         if (tag != null && tag.contains("RoomId")) {
             return Optional.of(tag.getInt("RoomId"));
+        }
+        return Optional.empty();
+    }
+    
+    public static Optional<UUID> getBoundRoomUUID(ItemStack stack) {
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).getUnsafe();
+        if (tag != null && tag.contains("RoomUUID")) {
+            return Optional.of(tag.getUUID("RoomUUID"));
         }
         return Optional.empty();
     }

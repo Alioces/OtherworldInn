@@ -14,6 +14,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
+import com.otherworldinn.entity.GuestEntity;
+import net.minecraft.world.phys.EntityHitResult;
+
 import java.util.Optional;
 
 @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
@@ -51,12 +54,22 @@ public class RoomKeyOverlay {
 
         Optional<Integer> roomId = RoomKeyItem.getBoundRoomId(stack);
         
+        boolean isLookingAtGuest = mc.hitResult instanceof EntityHitResult entityHitResult && 
+                                   entityHitResult.getEntity() instanceof GuestEntity;
+        
         if (roomId.isPresent()) {
-            // 已绑定：左键解绑，右键重新绑定
-            ItemHudOverlay.renderMouseActions(guiGraphics, 
-                new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.LEFT, Component.translatable("message.otherworldinn.room_key.overlay.unbind")),
-                new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, Component.translatable("message.otherworldinn.room_key.overlay.bind"))
-            );
+            if (isLookingAtGuest) {
+                // 旅客入住 (消耗钥匙)
+                ItemHudOverlay.renderMouseActions(guiGraphics, 
+                    new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, Component.translatable("message.otherworldinn.room_key.overlay.checkin"))
+                );
+            } else {
+                // 已绑定：左键解绑，右键重新绑定
+                ItemHudOverlay.renderMouseActions(guiGraphics, 
+                    new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.LEFT, Component.translatable("message.otherworldinn.room_key.overlay.unbind")),
+                    new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, Component.translatable("message.otherworldinn.room_key.overlay.bind"))
+                );
+            }
         } else {
             // 未绑定：右键绑定
             ItemHudOverlay.renderMouseActions(guiGraphics, 

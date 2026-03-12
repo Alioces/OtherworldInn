@@ -31,6 +31,7 @@ import java.util.UUID;
 @Data
 public class RoomData {
     private final int id;
+    private final UUID uuid; // 房间唯一标识符
     private final BlockPos minPos;
     private final BlockPos maxPos;
     
@@ -57,6 +58,20 @@ public class RoomData {
      */
     public RoomData(int id, BlockPos minPos, BlockPos maxPos) {
         this.id = id;
+        this.uuid = UUID.randomUUID();
+        this.minPos = minPos;
+        this.maxPos = maxPos;
+        this.comfort = 0;
+        this.light = 0;
+        this.humidity = 0;
+    }
+
+    /**
+     * 内部构造函数 (用于加载)
+     */
+    private RoomData(int id, UUID uuid, BlockPos minPos, BlockPos maxPos) {
+        this.id = id;
+        this.uuid = uuid;
         this.minPos = minPos;
         this.maxPos = maxPos;
         this.comfort = 0;
@@ -427,6 +442,7 @@ public class RoomData {
      */
     public CompoundTag save(CompoundTag tag) {
         tag.putInt("Id", id);
+        tag.putUUID("UUID", uuid);
         tag.putLong("MinPos", minPos.asLong());
         tag.putLong("MaxPos", maxPos.asLong());
         tag.putInt("Comfort", comfort);
@@ -453,10 +469,11 @@ public class RoomData {
      */
     public static RoomData load(CompoundTag tag) {
         int id = tag.getInt("Id");
+        UUID uuid = tag.contains("UUID") ? tag.getUUID("UUID") : UUID.randomUUID(); // 兼容旧数据
         BlockPos minPos = BlockPos.of(tag.getLong("MinPos"));
         BlockPos maxPos = BlockPos.of(tag.getLong("MaxPos"));
         
-        RoomData room = new RoomData(id, minPos, maxPos);
+        RoomData room = new RoomData(id, uuid, minPos, maxPos);
         
         if (tag.contains("Comfort")) {
             room.setComfort(tag.getInt("Comfort"));

@@ -40,6 +40,9 @@ public class InnData {
     private int rating = 0; // 旅社评级 (0-5)
     
     @Setter(AccessLevel.NONE)
+    private int reputation = 0; // 旅社声望
+
+    @Setter(AccessLevel.NONE)
     private boolean open = false; // 默认为歇业
     
     @Setter(AccessLevel.NONE)
@@ -53,6 +56,46 @@ public class InnData {
 
     public void setRating(int rating) {
         this.rating = Math.max(0, Math.min(5, rating));
+    }
+
+    public void setReputation(int reputation) {
+        this.reputation = Math.max(0, reputation);
+    }
+    
+    /**
+     * 获取当前等级升级所需的最大声望值
+     * <p>
+     * 类似于 Minecraft 的经验值系统。
+     * 公式：100 * (rating + 1)
+     * </p>
+     *
+     * @param rating 当前星级
+     * @return 升级所需声望
+     */
+    public int getMaxReputation(int rating) {
+        return 100 * (rating + 1);
+    }
+    
+    /**
+     * 增加声望
+     *
+     * @param amount 增加的数值
+     */
+    public void addReputation(int amount) {
+        this.reputation += amount;
+        if (this.reputation < 0) {
+            this.reputation = 0;
+        }
+    }
+    
+    /**
+     * 检查是否可以升级旅社星级
+     * <p>
+     * 逻辑暂时留空。
+     * </p>
+     */
+    public void checkLevelUp() {
+        // TODO: 实现升级逻辑
     }
 
     public void setOpen(boolean open) {
@@ -432,6 +475,8 @@ public class InnData {
                     room.removeGuest(guestId);
                 }
                 guest.setRoomId(-1);
+                // 标记为已退房
+                guest.setCheckedOut(true);
             }
         } else {
             // 如果无法获取 GuestData，也尝试清理
@@ -485,6 +530,7 @@ public class InnData {
     public CompoundTag save(CompoundTag tag) {
         tag.putString("Name", name);
         tag.putInt("Rating", rating);
+        tag.putInt("Reputation", reputation);
         tag.putBoolean("Open", open);
         tag.putBoolean("EditMode", editMode);
 
@@ -516,6 +562,9 @@ public class InnData {
         }
         if (tag.contains("Rating")) {
             rating = tag.getInt("Rating");
+        }
+        if (tag.contains("Reputation")) {
+            reputation = tag.getInt("Reputation");
         }
         if (tag.contains("Open")) {
             open = tag.getBoolean("Open");

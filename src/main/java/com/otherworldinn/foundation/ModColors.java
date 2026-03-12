@@ -15,4 +15,13 @@ public class ModColors {
     
     /** 一般提示/信息颜色 (97FFFF) */
     public static final int INFO = 0x97FFFF;
+
+    /** 舒适度颜色 (FF6A6A) */
+    public static final int COMFORT = 0xFF6A6A;
+    
+    /** 光照度颜色 (FFEC8B) */
+    public static final int LIGHT = 0xFFEC8B;
+    
+    /** 湿度颜色 (00BFFF) */
+    public static final int HUMIDITY = 0x00BFFF;
 }

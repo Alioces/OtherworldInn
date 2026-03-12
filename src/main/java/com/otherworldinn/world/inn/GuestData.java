@@ -29,6 +29,7 @@ public class GuestData {
     private final UUID uuid;
     private long checkoutTime; // 预计退房时间 (GameTime)
     private int roomId = -1; // 居住的房间ID (-1 表示无房间)
+    private boolean checkedOut = false; // 是否已退房
 
     // 房间属性偏好 (区间)
     private IntRange comfortPreference = new IntRange(0, 100);
@@ -187,6 +188,7 @@ public class GuestData {
         tag.putUUID("UUID", uuid);
         tag.putLong("CheckoutTime", checkoutTime);
         tag.putInt("RoomId", roomId);
+        tag.putBoolean("CheckedOut", checkedOut);
         
         tag.put("ComfortPref", comfortPreference.save());
         tag.put("LightPref", lightPreference.save());
@@ -215,6 +217,9 @@ public class GuestData {
         GuestData guest = new GuestData(uuid, checkoutTime);
         if (tag.contains("RoomId")) {
             guest.setRoomId(tag.getInt("RoomId"));
+        }
+        if (tag.contains("CheckedOut")) {
+            guest.setCheckedOut(tag.getBoolean("CheckedOut"));
         }
         
         if (tag.contains("ComfortPref")) {
