@@ -267,6 +267,11 @@ public class InnData {
             // 更新房间内所有旅客的偏好分数
             RoomData room = rooms.get(roomId);
             if (room != null && level instanceof ServerLevel serverLevel) {
+                // 更新房间整洁度（虽然不用于平均计算，但可能用于其他逻辑）
+                int[] bedStats = RoomData.calculateBedStats(room.getMinPos(), room.getMaxPos(), level);
+                room.setMaxGuests(bedStats[0]); // 有效床位
+                room.setCleanliness(bedStats[1]); // 整洁度
+                
                 for (UUID guestId : room.getCurrentGuests()) {
                     GuestData guest = getGuestData(guestId, serverLevel);
                     if (guest != null) {
@@ -275,6 +280,33 @@ public class InnData {
                 }
             }
         }
+    }
+    
+    /**
+     * 获取总房间数量
+     *
+     * @return 房间总数
+     */
+    public int getRoomCount() {
+        return rooms.size();
+    }
+    
+    /**
+     * 获取旅社平均舒适度
+     *
+     * @return 平均舒适度 (0-100)，如果没有房间则返回 0
+     */
+    public int getAverageComfort() {
+        if (rooms.isEmpty()) {
+            return 0;
+        }
+        
+        int totalComfort = 0;
+        for (RoomData room : rooms.values()) {
+            totalComfort += room.getComfort();
+        }
+        
+        return totalComfort / rooms.size();
     }
 
     /**
@@ -298,9 +330,10 @@ public class InnData {
                 removedRooms.add(room.getId());
                 failureReasons.put(room.getId(), result);
             } else {
-                // 如果验证通过，更新床的数量
-                int bedCount = RoomData.countBeds(room.getMinPos(), room.getMaxPos(), level);
-                room.setMaxGuests(bedCount);
+                // 如果验证通过，更新床的数量和整洁度
+                int[] bedStats = RoomData.calculateBedStats(room.getMinPos(), room.getMaxPos(), level);
+                room.setMaxGuests(bedStats[0]);
+                room.setCleanliness(bedStats[1]);
             }
         }
         

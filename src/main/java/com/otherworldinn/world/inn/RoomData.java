@@ -42,6 +42,11 @@ public class RoomData {
     private int light;
     @Setter(AccessLevel.NONE)
     private int humidity;
+    
+    // 房间整洁度 (0-100)
+    // 目前由床位的整洁程度决定：(干净床位 / 总床位) * 100
+    @Setter(AccessLevel.NONE)
+    private int cleanliness = 100;
 
     // 旅客信息
     @Setter(AccessLevel.NONE)
@@ -64,6 +69,7 @@ public class RoomData {
         this.comfort = 0;
         this.light = 0;
         this.humidity = 0;
+        this.cleanliness = 100;
     }
 
     /**
@@ -77,6 +83,7 @@ public class RoomData {
         this.comfort = 0;
         this.light = 0;
         this.humidity = 0;
+        this.cleanliness = 100;
     }
 
     public void setComfort(int comfort) {
@@ -89,6 +96,10 @@ public class RoomData {
 
     public void setHumidity(int humidity) {
         this.humidity = Math.max(0, Math.min(100, humidity));
+    }
+    
+    public void setCleanliness(int cleanliness) {
+        this.cleanliness = Math.max(0, Math.min(100, cleanliness));
     }
 
     public void setMaxGuests(int maxGuests) {
@@ -174,12 +185,19 @@ public class RoomData {
     }
 
     /**
-     * 并统计床位数量。
-     * 仅统计干净的床位 (MESSY=false)。
+     * 统计床位数量，并计算整洁度。
+     * <p>
+     * 只有干净的床位 (MESSY=false) 计入有效床位。
+     * 整洁度 = (干净床位 / 总床位) * 100
+     * 如果没有床，整洁度默认为 100。
+     * </p>
+     * 
+     * @return [有效床位数, 整洁度]
      */
-    
-    public static int countBeds(BlockPos minPos, BlockPos maxPos, Level level) {
-        int bedCount = 0;
+    public static int[] calculateBedStats(BlockPos minPos, BlockPos maxPos, Level level) {
+        int cleanBedCount = 0;
+        int totalBedCount = 0;
+        
         for (BlockPos pos : BlockPos.betweenClosed(minPos, maxPos)) {
             BlockState state = level.getBlockState(pos);
             if (state.is(BlockTags.BEDS)) {
@@ -187,7 +205,10 @@ public class RoomData {
                 if (state.hasProperty(BedBlock.PART) && 
                     state.getValue(BedBlock.PART) == BedPart.HEAD) {
                     
-                    // 检查是否脏乱，只有干净的床才算数
+                    totalBedCount++;
+                    
+                    // 检查是否脏乱
+                    boolean isMessy = false;
                     Property<?> messyProp = state.getProperties().stream()
                             .filter(p -> p.getName().equals("messy"))
                             .findFirst()
@@ -195,15 +216,26 @@ public class RoomData {
                             
                     if (messyProp != null && messyProp instanceof BooleanProperty boolProp) {
                         if (state.getValue(boolProp)) {
-                            continue;
+                            isMessy = true;
                         }
                     }
                     
-                    bedCount++;
+                    if (!isMessy) {
+                        cleanBedCount++;
+                    }
                 }
             }
         }
-        return bedCount;
+        
+        int cleanliness = totalBedCount > 0 ? (int)((float)cleanBedCount / totalBedCount * 100) : 100;
+        return new int[]{cleanBedCount, cleanliness};
+    }
+    
+    /**
+     * 仅统计有效床位数量（向后兼容）
+     */
+    public static int countBeds(BlockPos minPos, BlockPos maxPos, Level level) {
+        return calculateBedStats(minPos, maxPos, level)[0];
     }
 
     /**
@@ -448,6 +480,7 @@ public class RoomData {
         tag.putInt("Comfort", comfort);
         tag.putInt("Light", light);
         tag.putInt("Humidity", humidity);
+        tag.putInt("Cleanliness", cleanliness);
         
         tag.putInt("MaxGuests", maxGuests);
         ListTag guestsTag = new ListTag();
@@ -483,6 +516,9 @@ public class RoomData {
         }
         if (tag.contains("Humidity")) {
             room.setHumidity(tag.getInt("Humidity"));
+        }
+        if (tag.contains("Cleanliness")) {
+            room.setCleanliness(tag.getInt("Cleanliness"));
         }
 
         if (tag.contains("MaxGuests")) {

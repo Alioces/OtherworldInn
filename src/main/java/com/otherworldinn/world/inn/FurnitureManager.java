@@ -1,6 +1,8 @@
 package com.otherworldinn.world.inn;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.foundation.ModColors;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
