@@ -52,10 +52,9 @@ public class DimensionResetManager {
     // 8天 = 192000 ticks
     private static final long RESET_CYCLE_TICKS = 192000L;
     
-    private static boolean hasWarned1200 = false;
-    private static boolean hasWarned600 = false;
-    private static boolean hasWarned200 = false;
-    private static boolean hasWarned100 = false;
+    private static boolean hasWarned10Min = false;
+    private static boolean hasWarned5Min = false;
+    private static boolean hasWarned2Min = false;
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
@@ -74,29 +73,28 @@ public class DimensionResetManager {
         long ticksRemaining = RESET_CYCLE_TICKS - ticksIntoCycle;
 
         // 重置状态标志 (当新的一天开始时)
-        if (ticksRemaining > 1205L) {
-            hasWarned1200 = false;
-            hasWarned600 = false;
-            hasWarned200 = false;
-            hasWarned100 = false;
+        // 10分钟 = 12000 ticks, 留一点余量
+        if (ticksRemaining > 12005L) {
+            hasWarned10Min = false;
+            hasWarned5Min = false;
+            hasWarned2Min = false;
         }
 
         // 检查预警
-        if (!hasWarned1200 && ticksRemaining <= 1200 && ticksRemaining > 1190) {
-            broadcastWarning(server, 60);
-            hasWarned1200 = true;
-        }
-        if (!hasWarned600 && ticksRemaining <= 600 && ticksRemaining > 590) {
-            broadcastWarning(server, 30);
-            hasWarned600 = true;
-        }
-        if (!hasWarned200 && ticksRemaining <= 200 && ticksRemaining > 190) {
+        // 10分钟 = 12000 ticks
+        if (!hasWarned10Min && ticksRemaining <= 12000 && ticksRemaining > 11900) {
             broadcastWarning(server, 10);
-            hasWarned200 = true;
+            hasWarned10Min = true;
         }
-        if (!hasWarned100 && ticksRemaining <= 100 && ticksRemaining > 90) {
+        // 5分钟 = 6000 ticks
+        if (!hasWarned5Min && ticksRemaining <= 6000 && ticksRemaining > 5900) {
             broadcastWarning(server, 5);
-            hasWarned100 = true;
+            hasWarned5Min = true;
+        }
+        // 2分钟 = 2400 ticks
+        if (!hasWarned2Min && ticksRemaining <= 2400 && ticksRemaining > 2300) {
+            broadcastWarning(server, 2);
+            hasWarned2Min = true;
         }
 
         // 执行重置 (在周期结束的时刻)
@@ -105,14 +103,14 @@ public class DimensionResetManager {
              // 实际上是在接近 0 的时候触发
              // 为了避免重复触发，我们可以检查 gameTime 是否是 RESET_CYCLE_TICKS 的倍数
              // 或者增加一个简单的冷却/锁定机制，这里简化处理
-             if (gameTime % RESET_CYCLE_TICKS == 0 || (ticksRemaining == 0 && !hasWarned100)) {
+             if (gameTime % RESET_CYCLE_TICKS == 0 || (ticksRemaining == 0 && !hasWarned2Min)) { // 注意：这里逻辑上稍微有点变化，但能保证触发
                  performReset(server);
              }
         }
     }
 
-    private static void broadcastWarning(MinecraftServer server, int secondsRemaining) {
-        Component message = Component.translatable("message.otherworldinn.reset.warning", secondsRemaining)
+    private static void broadcastWarning(MinecraftServer server, int minutesRemaining) {
+        Component message = Component.translatable("message.otherworldinn.reset.warning", minutesRemaining)
                 .withStyle(ChatFormatting.RED, ChatFormatting.BOLD);
         server.getPlayerList().broadcastSystemMessage(message, false);
     }

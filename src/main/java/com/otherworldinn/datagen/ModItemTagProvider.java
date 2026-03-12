@@ -33,6 +33,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(Items.FLINT_AND_STEEL)
                 .add(Items.LAVA_BUCKET)
                 .add(Items.END_CRYSTAL)
+                .add(Items.FIRE_CHARGE)
                 ;
 
         // 定义“仅城镇维度可用”标签

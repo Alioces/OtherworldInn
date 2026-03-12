@@ -3,6 +3,7 @@ package com.otherworldinn.client.renderer;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.item.LandDeedItem;
+import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.RoomData;
 import com.otherworldinn.world.team.TeamData;
@@ -49,14 +50,16 @@ public class RoomOutlineRenderer {
         ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
         boolean holdingRegistry = stack.is(ModItems.ROOM_REGISTER.get());
         boolean holdingLandDeed = stack.is(ModItems.LAND_DEED.get());
+        boolean holdingRoomKey = stack.is(ModItems.ROOM_KEY.get());
         
-        if (!holdingRegistry && !holdingLandDeed) {
+        if (!holdingRegistry && !holdingLandDeed && !holdingRoomKey) {
             stack = player.getItemInHand(InteractionHand.OFF_HAND);
             holdingRegistry = stack.is(ModItems.ROOM_REGISTER.get());
             holdingLandDeed = stack.is(ModItems.LAND_DEED.get());
+            holdingRoomKey = stack.is(ModItems.ROOM_KEY.get());
         }
 
-        if (!holdingRegistry && !holdingLandDeed) {
+        if (!holdingRegistry && !holdingLandDeed && !holdingRoomKey) {
             return;
         }
         
@@ -77,6 +80,21 @@ public class RoomOutlineRenderer {
                             .withFaceTextures(AllSpecialTextures.CUTOUT_CHECKERED, AllSpecialTextures.CUTOUT_CHECKERED)
                             ;
                 }
+            } else if (holdingRoomKey) {
+                // 如果手持房间钥匙，仅渲染绑定的房间
+                RoomKeyItem.getBoundRoomId(stack).ifPresent(roomId -> {
+                    RoomData room = innData.getRoom(roomId);
+                    if (room != null) {
+                        AABB box = new AABB(
+                                room.getMinPos().getX(), room.getMinPos().getY(), room.getMinPos().getZ(),
+                                room.getMaxPos().getX() + 1.0, room.getMaxPos().getY() + 1.0, room.getMaxPos().getZ() + 1.0
+                        );
+                        Outliner.getInstance().showAABB(room.getId(), box)
+                                .colored(0xFFD700) // 金色
+                                .lineWidth(1/16f)
+                                .withFaceTextures(AllSpecialTextures.CUTOUT_CHECKERED, AllSpecialTextures.CUTOUT_CHECKERED);
+                    }
+                });
             }
 
             // 3. 渲染旅社范围 (青色) - 手持房间登记册或地契时都显示

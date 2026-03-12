@@ -86,5 +86,6 @@
   "tooltip.otherworldinn.furniture.comfort": "舒适度: %s",
   "tooltip.otherworldinn.furniture.humidity": "湿度: %s",
   "tooltip.otherworldinn.furniture.light": "光照度: %s",
-  "tooltip.otherworldinn.only_in_town": "§c仅限城镇维度使用"
+  "tooltip.otherworldinn.only_in_town": "§c仅限城镇维度使用",
+  "tooltip.otherworldinn.room_key.price": "床位价格: §f\uE001§r %d"
 }

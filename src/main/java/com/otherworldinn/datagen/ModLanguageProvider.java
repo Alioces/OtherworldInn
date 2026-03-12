@@ -73,10 +73,10 @@ public class ModLanguageProvider extends LanguageProvider {
             // 管理员命令
             add("command.otherworldinn.admin.reset_dimensions.start", "§c[管理员] 正在强制触发维度重置...");
 
-            add("message.otherworldinn.reset.warning", "§c[注意] §e世界将在 %d 秒后重置！除了城镇外，所有维度的生物和地形将被清除！");
-            add("message.otherworldinn.reset.start", "§c[警告] 正在执行维度重置...请勿断开连接！");
+            add("message.otherworldinn.reset.warning", "§c[注意] §e外部维度还有%d分钟重置，请尽快回到城镇");
+            add("message.otherworldinn.reset.start", "§c[警告] 外部维度重置中，请暂时不要离开城镇");
             add("message.otherworldinn.reset.teleported", "§a你已被传送到城镇安全区域。");
-            add("message.otherworldinn.reset.complete", "§a维度重置完成！新的世界等待探索。");
+            add("message.otherworldinn.reset.complete", "§a外部维度重置完成，准备迎接新的冒险");
 
             // 保护提示
             add("message.otherworldinn.protection.deny", "你不能修改城镇内的方块");
@@ -132,6 +132,18 @@ public class ModLanguageProvider extends LanguageProvider {
             add("message.otherworldinn.land_deed.fail_out_of_bounds", "无法扩展：超出最大范围！");
             add("message.otherworldinn.land_deed.selection_cleared", "已取消选定范围。");
             add("message.otherworldinn.land_deed.overlay.cancel", "取消选定");
+
+            // 房间钥匙
+            add("item.otherworldinn.room_key.bound", "%d号房间钥匙");
+            add("message.otherworldinn.room_key.bound", "成功绑定到房间 %d");
+            add("message.otherworldinn.room_key.unbound", "已解除绑定");
+            add("message.otherworldinn.room_key.no_room", "此处没有房间");
+            add("message.otherworldinn.room_key.overlay.bind", "绑定房间");
+            add("message.otherworldinn.room_key.overlay.unbind", "解除绑定");
+            add("tooltip.otherworldinn.room_key.room_id", "房间号: %d");
+            add("tooltip.otherworldinn.room_key.pos", "位置: %s -> %s");
+            add("tooltip.otherworldinn.room_key.beds", "床位: %d/%d");
+            add("tooltip.otherworldinn.room_key.price", "床位价格: §f\uE001§r %d");
         } else {
             add("itemGroup.otherworldinn", "Otherworld Inn");
             add("key.categories.otherworldinn", "Otherworld Inn");
@@ -233,6 +245,18 @@ public class ModLanguageProvider extends LanguageProvider {
             add("message.otherworldinn.land_deed.overlay.confirm", "Confirm Expansion");
             add("message.otherworldinn.land_deed.overlay.confirm_with_cost", "Confirm Expansion (Cost: §f\uE001§r %d)");
             add("message.otherworldinn.land_deed.fail_out_of_bounds", "Cannot expand: Exceeds maximum range! ");
+
+            // Room Key
+            add("item.otherworldinn.room_key.bound", "Room %d Key");
+            add("message.otherworldinn.room_key.bound", "Successfully bound to Room %d");
+            add("message.otherworldinn.room_key.unbound", "Unbound from room");
+            add("message.otherworldinn.room_key.no_room", "No room here");
+            add("message.otherworldinn.room_key.overlay.bind", "Bind Room");
+            add("message.otherworldinn.room_key.overlay.unbind", "Unbind Room");
+            add("tooltip.otherworldinn.room_key.room_id", "Room ID: %d");
+            add("tooltip.otherworldinn.room_key.pos", "Pos: %s -> %s");
+            add("tooltip.otherworldinn.room_key.beds", "Beds: %d/%d");
+            add("tooltip.otherworldinn.room_key.price", "Price: §f\uE001§r %d");
         }
 
         // 生成方块语言键

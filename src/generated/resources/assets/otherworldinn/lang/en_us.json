@@ -86,5 +86,6 @@
   "tooltip.otherworldinn.furniture.comfort": "Comfort: %s",
   "tooltip.otherworldinn.furniture.humidity": "Humidity: %s",
   "tooltip.otherworldinn.furniture.light": "Light: %s",
-  "tooltip.otherworldinn.only_in_town": "§cOnly usable in Town dimension"
+  "tooltip.otherworldinn.only_in_town": "§cOnly usable in Town dimension",
+  "tooltip.otherworldinn.room_key.price": "Price: §f\uE001§r %d"
 }

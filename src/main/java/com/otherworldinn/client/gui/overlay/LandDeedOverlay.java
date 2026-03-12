@@ -13,7 +13,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -23,93 +22,75 @@ import net.minecraft.world.phys.HitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class LandDeedOverlay {
 
     @SubscribeEvent
-    public static void registerOverlays(RegisterGuiLayersEvent event) {
-        event.registerAbove(VanillaGuiLayers.HOTBAR, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "land_deed_overlay"), (guiGraphics, deltaTracker) -> {
-            Minecraft mc = Minecraft.getInstance();
-            Player player = mc.player;
-            if (player == null) return;
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        // 注册到 HUD 管理器，优先级 20 (较高，优先于房间登记册)
+        ItemHudOverlay.register(20, (unused) -> shouldShow(), LandDeedOverlay::render);
+    }
 
-            // 检查玩家是否主手或副手持有地契
-            ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
-            boolean holding = stack.is(ModItems.LAND_DEED.get());
-            if (!holding) {
-                stack = player.getItemInHand(InteractionHand.OFF_HAND);
-                holding = stack.is(ModItems.LAND_DEED.get());
-            }
+    private static boolean shouldShow() {
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
+        if (player == null) return false;
 
-            if (!holding) {
-                return;
-            }
+        // 检查玩家是否主手或副手持有地契
+        ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
+        boolean holding = stack.is(ModItems.LAND_DEED.get());
+        if (!holding) {
+            stack = player.getItemInHand(InteractionHand.OFF_HAND);
+            holding = stack.is(ModItems.LAND_DEED.get());
+        }
+        return holding;
+    }
 
-            int screenWidth = mc.getWindow().getGuiScaledWidth();
-            Font font = mc.font;
-            int centerX = screenWidth / 2;
-            int startY = 60;
-            int iconSize = 16;
-            int padding = 4;
+    private static void render(GuiGraphics guiGraphics, net.minecraft.client.DeltaTracker deltaTracker) {
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
+        if (player == null) return;
+        
+        ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (!stack.is(ModItems.LAND_DEED.get())) {
+             stack = player.getItemInHand(InteractionHand.OFF_HAND);
+        }
 
-            // 根据状态显示提示
-            // 状态：Pos1 未定 -> Pos2 未定 -> 确认
-            CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-            CompoundTag tag = customData.copyTag();
+        // 根据状态显示提示
+        // 状态：Pos1 未定 -> Pos2 未定 -> 确认
+        CustomData customData = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        CompoundTag tag = customData.copyTag();
+        
+        boolean hasPos1 = tag.contains("Pos1");
+        
+        if (!hasPos1) {
+            // [RMB] 设置第一点
+            ItemHudOverlay.renderMouseActions(guiGraphics, 
+                new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, Component.translatable("message.otherworldinn.land_deed.overlay.set_pos1"))
+            );
+        } else if (!tag.contains("Pos2")) {
+            // [RMB] 设置第二点 (显示价格)
+            BlockPos pos1 = BlockPos.of(tag.getLong("Pos1"));
             
             Component text;
             int color = 0xFFFFFF;
+
+            // 实时获取光标位置
+            BlockPos pos2 = null;
+            HitResult hitResult = mc.hitResult;
+            if (hitResult instanceof BlockHitResult blockHitResult) {
+                pos2 = blockHitResult.getBlockPos().relative(blockHitResult.getDirection());
+            }
             
-            boolean hasPos1 = tag.contains("Pos1");
-            
-            if (!hasPos1) {
-                // [RMB] 设置第一点
-                text = Component.translatable("message.otherworldinn.land_deed.overlay.set_pos1");
-            } else if (!tag.contains("Pos2")) {
-                // [RMB] 设置第二点 (显示价格)
-                BlockPos pos1 = BlockPos.of(tag.getLong("Pos1"));
-                
-                // 实时获取光标位置
-                BlockPos pos2 = null;
-                HitResult hitResult = mc.hitResult;
-                if (hitResult instanceof BlockHitResult blockHitResult) {
-                    pos2 = blockHitResult.getBlockPos().relative(blockHitResult.getDirection());
-                }
-                
-                if (pos2 != null) {
-                    TeamData team = TeamManager.getInstance().getClientPlayerTeam();
-                    
-                    // 检查是否超出最大范围
-                    if (!LandDeedItem.isWithinBounds(pos1, pos2)) {
-                        text = Component.translatable("message.otherworldinn.land_deed.fail_out_of_bounds");
-                        color = 0xFF5555; // 红色
-                    } else {
-                        int price = LandDeedItem.calculatePrice(team, pos1, pos2);
-                        int coins = team != null ? team.getCoins() : 0;
-                        
-                        if (price > coins) {
-                            color = 0xFF5555; // 红色
-                        }
-                        
-                        text = Component.translatable("message.otherworldinn.land_deed.overlay.set_pos2_with_cost", price);
-                    }
-                } else {
-                    text = Component.translatable("message.otherworldinn.land_deed.overlay.set_pos2");
-                }
-            } else {
-                // [RMB] 确认扩展 (显示价格)
-                BlockPos pos1 = BlockPos.of(tag.getLong("Pos1"));
-                BlockPos pos2 = BlockPos.of(tag.getLong("Pos2"));
-                
+            if (pos2 != null) {
                 TeamData team = TeamManager.getInstance().getClientPlayerTeam();
                 
-                // 检查是否超出最大范围 (双重保险)
+                // 检查是否超出最大范围
                 if (!LandDeedItem.isWithinBounds(pos1, pos2)) {
-                     text = Component.translatable("message.otherworldinn.land_deed.fail_out_of_bounds");
-                     color = 0xFF5555;
+                    text = Component.translatable("message.otherworldinn.land_deed.fail_out_of_bounds");
+                    color = 0xFF5555; // 红色
                 } else {
                     int price = LandDeedItem.calculatePrice(team, pos1, pos2);
                     int coins = team != null ? team.getCoins() : 0;
@@ -118,36 +99,46 @@ public class LandDeedOverlay {
                         color = 0xFF5555; // 红色
                     }
                     
-                    text = Component.translatable("message.otherworldinn.land_deed.overlay.confirm_with_cost", price);
+                    text = Component.translatable("message.otherworldinn.land_deed.overlay.set_pos2_with_cost", price);
                 }
-            }
-            
-            int textWidth = font.width(text);
-            
-            // 如果已设置 Pos1，则显示取消选项
-            if (hasPos1) {
-                Component cancelText = Component.translatable("message.otherworldinn.land_deed.overlay.cancel");
-                int cancelTextWidth = font.width(cancelText);
-                
-                int totalWidth = iconSize + padding + cancelTextWidth + padding * 3 + iconSize + padding + textWidth;
-                int startX = centerX - totalWidth / 2;
-                
-                // 渲染取消部分 [LMB]
-                AllIcons.I_LMB.render(guiGraphics, startX, startY);
-                guiGraphics.drawString(font, cancelText, startX + iconSize + padding, startY + (iconSize - font.lineHeight) / 2 + 1, 0xFFFFFF, true);
-                
-                // 渲染确认/设置部分 [RMB]
-                int secondSectionX = startX + iconSize + padding + cancelTextWidth + padding * 3;
-                AllIcons.I_RMB.render(guiGraphics, secondSectionX, startY);
-                guiGraphics.drawString(font, text, secondSectionX + iconSize + padding, startY + (iconSize - font.lineHeight) / 2 + 1, color, true);
             } else {
-                int totalWidth = iconSize + padding + textWidth;
-                int startX = centerX - totalWidth / 2;
-
-                // 渲染
-                AllIcons.I_RMB.render(guiGraphics, startX, startY);
-                guiGraphics.drawString(font, text, startX + iconSize + padding, startY + (iconSize - font.lineHeight) / 2 + 1, color, true);
+                text = Component.translatable("message.otherworldinn.land_deed.overlay.set_pos2");
             }
-        });
+
+            ItemHudOverlay.renderMouseActions(guiGraphics, 
+                new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.LEFT, Component.translatable("message.otherworldinn.land_deed.overlay.cancel")),
+                new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, text, color)
+            );
+
+        } else {
+            // [RMB] 确认扩展 (显示价格)
+            BlockPos pos1 = BlockPos.of(tag.getLong("Pos1"));
+            BlockPos pos2 = BlockPos.of(tag.getLong("Pos2"));
+            
+            Component text;
+            int color = 0xFFFFFF;
+
+            TeamData team = TeamManager.getInstance().getClientPlayerTeam();
+            
+            // 检查是否超出最大范围 (双重保险)
+            if (!LandDeedItem.isWithinBounds(pos1, pos2)) {
+                 text = Component.translatable("message.otherworldinn.land_deed.fail_out_of_bounds");
+                 color = 0xFF5555;
+            } else {
+                int price = LandDeedItem.calculatePrice(team, pos1, pos2);
+                int coins = team != null ? team.getCoins() : 0;
+                
+                if (price > coins) {
+                    color = 0xFF5555; // 红色
+                }
+                
+                text = Component.translatable("message.otherworldinn.land_deed.overlay.confirm_with_cost", price);
+            }
+
+            ItemHudOverlay.renderMouseActions(guiGraphics, 
+                new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.LEFT, Component.translatable("message.otherworldinn.land_deed.overlay.cancel")),
+                new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, text, color)
+            );
+        }
     }
 }

@@ -6,6 +6,7 @@ import com.otherworldinn.foundation.ItemReg;
 import com.otherworldinn.item.BedSheetItem;
 import com.otherworldinn.item.LandDeedItem;
 import com.otherworldinn.item.RecallScrollItem;
+import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.item.RoomRegisterItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
@@ -45,6 +46,12 @@ public class ModItems {
             .lang("Room Register", "房间登记册")
             .tooltip("Hold in off-hand to edit room", "副手手持来编辑房间");
     public static final DeferredItem<RoomRegisterItem> ROOM_REGISTER = ROOM_REGISTER_REG.register();
+
+    public static final ItemReg<RoomKeyItem> ROOM_KEY_REG = new ItemReg<>("room_key", RoomKeyItem::new)
+            .stacksTo(1)
+            .lang("Room Key", "房间钥匙")
+            .tooltip("Right click room to bind", "右键房间绑定，左键解绑");
+    public static final DeferredItem<RoomKeyItem> ROOM_KEY = ROOM_KEY_REG.register();
 
     public static final ItemReg<BedSheetItem> BED_SHEET_REG = new ItemReg<>("bed_sheet", BedSheetItem::new)
             .stacksTo(16)

@@ -23,6 +23,7 @@ public class ModCreativeModeTabs {
                 output.accept(ModItems.ROOM_REGISTER.get());
                 output.accept(ModItems.BED_SHEET.get());
                 output.accept(ModItems.LAND_DEED.get());
+                output.accept(ModItems.ROOM_KEY.get());
 
                 output.accept(ModBlocks.OVERWORLD_PORTAL.get());
             }).build());
