@@ -39,7 +39,7 @@ displayName="${mod_name}" #mandatory
 #logoFile="examplemod.png" #optional
 
 # A text field displayed in the mod UI
-#credits="" #optional
+credits="Includes textures from Corpse Complex (LGPLv3)" #optional
 
 # The authors of the mod, displayed in the mod UI (optional)
 #authors=""
@@ -47,6 +47,9 @@ displayName="${mod_name}" #mandatory
 # The description text for the mod (multi line!) (#mandatory)
 description='''
 Otherworld Inn mod.
+All Rights Reserved.
+
+This project uses some texture resources from the Corpse Complex mod (LGPLv3).
 '''
 
 # The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.

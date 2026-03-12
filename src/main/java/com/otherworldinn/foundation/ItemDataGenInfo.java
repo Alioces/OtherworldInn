@@ -13,7 +13,13 @@ import java.util.List;
  * @param enTooltips    英文工具提示
  * @param cnTooltips    中文工具提示
  */
-public record ItemDataGenInfo(boolean generateModel, String modelType, String enName, String cnName, List<String> enTooltips, List<String> cnTooltips) {
+public record ItemDataGenInfo(
+        boolean generateModel,
+        String modelType,
+        String enName,
+        String cnName,
+        List<String> enTooltips,
+        List<String> cnTooltips
+) {
     public static final ItemDataGenInfo DEFAULT = new ItemDataGenInfo(true, "generated", "", "", new ArrayList<>(), new ArrayList<>());
 }
-

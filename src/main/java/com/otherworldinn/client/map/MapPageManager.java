@@ -22,7 +22,7 @@ public class MapPageManager {
     private static final MapPageManager INSTANCE = new MapPageManager();
     
     /** 页面在虚拟坐标系中的间距（方块单位） */
-    public static final int PAGE_SPACING = 40;
+    public static final int PAGE_SPACING = 60;
 
     private final Set<PagePos> registeredPages = new HashSet<>();
     private final Map<PagePos, Set<ResourceLocation>> pagePoints = new HashMap<>();

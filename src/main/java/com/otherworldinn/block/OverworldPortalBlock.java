@@ -7,7 +7,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BarrierBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -21,6 +20,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * <p>
  * 一个隐形的方块，没有碰撞体积。
  * 当玩家进入该方块区域时，会被传送回主世界重生点。
+ * </p>
  */
 public class OverworldPortalBlock extends Block {
 

@@ -1,7 +1,6 @@
 package com.otherworldinn.foundation;
 
 import com.otherworldinn.init.ModItems;
-
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -14,7 +13,9 @@ import java.util.function.UnaryOperator;
 
 /**
  * 物品注册构建器
+ * <p>
  * 用于链式配置物品的属性、DataGen信息等
+ * </p>
  *
  * @param <T> 物品类型
  */
@@ -105,7 +106,9 @@ public class ItemReg<T extends Item> {
 
     /**
      * 注册物品
+     * <p>
      * 必须调用此方法以完成注册
+     * </p>
      */
     public DeferredItem<T> register() {
         Supplier<T> itemSupplier = () -> this.itemFactory.apply(this.properties);
@@ -116,4 +119,3 @@ public class ItemReg<T extends Item> {
         return item;
     }
 }
-

@@ -11,9 +11,9 @@ import java.util.List;
  * @param silkTouchDropSelf 是否在精准采集时掉落方块自身
  */
 public record LootConfig(
-    LootType type,
-    List<LootEntry> entries,
-    boolean silkTouchDropSelf
+        LootType type,
+        List<LootEntry> entries,
+        boolean silkTouchDropSelf
 ) {
     public static final LootConfig DEFAULT = new LootConfig(LootType.DROP_SELF, new ArrayList<>(), false);
     public static final LootConfig EMPTY = new LootConfig(LootType.DROP_NOTHING, new ArrayList<>(), false);
@@ -34,11 +34,11 @@ public record LootConfig(
      * @param requiresSilkTouch 是否需要精准采集 (通常不需要设置，除非有特殊需求)
      */
     public record LootEntry(
-        String itemId,
-        float chance,
-        int minCount,
-        int maxCount,
-        boolean requiresSilkTouch
-    ) {}
+            String itemId,
+            float chance,
+            int minCount,
+            int maxCount,
+            boolean requiresSilkTouch
+    ) {
+    }
 }
-

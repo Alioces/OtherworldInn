@@ -5,33 +5,31 @@ import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.bus.api.SubscribeEvent;
+import net.minecraft.world.level.block.piston.PistonStructureResolver;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.level.PistonEvent;
-import net.minecraft.world.level.block.piston.PistonStructureResolver;
-import java.util.List;
 
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.common.util.TriState;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.core.Direction;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 城镇保护处理器
@@ -39,6 +37,7 @@ import net.minecraft.core.Direction;
  * 在城镇维度中，默认禁止破坏和放置方块。
  * 只有在玩家所属队伍的“旅社”范围内才允许建筑。
  * 同时禁止使用特定的物品。
+ * </p>
  */
 @EventBusSubscriber(modid = OtherworldInn.MODID)
 public class TownProtectionHandler {
@@ -173,12 +172,23 @@ public class TownProtectionHandler {
     
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        if (event.getLevel().dimension() == TownDimensions.TOWN_LEVEL) {
-            ItemStack stack = event.getItemStack();
+        Level level = event.getLevel();
+        ItemStack stack = event.getItemStack();
+
+        // 1. 检查禁用物品 (仅在城镇维度)
+        if (level.dimension() == TownDimensions.TOWN_LEVEL) {
             if (stack.is(OtherworldInn.BANNED_IN_TOWN)) {
                 event.setCanceled(true);
                 if (event.getEntity() instanceof ServerPlayer player) {
                     player.displayClientMessage(Component.translatable("message.otherworldinn.protection.banned_item"), true);
+                }
+            }
+        } else {
+            // 2. 检查仅限城镇维度使用的物品
+            if (stack.is(OtherworldInn.ONLY_IN_TOWN)) {
+                event.setCanceled(true);
+                if (event.getEntity() instanceof ServerPlayer player) {
+                    player.displayClientMessage(Component.translatable("message.otherworldinn.protection.only_in_town"), true);
                 }
             }
         }
@@ -187,13 +197,31 @@ public class TownProtectionHandler {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getLevel();
-        if (level.dimension() == TownDimensions.TOWN_LEVEL) {
-            Player player = event.getEntity();
-            BlockPos pos = event.getPos();
-            
-            // 1. 检查禁用物品
-            ItemStack stack = event.getItemStack();
-            if (stack.is(OtherworldInn.BANNED_IN_TOWN)) {
+        Player player = event.getEntity();
+        BlockPos pos = event.getPos();
+        ItemStack stack = event.getItemStack();
+
+        // 1. 检查仅限城镇维度使用的物品 (如果不在城镇维度)
+        if (level.dimension() != TownDimensions.TOWN_LEVEL) {
+            if (stack.is(OtherworldInn.ONLY_IN_TOWN)) {
+                event.setCanceled(true);
+                event.setUseItem(TriState.FALSE);
+                event.setUseBlock(TriState.FALSE);
+                event.setCancellationResult(InteractionResult.FAIL);
+
+                if (player instanceof ServerPlayer serverPlayer) {
+                    serverPlayer.displayClientMessage(Component.translatable("message.otherworldinn.protection.only_in_town"), true);
+                    serverPlayer.inventoryMenu.sendAllDataToRemote();
+                }
+                return;
+            }
+            return; // 不在城镇维度，后续检查跳过
+        }
+
+        // --- 以下为城镇维度内的检查 ---
+
+        // 2. 检查禁用物品
+        if (stack.is(OtherworldInn.BANNED_IN_TOWN)) {
                 event.setCanceled(true);
                 event.setUseItem(TriState.FALSE);
                 event.setUseBlock(TriState.FALSE);
@@ -206,9 +234,9 @@ public class TownProtectionHandler {
                 return;
             }
 
-            // 2. 检查建筑权限 (针对放置方块的行为)
-            // 只有当玩家在生存/冒险模式下，且手持方块物品时才需要提前拦截
-            if (!player.isCreative() && !stack.isEmpty() && stack.getItem() instanceof BlockItem) {
+        // 3. 检查建筑权限 (针对放置方块的行为)
+        // 只有当玩家在生存/冒险模式下，且手持方块物品时才需要提前拦截
+        if (!player.isCreative() && !stack.isEmpty() && stack.getItem() instanceof BlockItem) {
                 // 计算拟放置位置
                 BlockPos placePos = pos.relative(event.getFace());
                 
@@ -227,7 +255,6 @@ public class TownProtectionHandler {
                 }
             }
         }
-    }
     
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onExplosionDetonate(ExplosionEvent.Detonate event) {
@@ -244,16 +271,7 @@ public class TownProtectionHandler {
             Entity entity = event.getEntity();
             
             // 检查实体是否在禁用列表中 (通过 ResourceLocation 检查)
-            ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-            
-            // 针对 Super Glue 的特殊检查
-            /*
-            if (entityId.toString().equals("create:super_glue")) {
-                event.setCanceled(true);
-                return;
-            }
-             */
-
+            // ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         }
     }
 
@@ -269,7 +287,7 @@ public class TownProtectionHandler {
             }
 
             // 收集所有需要检查的位置
-            java.util.Set<BlockPos> pointsToCheck = new java.util.HashSet<>();
+            Set<BlockPos> pointsToCheck = new HashSet<>();
             
             // 1. 活塞本身的位置
             pointsToCheck.add(pos);

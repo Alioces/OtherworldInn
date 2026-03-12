@@ -4,7 +4,6 @@ import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.map.MapPoint;
 import com.otherworldinn.world.map.TownDataProvider;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -30,6 +29,7 @@ import java.util.Optional;
  * <p>
  * 在非城镇维度长按使用，可将玩家传送回旅社（城镇维度）。
  * 使用时会播放末影人传送音效，触发传送粒子，并显示不死图腾动画。
+ * </p>
  */
 public class RecallScrollItem extends Item {
 
@@ -75,7 +75,10 @@ public class RecallScrollItem extends Item {
                     Vec3 target = innPoint.get().worldPosition();
                     
                     // 触发不死图腾动画
-                    Minecraft.getInstance().gameRenderer.displayItemActivation(stack);
+                    // Minecraft.getInstance().gameRenderer.displayItemActivation(stack); 
+                    // 注意：Minecraft.getInstance() 是客户端代码，不能在服务器端直接调用。
+                    // 实际上 displayItemActivation 是客户端逻辑，服务器端不需要调用，客户端会自动响应物品使用完成。
+                    // 如果需要强制触发动画，可能需要发包。这里先注释掉，避免崩服。
                     
                     // 播放传送前的音效 (在当前维度)
                     level.playSound(null, player.getX(), player.getY(), player.getZ(), 

@@ -7,6 +7,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -221,6 +222,11 @@ public class TeamManager {
      * @return 同步数据包
      */
     private S2CTeamSyncPacket createSyncPacket(TeamData team) {
+        List<CompoundTag> regionTags = new ArrayList<>();
+        for (TeamData.InnRegion region : team.getInnRegions()) {
+            regionTags.add(region.save());
+        }
+
         return new S2CTeamSyncPacket(
                 team.getTeamId(),
                 team.getName(),
@@ -229,7 +235,8 @@ public class TeamManager {
                 new ArrayList<>(team.getUnlockedMapPoints()),
                 team.isTeleportUnlocked(),
                 team.getCoins(),
-                team.getInnData().save(new CompoundTag())
+                team.getInnData().save(new CompoundTag()),
+                regionTags
         );
     }
 
@@ -311,7 +318,7 @@ public class TeamManager {
     /**
      * 更新客户端缓存 (由网络包调用)
      */
-    public void updateClientTeamData(UUID teamId, String name, UUID leaderId, Set<UUID> members, Set<ResourceLocation> unlockedPoints, boolean teleportUnlocked, int coins, CompoundTag innDataTag) {
+    public void updateClientTeamData(UUID teamId, String name, UUID leaderId, Set<UUID> members, Set<ResourceLocation> unlockedPoints, boolean teleportUnlocked, int coins, CompoundTag innDataTag, List<CompoundTag> innRegions) {
         if (clientTeamCache == null || !clientTeamCache.getTeamId().equals(teamId)) {
             clientTeamCache = new TeamData(teamId);
         }
@@ -326,6 +333,15 @@ public class TeamManager {
         // 更新旅社数据
         if (innDataTag != null) {
             clientTeamCache.getInnData().load(innDataTag);
+        }
+
+        // 更新旅社区域
+        clientTeamCache.getInnRegions().clear();
+        if (innRegions != null) {
+            for (CompoundTag regionTag : innRegions) {
+                clientTeamCache.getInnRegions().add(TeamData.InnRegion.load(regionTag));
+            }
+            clientTeamCache.optimizeRegions();
         }
     }
 }

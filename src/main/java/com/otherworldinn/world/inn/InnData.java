@@ -1,36 +1,30 @@
 package com.otherworldinn.world.inn;
 
+import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.entity.GuestEntity;
+import com.otherworldinn.foundation.ModColors;
+import com.otherworldinn.mixin.BedBlockExtension;
+import com.otherworldinn.util.EntityUtils;
+import com.otherworldinn.world.team.TeamData;
+import com.otherworldinn.world.team.TeamManager;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
-import lombok.AccessLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.world.level.Level;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 
-import com.otherworldinn.foundation.ModColors;
-import com.otherworldinn.mixin.BedBlockExtension;
-import net.minecraft.network.chat.Component;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
-import com.otherworldinn.entity.GuestEntity;
+import java.util.*;
 
 /**
  * 旅社数据
@@ -375,6 +369,7 @@ public class InnData {
         return false;
     }
 
+
     /**
      * 旅客退房
      * <p>
@@ -383,10 +378,11 @@ public class InnData {
      * 此外，会将房间内的一张床标记为脏乱。
      * </p>
      *
-     * @param guestId 旅客UUID
-     * @param level   服务器等级
+     * @param guestId          旅客UUID
+     * @param level            服务器等级
+     * @param isNormalCheckout 是否为正常退房（如果为 false，则不计算房费）
      */
-    public void checkOut(UUID guestId, ServerLevel level) {
+    public void checkOut(UUID guestId, ServerLevel level, boolean isNormalCheckout) {
         // 尝试获取实体（如果已加载）
         Entity entity = level.getEntity(guestId);
         GuestData guest = null;
@@ -413,10 +409,20 @@ public class InnData {
                     if (room != null) {
                         room.setMaxGuests(Math.max(0, room.getMaxGuests() - 1));
                         
-                        // 同步数据
-                        TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
-                        if (team != null) {
-                            TeamManager.getInstance().syncTeam(team, level.getServer());
+                        // 计算房费并添加到队伍金币 (仅在正常退房时执行)
+                        if (isNormalCheckout) {
+                            TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
+                            if (team != null) {
+                                int price = room.getBedPrice(this.rating);
+                                team.addCoins(price);
+                                TeamManager.getInstance().syncTeam(team, level.getServer());
+                            }
+                        } else {
+                            // 即使非正常退房，如果修改了 maxGuests，仍需同步队伍数据
+                            TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
+                            if (team != null) {
+                                TeamManager.getInstance().syncTeam(team, level.getServer());
+                            }
                         }
                     }
                 }
@@ -428,17 +434,27 @@ public class InnData {
                 guest.setRoomId(-1);
             }
         } else {
-            // 如果无法获取 GuestData，也尝试清理（我不知道这种情况到底发生在什么场景，但是这样写一下好了）
+            // 如果无法获取 GuestData，也尝试清理
             for (RoomData room : rooms.values()) {
                 if (room.hasGuest(guestId)) {
                     // 将一张干净的床弄乱
                     if (setRoomBedMessy(room.getId(), level)) {
                         room.setMaxGuests(Math.max(0, room.getMaxGuests() - 1));
                         
-                        // 同步数据
-                        TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
-                        if (team != null) {
-                            TeamManager.getInstance().syncTeam(team, level.getServer());
+                        // 计算房费并添加到队伍金币 (仅在正常退房时执行)
+                        if (isNormalCheckout) {
+                            TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
+                            if (team != null) {
+                                int price = room.getBedPrice(this.rating);
+                                team.addCoins(price);
+                                TeamManager.getInstance().syncTeam(team, level.getServer());
+                            }
+                        } else {
+                            // 即使非正常退房，如果修改了 maxGuests，仍需同步队伍数据
+                            TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
+                            if (team != null) {
+                                TeamManager.getInstance().syncTeam(team, level.getServer());
+                            }
                         }
                     }
                     
@@ -451,6 +467,11 @@ public class InnData {
 
         // 2. 从旅社旅客名单中彻底移除
         removeGuest(guestId);
+        
+        // 3. 安排实体消失 (如果实体存在)
+        if (entity != null) {
+            EntityUtils.scheduleDisappear(entity);
+        }
     }
 
     // --- NBT 序列化 ---

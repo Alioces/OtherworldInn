@@ -64,19 +64,34 @@ public class ModLanguageProvider extends LanguageProvider {
             add("command.otherworldinn.team.open_status_set", "旅社营业状态已设置为：%s");
             add("command.otherworldinn.team.point_unlocked", "已解锁地图点：%s (队伍：%s)");
             add("command.otherworldinn.team.point_locked", "已锁定地图点：%s (队伍：%s)");
+            add("command.otherworldinn.team.coins.set", "已将队伍 %s 的余额设置为 §f\uE001§r %d");
+            add("command.otherworldinn.team.coins.add", "已向队伍 %s 增加 §f\uE001§r %d (当前: §f\uE001§r %d)");
+            add("command.otherworldinn.team.coins.remove", "已从队伍 %s 扣除 §f\uE001§r %d (当前: §f\uE001§r %d)");
+            add("command.otherworldinn.team.coins.remove_fail", "扣除失败！余额不足 (当前: §f\uE001§r %d)");
+            add("command.otherworldinn.team.coins.get", "队伍 %s 当前余额: §f\uE001§r %d");
             
+            // 管理员命令
+            add("command.otherworldinn.admin.reset_dimensions.start", "§c[管理员] 正在强制触发维度重置...");
+
+            add("message.otherworldinn.reset.warning", "§c[注意] §e世界将在 %d 秒后重置！除了城镇外，所有维度的生物和地形将被清除！");
+            add("message.otherworldinn.reset.start", "§c[警告] 正在执行维度重置...请勿断开连接！");
+            add("message.otherworldinn.reset.teleported", "§a你已被传送到城镇安全区域。");
+            add("message.otherworldinn.reset.complete", "§a维度重置完成！新的世界等待探索。");
+
             // 保护提示
             add("message.otherworldinn.protection.deny", "你不能修改城镇内的方块");
             add("message.otherworldinn.protection.banned_item", "此物品在城镇维度被禁用！");
+            add("message.otherworldinn.protection.only_in_town", "此物品仅限在城镇维度使用！");
             
             // 物品提示
             add("item.otherworldinn.recall_scroll.fail_in_town", "回程卷轴无法在城镇中使用！");
             add("tooltip.otherworldinn.banned_in_town", "§c当前维度内禁用");
+            add("tooltip.otherworldinn.only_in_town", "§c仅限城镇维度使用");
 
             // 房间登记册
             add("message.otherworldinn.room_register.not_edit_mode", "旅社未处于编辑模式！");
             add("message.otherworldinn.room_register.pos1_set", "位置1已设置：%s");
-            add("message.otherworldinn.room_register.create_success", "房间创建成功！ID：%s");
+            add("message.otherworldinn.room_register.create_success", "房间创建成功！");
             add("message.otherworldinn.room_register.remove_success", "ID为%s的房间已被移除");
             add("message.otherworldinn.room_register.invalid_room", "无效的房间结构！");
             add("message.otherworldinn.room_register.validation.too_small", "房间空间太小！");
@@ -85,11 +100,14 @@ public class ModLanguageProvider extends LanguageProvider {
             add("message.otherworldinn.room_register.validation.hole_in_ceiling", "房间的天花板有漏洞！");
             add("message.otherworldinn.room_register.validation.hole_in_wall", "房间的墙壁有漏洞！");
             add("message.otherworldinn.room_register.validation.missing_door", "房间缺少门！");
-            add("message.otherworldinn.room_register.validation.missing_bed", "房间缺少床！");
+            add("message.otherworldinn.room_register.validation.missing_bed", "房间缺少干净的床！");
             add("message.otherworldinn.room_register.validation.overlap", "房间与已有房间重叠！");
             add("message.otherworldinn.room_register.remove_success_with_reason", "ID为%s的房间已被移除。原因：%s");
             add("message.otherworldinn.room_register.manual_removal", "手动移除");
             add("message.otherworldinn.room_register.validation.too_crowded", "房间过于拥挤！");
+            
+            add("message.otherworldinn.room_register.overlay.delete_room", "删除房间");
+            add("message.otherworldinn.room_register.overlay.add_room", "添加房间");
             
             // 生物群系
             add("biome.otherworldinn.town", "城镇");
@@ -98,6 +116,22 @@ public class ModLanguageProvider extends LanguageProvider {
             add("tooltip.otherworldinn.furniture.comfort", "舒适度: %s");
             add("tooltip.otherworldinn.furniture.light", "光照度: %s");
             add("tooltip.otherworldinn.furniture.humidity", "湿度: %s");
+
+            // 地契
+            add("message.otherworldinn.land_deed.pos1_set", "位置1已设置：%s");
+            add("message.otherworldinn.land_deed.pos2_set", "位置2已设置：%s");
+            add("message.otherworldinn.land_deed.success", "旅社区域扩展成功！");
+            add("message.otherworldinn.land_deed.overlay.set_pos1", "设置第一点");
+            add("message.otherworldinn.land_deed.overlay.set_pos2", "设置第二点");
+            add("message.otherworldinn.land_deed.overlay.set_pos2_with_cost", "设置第二点 (花费: §f\uE001§r %d)");
+            add("message.otherworldinn.land_deed.pos2_set_with_cost", "成功选定区域 (预计花费: §f\uE001§r %d)");
+            add("message.otherworldinn.land_deed.pos2_set_with_cost_fail", "余额不足以扩展当前选定的范围！需要 §f\uE001§r %d，当前 §f\uE001§r %d");
+            add("message.otherworldinn.land_deed.fail_no_money", "扩展失败：余额不足！需要 §f\uE001§r %d，当前 §f\uE001§r %d");
+            add("message.otherworldinn.land_deed.overlay.confirm", "确认扩展");
+            add("message.otherworldinn.land_deed.overlay.confirm_with_cost", "确认花费 §f\uE001§r %d 扩展旅社范围");
+            add("message.otherworldinn.land_deed.fail_out_of_bounds", "无法扩展：超出最大范围！");
+            add("message.otherworldinn.land_deed.selection_cleared", "已取消选定范围。");
+            add("message.otherworldinn.land_deed.overlay.cancel", "取消选定");
         } else {
             add("itemGroup.otherworldinn", "Otherworld Inn");
             add("key.categories.otherworldinn", "Otherworld Inn");
@@ -131,19 +165,34 @@ public class ModLanguageProvider extends LanguageProvider {
             add("command.otherworldinn.team.open_status_set", "Inn open status set to: %s");
             add("command.otherworldinn.team.point_unlocked", "Unlocked map point: %s (Team: %s)");
             add("command.otherworldinn.team.point_locked", "Locked map point: %s (Team: %s)");
+            add("command.otherworldinn.team.coins.set", "Set team %s balance to §f\uE001§r %d");
+            add("command.otherworldinn.team.coins.add", "Added §f\uE001§r %d to team %s (Current: §f\uE001§r %d)");
+            add("command.otherworldinn.team.coins.remove", "Removed §f\uE001§r %d from team %s (Current: §f\uE001§r %d)");
+            add("command.otherworldinn.team.coins.remove_fail", "Failed to remove! Not enough balance (Current: §f\uE001§r %d)");
+            add("command.otherworldinn.team.coins.get", "Team %s current balance: §f\uE001§r %d");
             
+            // Admin Commands
+            add("command.otherworldinn.admin.reset_dimensions.start", "§c[Admin] Triggering forced dimension reset...");
+            
+            add("message.otherworldinn.reset.warning", "§c[Notice] §eWorld reset in %d seconds! All dimensions except Town will be wiped!");
+            add("message.otherworldinn.reset.start", "§c[WARNING] Resetting dimensions... Do not disconnect!");
+            add("message.otherworldinn.reset.teleported", "§aYou have been teleported to safety.");
+            add("message.otherworldinn.reset.complete", "§aDimension reset complete! New worlds await.");
+
             // Protection Messages
             add("message.otherworldinn.protection.deny", "You cannot modify blocks in the Town!");
             add("message.otherworldinn.protection.banned_item", "This item is banned in the Town dimension!");
+            add("message.otherworldinn.protection.only_in_town", "This item can only be used in the Town dimension!");
             
             // Item Messages
             add("item.otherworldinn.recall_scroll.fail_in_town", "Recall Scroll cannot be used in Town!");
             add("tooltip.otherworldinn.banned_in_town", "§cBanned in this dimension");
+            add("tooltip.otherworldinn.only_in_town", "§cOnly usable in Town dimension");
 
             // Room Register
             add("message.otherworldinn.room_register.not_edit_mode", "Inn is not in edit mode!");
             add("message.otherworldinn.room_register.pos1_set", "Position 1 set: %s");
-            add("message.otherworldinn.room_register.create_success", "Room created successfully! ID: %s");
+            add("message.otherworldinn.room_register.create_success", "Room created successfully!");
             add("message.otherworldinn.room_register.remove_success", "Room with ID %s has been removed");
             add("message.otherworldinn.room_register.invalid_room", "Invalid room structure!");
             add("message.otherworldinn.room_register.validation.too_small", "Room is too small!");
@@ -152,11 +201,14 @@ public class ModLanguageProvider extends LanguageProvider {
             add("message.otherworldinn.room_register.validation.hole_in_ceiling", "Hole in the ceiling!");
             add("message.otherworldinn.room_register.validation.hole_in_wall", "Hole in the walls!");
             add("message.otherworldinn.room_register.validation.missing_door", "Missing door!");
-            add("message.otherworldinn.room_register.validation.missing_bed", "Missing bed!");
+            add("message.otherworldinn.room_register.validation.missing_bed", "Missing clean bed!");
             add("message.otherworldinn.room_register.validation.overlap", "Room overlaps with existing room!");
             add("message.otherworldinn.room_register.remove_success_with_reason", "Room with ID %s has been removed. Reason: %s");
             add("message.otherworldinn.room_register.manual_removal", "Manual Removal");
             add("message.otherworldinn.room_register.validation.too_crowded", "Room is too crowded!");
+            
+            add("message.otherworldinn.room_register.overlay.delete_room", "Delete Room");
+            add("message.otherworldinn.room_register.overlay.add_room", "Add Room");
             
             // Biomes
             add("biome.otherworldinn.town", "Town");
@@ -165,6 +217,22 @@ public class ModLanguageProvider extends LanguageProvider {
             add("tooltip.otherworldinn.furniture.comfort", "Comfort: %s");
             add("tooltip.otherworldinn.furniture.light", "Light: %s");
             add("tooltip.otherworldinn.furniture.humidity", "Humidity: %s");
+
+            // Land Deed
+            add("message.otherworldinn.land_deed.pos1_set", "Position 1 set: %s");
+            add("message.otherworldinn.land_deed.pos2_set", "Position 2 set: %s");
+            add("message.otherworldinn.land_deed.success", "Inn area expanded successfully!");
+            add("message.otherworldinn.land_deed.overlay.set_pos1", "Set 1st Corner");
+            add("message.otherworldinn.land_deed.overlay.set_pos2", "Set 2nd Corner");
+            add("message.otherworldinn.land_deed.selection_cleared", "Selection cleared.");
+            add("message.otherworldinn.land_deed.overlay.cancel", "Cancel Selection");
+            add("message.otherworldinn.land_deed.overlay.set_pos2_with_cost", "Set 2nd Corner (Cost: §f\uE001§r %d)");
+            add("message.otherworldinn.land_deed.pos2_set_with_cost", "Successfully set 2nd Corner (Cost: §f\uE001§r %d)");
+            add("message.otherworldinn.land_deed.pos2_set_with_cost_fail", "Land Deed failed: Not enough balance! Need §f\uE001§r %d, have §f\uE001§r %d");
+            add("message.otherworldinn.land_deed.fail_no_money", "Expansion failed: Not enough balance! Need §f\uE001§r %d, have §f\uE001§r %d");
+            add("message.otherworldinn.land_deed.overlay.confirm", "Confirm Expansion");
+            add("message.otherworldinn.land_deed.overlay.confirm_with_cost", "Confirm Expansion (Cost: §f\uE001§r %d)");
+            add("message.otherworldinn.land_deed.fail_out_of_bounds", "Cannot expand: Exceeds maximum range! ");
         }
 
         // 生成方块语言键

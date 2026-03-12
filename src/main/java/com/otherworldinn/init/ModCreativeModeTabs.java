@@ -18,12 +18,12 @@ public class ModCreativeModeTabs {
             .title(Component.translatable("itemGroup.otherworldinn"))
             .icon(() -> new ItemStack(ModItems.RECALL_SCROLL.get()))
             .displayItems((parameters, output) -> {
-                // 在这里手动添加物品
+                // 添加物品
                 output.accept(ModItems.RECALL_SCROLL.get());
-                output.accept(ModBlocks.OVERWORLD_PORTAL.get());
                 output.accept(ModItems.ROOM_REGISTER.get());
                 output.accept(ModItems.BED_SHEET.get());
-                
+                output.accept(ModItems.LAND_DEED.get());
 
+                output.accept(ModBlocks.OVERWORLD_PORTAL.get());
             }).build());
 }

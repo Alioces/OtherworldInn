@@ -77,25 +77,16 @@ public class TeamData {
     @Setter(AccessLevel.NONE)
     private int coins = 0; // 队伍金币
     
-    // 旅社区域列表 (替代原有的中心点+半径)
+    // 旅社区域列表
     private final List<InnRegion> innRegions = new ArrayList<>();
-    
-    // 过时字段，仅用于数据迁移或特定逻辑
-    @Deprecated
-    @Setter(AccessLevel.NONE)
-    private BlockPos innZoneCenter = new BlockPos(0, 70, 0); 
-    @Deprecated
-    @Setter(AccessLevel.NONE)
-    private int innZoneRadius = 15; 
     
     private final InnData innData = new InnData(); // 旅社数据管理系统
 
     public TeamData(UUID teamId) {
         this.teamId = teamId;
         this.name = "Team-" + teamId.toString().substring(0, 8);
-        // 初始化默认区域 (以原点为中心，半径15)
-        // -15 ~ 15 -> 31x31
-        addRegion(new InnRegion(-15, -15, 15, 15));
+        // 初始化默认区域 (30, -14) ~ (51, 14)
+        addRegion(new InnRegion(30, -14, 51, 14));
     }
 
     public void addMember(UUID playerId) {
@@ -159,7 +150,7 @@ public class TeamData {
     }
 
     public boolean removeCoins(int amount) {
-        if (amount > 0 && this.coins >= amount) {
+        if (amount >= 0 && this.coins >= amount) {
             this.coins -= amount;
             return true;
         }
@@ -174,32 +165,6 @@ public class TeamData {
     public void setMembers(Set<UUID> newMembers) {
         this.members.clear();
         this.members.addAll(newMembers);
-    }
-
-    // 兼容性方法：返回第一个区域的中心，或者默认中心
-    // 主要用于某些仍需要单一中心点的逻辑（如地图渲染定位）
-    public BlockPos getEffectiveCenter() {
-        if (!innRegions.isEmpty()) {
-            InnRegion r = innRegions.get(0);
-            return new BlockPos((r.minX + r.maxX) / 2, 70, (r.minZ + r.maxZ) / 2);
-        }
-        return innZoneCenter;
-    }
-    
-    // 兼容性方法：尽可能返回一个能覆盖所有区域的半径
-    public int getEffectiveRadius() {
-        if (innRegions.isEmpty()) return innZoneRadius;
-        
-        BlockPos center = getEffectiveCenter();
-        int maxDist = 0;
-        
-        for (InnRegion region : innRegions) {
-            int d1 = Math.max(Math.abs(region.minX - center.getX()), Math.abs(region.minZ - center.getZ()));
-            int d2 = Math.max(Math.abs(region.maxX - center.getX()), Math.abs(region.maxZ - center.getZ()));
-            maxDist = Math.max(maxDist, Math.max(d1, d2));
-        }
-        
-        return maxDist;
     }
 
     public void addRegion(InnRegion region) {
@@ -288,16 +253,30 @@ public class TeamData {
     }
     
     public void removeRegion(InnRegion region) {
-        // 简单实现：移除完全匹配的，或者重叠部分剔除（复杂）
-        // 目前需求主要是添加和合并。如果需要移除，通常是“移除某个区域内的权限”。
-        // 这里暂时仅支持移除完全一致的区域
-        innRegions.remove(region);
+        // 确保 min <= max
+        int minX = Math.min(region.minX, region.maxX);
+        int maxX = Math.max(region.minX, region.maxX);
+        int minZ = Math.min(region.minZ, region.maxZ);
+        int maxZ = Math.max(region.minZ, region.maxZ);
+        
+        InnRegion normalized = new InnRegion(minX, minZ, maxX, maxZ);
+
+        List<InnRegion> nextRegions = new ArrayList<>();
+        
+        // 遍历现有区域，减去要移除的部分
+        for (InnRegion existing : innRegions) {
+            nextRegions.addAll(subtract(existing, normalized));
+        }
+        
+        innRegions.clear();
+        innRegions.addAll(nextRegions);
+        optimizeRegions();
     }
 
     /**
      * 优化区域列表，合并可合并的矩形
      */
-    private void optimizeRegions() {
+    public void optimizeRegions() {
         boolean changed = true;
         while (changed) {
             changed = false;
@@ -356,26 +335,6 @@ public class TeamData {
         return false;
     }
 
-    @Deprecated
-    public void setInnZoneCenter(BlockPos center) {
-        this.innZoneCenter = center;
-        // 迁移逻辑：如果设置中心点，则重置区域为以该点为中心的矩形
-        innRegions.clear();
-        addRegion(new InnRegion(center.getX() - innZoneRadius, center.getZ() - innZoneRadius, 
-                                center.getX() + innZoneRadius, center.getZ() + innZoneRadius));
-    }
-
-    @Deprecated
-    public void setInnZoneRadius(int radius) {
-        this.innZoneRadius = radius;
-        // 迁移逻辑
-        if (innZoneCenter != null) {
-            innRegions.clear();
-            addRegion(new InnRegion(innZoneCenter.getX() - radius, innZoneCenter.getZ() - radius, 
-                                    innZoneCenter.getX() + radius, innZoneCenter.getZ() + radius));
-        }
-    }
-
     // --- NBT 序列化 ---
 
     /**
@@ -429,7 +388,7 @@ public class TeamData {
      */
     public void load(CompoundTag tag) {
         if (tag.contains("TeamId")) {
-            // teamId is final and passed in constructor, usually not overwritten here unless we are loading into a dummy
+
         }
         if (tag.contains("Name")) {
             name = tag.getString("Name");
@@ -477,19 +436,7 @@ public class TeamData {
                     innRegions.add(InnRegion.load(regionTag));
                 }
             }
-        } else {
-            // 尝试从旧数据迁移
-            BlockPos center = innZoneCenter;
-            int radius = innZoneRadius;
-            if (tag.contains("InnCenter")) {
-                center = BlockPos.of(tag.getLong("InnCenter"));
-            }
-            if (tag.contains("InnRadius")) {
-                radius = tag.getInt("InnRadius");
-            }
-            // 生成默认区域
-            addRegion(new InnRegion(center.getX() - radius, center.getZ() - radius, 
-                                    center.getX() + radius, center.getZ() + radius));
+            optimizeRegions();
         }
     }
 }

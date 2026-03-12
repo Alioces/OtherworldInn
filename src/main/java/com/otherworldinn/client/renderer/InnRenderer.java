@@ -65,7 +65,7 @@ public class InnRenderer {
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.disableCull();
 
-        float y = 70.01f; // 假设地面在 70
+        float y = 71.01f; // 假设地面在 70
         
         // 颜色设置
         float red, green, blue;

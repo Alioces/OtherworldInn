@@ -1,23 +1,24 @@
 package com.otherworldinn.entity;
 
 import com.otherworldinn.world.inn.GuestData;
+import com.otherworldinn.world.inn.InnData;
+import com.otherworldinn.world.team.TeamData;
+import com.otherworldinn.world.team.TeamManager;
 import lombok.Getter;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.level.Level;
-
-import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
-
-import com.otherworldinn.world.team.TeamManager;
-import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.inn.InnData;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 
 /**
  * 旅客实体
@@ -42,6 +43,40 @@ public abstract class GuestEntity extends PathfinderMob {
         this.initGuestPreferences();
         // 初始化奖励物品
         this.initRewardItems();
+    }
+
+    /**
+     * 获取旅客皮肤纹理
+     * <p>
+     * 子类必须实现此方法以提供特定的纹理。
+     * </p>
+     *
+     * @return 纹理资源位置
+     */
+    public abstract ResourceLocation getSkinTexture();
+
+    /**
+     * 获取模型类型
+     * <p>
+     * 返回 "default" (Steve) 或 "slim" (Alex)。
+     * 默认为 "default"。
+     * </p>
+     *
+     * @return 模型类型字符串
+     */
+    public String getModelType() {
+        return "default";
+    }
+
+    /**
+     * 创建旅客属性
+     *
+     * @return 属性构建器
+     */
+    public static AttributeSupplier.Builder createAttributes() {
+        return PathfinderMob.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 64.0)
+                .add(Attributes.MOVEMENT_SPEED, 0.25);
     }
 
     /**
@@ -105,8 +140,8 @@ public abstract class GuestEntity extends PathfinderMob {
             TeamData team = TeamManager.getInstance().getTeamAt(this.blockPosition(), serverLevel.getServer());
             if (team != null) {
                 InnData innData = team.getInnData();
-                // 强制退房
-                innData.checkOut(this.getUUID(), serverLevel);
+                // 强制退房，标记为非正常退房（不支付房费）
+                innData.checkOut(this.getUUID(), serverLevel, false);
             }
         }
     }

@@ -1,17 +1,18 @@
 package com.otherworldinn.init;
 
+import com.mojang.serialization.MapCodec;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.world.dimension.TownChunkGenerator;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.minecraft.world.level.chunk.ChunkGenerator;
 
 /**
  * 维度注册中心
  * <p>
  * 负责注册自定义维度的 ChunkGenerator。
+ * </p>
  */
 public class ModDimensions {
     public static final DeferredRegister<MapCodec<? extends ChunkGenerator>> CHUNK_GENERATORS = 

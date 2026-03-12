@@ -1,5 +1,7 @@
 package com.otherworldinn.world.inn;
 
+import com.otherworldinn.OtherworldInn;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -15,8 +17,6 @@ import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import com.otherworldinn.OtherworldInn;
 
 /**
  * 家具管理器
@@ -121,13 +121,13 @@ public class FurnitureManager {
                 Block block = blockItem.getBlock();
                 getStats(block).ifPresent(stats -> {
                     if (stats.comfort != 0) {
-                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.comfort", String.format("%+d", stats.comfort)).withStyle(net.minecraft.ChatFormatting.GRAY));
+                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.comfort", String.format("%+d", stats.comfort)).withStyle(ChatFormatting.GRAY));
                     }
                     if (stats.light != 0) {
-                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.light", String.format("%+d", stats.light)).withStyle(net.minecraft.ChatFormatting.YELLOW));
+                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.light", String.format("%+d", stats.light)).withStyle(ChatFormatting.YELLOW));
                     }
                     if (stats.humidity != 0) {
-                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.humidity", String.format("%+d", stats.humidity)).withStyle(net.minecraft.ChatFormatting.BLUE));
+                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.humidity", String.format("%+d", stats.humidity)).withStyle(ChatFormatting.BLUE));
                     }
                 });
             }

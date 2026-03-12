@@ -14,6 +14,7 @@ import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
  * 模组客户端事件处理器
  * <p>
  * 处理仅限客户端的事件，例如按键绑定注册。
+ * </p>
  */
 @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class ModClientEvents {
@@ -30,9 +31,7 @@ public class ModClientEvents {
 
             ItemProperties.register(ModItems.BED_SHEET.get(), 
                     ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "messy"), 
-                    (stack, level, entity, seed) -> {
-                        return BedSheetItem.isMessy(stack) ? 1.0F : 0.0F;
-                    });
+                    (stack, level, entity, seed) -> BedSheetItem.isMessy(stack) ? 1.0F : 0.0F);
         });
     }
 

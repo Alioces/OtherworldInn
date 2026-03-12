@@ -16,7 +16,17 @@ import java.util.List;
  * @param enTooltips    英文工具提示
  * @param cnTooltips    中文工具提示
  */
-public record BlockDataGenInfo(boolean generateModel, String renderType, LootConfig lootConfig, ToolType toolType, MiningLevel miningLevel, String enName, String cnName, List<String> enTooltips, List<String> cnTooltips) {
+public record BlockDataGenInfo(
+        boolean generateModel,
+        String renderType,
+        LootConfig lootConfig,
+        ToolType toolType,
+        MiningLevel miningLevel,
+        String enName,
+        String cnName,
+        List<String> enTooltips,
+        List<String> cnTooltips
+) {
     public static final BlockDataGenInfo DEFAULT = new BlockDataGenInfo(true, "solid", LootConfig.DEFAULT, ToolType.NONE, MiningLevel.NONE, "", "", new ArrayList<>(), new ArrayList<>());
 
     public enum ToolType {
@@ -35,4 +45,3 @@ public record BlockDataGenInfo(boolean generateModel, String renderType, LootCon
         NETHERITE
     }
 }
-

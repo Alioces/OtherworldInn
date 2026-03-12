@@ -1,6 +1,8 @@
 package com.otherworldinn.datagen;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.init.ModItems;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
@@ -31,13 +33,11 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(Items.FLINT_AND_STEEL)
                 .add(Items.LAVA_BUCKET)
                 .add(Items.END_CRYSTAL)
-                //.addOptional(ResourceLocation.parse("create:cart_assembler"))
-                //.addOptional(ResourceLocation.parse("create:super_glue"))
-                //.addOptional(ResourceLocation.parse("create:mechanical_piston"))
-                //.addOptional(ResourceLocation.parse("create:sticky_mechanical_piston"))
-                //.addOptional(ResourceLocation.parse("create:mechanical_bearing"))
-                //.addOptional(ResourceLocation.parse("create:clockwork_bearing"))
-                //.addOptional(ResourceLocation.parse("create:gantry_carriage"))
                 ;
+
+        // 定义“仅城镇维度可用”标签
+        tag(OtherworldInn.ONLY_IN_TOWN)
+                .add(ModItems.ROOM_REGISTER.get())
+                .add(ModItems.LAND_DEED.get());
     }
 }

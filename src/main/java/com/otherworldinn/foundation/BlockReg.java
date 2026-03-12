@@ -2,7 +2,6 @@ package com.otherworldinn.foundation;
 
 import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModItems;
-
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
@@ -19,7 +18,9 @@ import java.util.function.UnaryOperator;
 
 /**
  * 方块注册构建器
+ * <p>
  * 用于链式配置方块的属性、物品、DataGen信息等
+ * </p>
  *
  * @param <T> 方块类型
  */
@@ -262,7 +263,9 @@ public class BlockReg<T extends Block> {
 
     /**
      * 注册方块
+     * <p>
      * 必须调用此方法以完成注册
+     * </p>
      */
     public DeferredBlock<T> register() {
         // 使用配置的属性创建方块

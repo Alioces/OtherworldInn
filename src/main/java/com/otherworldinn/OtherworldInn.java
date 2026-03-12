@@ -1,31 +1,29 @@
 package com.otherworldinn;
 
 import com.mojang.logging.LogUtils;
+import com.otherworldinn.compat.CreateCompat;
 import com.otherworldinn.foundation.ClientConfig;
 import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModCreativeModeTabs;
 import com.otherworldinn.init.ModDimensions;
 import com.otherworldinn.init.ModItems;
-import com.otherworldinn.network.ModMessages;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import org.slf4j.Logger;
-
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import com.otherworldinn.compat.CreateCompat;
+import org.slf4j.Logger;
 
 /**
  * 模组主类
  * <p>
  * 模组的入口点，负责初始化和注册。
+ * </p>
  */
 @Mod(OtherworldInn.MODID)
 public class OtherworldInn {
@@ -34,6 +32,7 @@ public class OtherworldInn {
 
     // 定义标签
     public static final TagKey<Item> BANNED_IN_TOWN = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "banned_in_town"));
+    public static final TagKey<Item> ONLY_IN_TOWN = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "only_in_town"));
 
     public OtherworldInn(IEventBus modEventBus, ModContainer modContainer) {
         // 注册物品和方块
@@ -56,4 +55,3 @@ public class OtherworldInn {
         }
     }
 }
-

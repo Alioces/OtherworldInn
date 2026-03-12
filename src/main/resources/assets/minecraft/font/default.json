@@ -1,0 +1,13 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "otherworldinn:font/coin.png",
+      "height": 12,
+      "ascent": 10,
+      "chars": [
+        "\uE001"
+      ]
+    }
+  ]
+}

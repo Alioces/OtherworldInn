@@ -5,6 +5,7 @@ import com.otherworldinn.foundation.BlockDataGenInfo;
 import com.otherworldinn.init.ModBlocks;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.client.model.generators.ModelFile;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
@@ -38,6 +39,11 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 }
             }
         }
+    }
+    
+    public void simpleBlockWithItem(Block block, ModelFile model) {
+        simpleBlock(block, model);
+        simpleBlockItem(block, model);
     }
 }
 

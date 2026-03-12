@@ -167,7 +167,6 @@ public class CameraHandler {
         startYaw = ClientConfig.INSTANCE.cameraYaw.get().floatValue();
         startPitch = ClientConfig.INSTANCE.cameraPitch.get().floatValue();
         
-        // Move down relative to current page center, keep rotation same
         targetPos = new Vec3(startPos.x, startPos.y - 5.0, startPos.z);
         targetYaw = startYaw;
         targetPitch = startPitch;

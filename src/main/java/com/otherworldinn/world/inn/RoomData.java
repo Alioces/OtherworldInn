@@ -1,8 +1,9 @@
 package com.otherworldinn.world.inn;
 
+import com.otherworldinn.world.team.TeamData;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
-import lombok.AccessLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -14,13 +15,12 @@ import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-
-import com.otherworldinn.mixin.BedBlockExtension;
-import com.otherworldinn.world.team.TeamData;
 
 /**
  * 房间数据
@@ -95,6 +95,33 @@ public class RoomData {
         return currentGuests.contains(guestId);
     }
 
+    /**
+     * 计算床位价格
+     * <p>
+     * 根据旅社星级和房间水平面积计算。
+     * 最低 8 金币，最高 96 金币。
+     * 权重：星级 60%，面积 40%。
+     * </p>
+     *
+     * @param innRating 旅社评级 (0-5)
+     * @return 单个床位的价格
+     */
+    public int getBedPrice(int innRating) {
+        int area = (maxPos.getX() - minPos.getX() + 1) * (maxPos.getZ() - minPos.getZ() + 1);
+        int maxEffectiveArea = 48; // 约 7x7 大小作为满分面积基准
+        
+        double ratingFactor = Math.max(0, Math.min(5, innRating)) / 5.0;
+        double areaFactor = Math.min((double)area, maxEffectiveArea) / maxEffectiveArea;
+        
+        // 权重分配：星级 60%，面积 40%
+        double score = ratingFactor * 0.6 + areaFactor * 0.4;
+        
+        int minPrice = 8;
+        int maxPrice = 96;
+        
+        return minPrice + (int)Math.round(score * (maxPrice - minPrice));
+    }
+
     public enum ValidationResult {
         SUCCESS("success"),
         TOO_SMALL("too_small"),
@@ -146,8 +173,15 @@ public class RoomData {
                     state.getValue(BedBlock.PART) == BedPart.HEAD) {
                     
                     // 检查是否脏乱，只有干净的床才算数
-                    if (state.hasProperty(BedBlockExtension.MESSY) && state.getValue(BedBlockExtension.MESSY)) {
-                        continue;
+                    Property<?> messyProp = state.getProperties().stream()
+                            .filter(p -> p.getName().equals("messy"))
+                            .findFirst()
+                            .orElse(null);
+                            
+                    if (messyProp != null && messyProp instanceof BooleanProperty boolProp) {
+                        if (state.getValue(boolProp)) {
+                            continue;
+                        }
                     }
                     
                     bedCount++;
@@ -292,8 +326,6 @@ public class RoomData {
         int bedCount = 0;
         boolean hasSpace = false;
         
-        // 用于快速检查 2x2x2 空间的计数器 (X轴连续无碰撞方块计数)
-        // 这种优化需要更复杂的逻辑，这里采用一种简化版的“滑动窗口”思想：
         // 如果当前点是空的，尝试以此为起点的 2x2x2。
         // 为了减少重复检查，只有当 hasSpace 为 false 时才进行检查。
         
@@ -304,16 +336,28 @@ public class RoomData {
                     BlockState state = level.getBlockState(mPos);
                     
                     // 统计床位
-                    if (state.is(BlockTags.BEDS)) {
-                        if (state.hasProperty(BedBlock.PART) && 
-                            state.getValue(BedBlock.PART) == BedPart.HEAD) {
-                            
-                            // 检查是否脏乱
-                            if (!state.hasProperty(BedBlockExtension.MESSY) || !state.getValue(BedBlockExtension.MESSY)) {
-                                bedCount++;
+                        if (state.is(BlockTags.BEDS)) {
+                            if (state.hasProperty(BedBlock.PART) && 
+                                state.getValue(BedBlock.PART) == BedPart.HEAD) {
+                                
+                                // 检查是否脏乱
+                                boolean isMessy = false;
+                                net.minecraft.world.level.block.state.properties.Property<?> messyProp = state.getProperties().stream()
+                                         .filter(p -> p.getName().equals("messy"))
+                                         .findFirst()
+                                         .orElse(null);
+                                         
+                                if (messyProp != null && messyProp instanceof net.minecraft.world.level.block.state.properties.BooleanProperty boolProp) {
+                                     if (state.getValue(boolProp)) {
+                                         isMessy = true;
+                                     }
+                                }
+                                
+                                if (!isMessy) {
+                                    bedCount++;
+                                }
                             }
                         }
-                    }
                     
                     // 检查 2x2x2 空间 (如果尚未找到)
                     // 只有当 x, y, z 都在允许作为 2x2x2 起点的范围内时才检查

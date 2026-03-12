@@ -32,7 +32,8 @@ public record S2CTeamSyncPacket(
         List<ResourceLocation> unlockedPoints,
         boolean teleportUnlocked,
         int coins,
-        CompoundTag innData
+        CompoundTag innData,
+        List<CompoundTag> innRegions
 ) implements CustomPacketPayload {
 
     public static final Type<S2CTeamSyncPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "team_sync"));
@@ -47,6 +48,7 @@ public record S2CTeamSyncPacket(
                 ByteBufCodecs.BOOL.encode(buf, packet.teleportUnlocked());
                 ByteBufCodecs.INT.encode(buf, packet.coins());
                 ByteBufCodecs.COMPOUND_TAG.encode(buf, packet.innData());
+                ByteBufCodecs.collection(ArrayList::new, ByteBufCodecs.COMPOUND_TAG).encode(buf, new ArrayList<>(packet.innRegions()));
             },
             buf -> new S2CTeamSyncPacket(
                     UUIDUtil.STREAM_CODEC.decode(buf),
@@ -56,7 +58,8 @@ public record S2CTeamSyncPacket(
                     ByteBufCodecs.collection(ArrayList::new, ResourceLocation.STREAM_CODEC).decode(buf),
                     ByteBufCodecs.BOOL.decode(buf),
                     ByteBufCodecs.INT.decode(buf),
-                    ByteBufCodecs.COMPOUND_TAG.decode(buf)
+                    ByteBufCodecs.COMPOUND_TAG.decode(buf),
+                    ByteBufCodecs.collection(ArrayList::new, ByteBufCodecs.COMPOUND_TAG).decode(buf)
             )
     );
 
@@ -81,7 +84,8 @@ public record S2CTeamSyncPacket(
                     new HashSet<>(unlockedPoints()),
                     teleportUnlocked(),
                     coins(),
-                    innData()
+                    innData(),
+                    innRegions()
             );
         });
     }

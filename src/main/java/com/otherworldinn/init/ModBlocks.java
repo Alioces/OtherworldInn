@@ -1,29 +1,29 @@
 package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.block.OverworldPortalBlock;
 import com.otherworldinn.foundation.BlockDataGenInfo;
 import com.otherworldinn.foundation.BlockReg;
-import net.minecraft.world.level.block.Block;
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.minecraft.world.item.Rarity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
-
-import com.otherworldinn.block.OverworldPortalBlock;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 /**
  * 方块注册中心
  * <p>
  * 负责注册模组中的所有方块。
  * 同时注册对应的方块物品（如果启用）。
+ * </p>
  */
 public class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(OtherworldInn.MODID);
@@ -46,7 +46,7 @@ public class ModBlocks {
      * 判断实体是否可以在该方块上生成
      * 用于 isValidSpawn 属性
      */
-    private static Boolean never(BlockState state, BlockGetter level, BlockPos pos, EntityType<?> entityType) {
+    private static boolean never(BlockState state, BlockGetter level, BlockPos pos, EntityType<?> entityType) {
         return false;
     }
 
@@ -60,8 +60,7 @@ public class ModBlocks {
      * @param <T>     方块类型
      * @return BlockReg 构建器
      */
-    public static <T extends Block> BlockReg<T> register(String name, java.util.function.Function<BlockBehaviour.Properties, T> factory) {
+    public static <T extends Block> BlockReg<T> register(String name, Function<BlockBehaviour.Properties, T> factory) {
         return new BlockReg<>(name, factory);
     }
 }
-

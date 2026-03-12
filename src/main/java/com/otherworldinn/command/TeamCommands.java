@@ -2,8 +2,10 @@ package com.otherworldinn.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
 import net.minecraft.commands.CommandSourceStack;
@@ -13,8 +15,6 @@ import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-
-import java.util.UUID;
 
 /**
  * 队伍命令
@@ -75,7 +75,123 @@ public class TeamCommands {
                         .then(Commands.argument("target", EntityArgument.player())
                                 .then(Commands.argument("pointId", ResourceLocationArgument.id())
                                         .executes(TeamCommands::lockMapPoint))))
+                .then(Commands.literal("coins")
+                        .requires(s -> s.hasPermission(2))
+                        .then(Commands.literal("set")
+                                .then(Commands.argument("amount", IntegerArgumentType.integer(0))
+                                        .executes(ctx -> setCoins(ctx, null))
+                                        .then(Commands.argument("target", EntityArgument.player())
+                                                .executes(ctx -> setCoins(ctx, EntityArgument.getPlayer(ctx, "target"))))))
+                        .then(Commands.literal("add")
+                                .then(Commands.argument("amount", IntegerArgumentType.integer(1))
+                                        .executes(ctx -> addCoins(ctx, null))
+                                        .then(Commands.argument("target", EntityArgument.player())
+                                                .executes(ctx -> addCoins(ctx, EntityArgument.getPlayer(ctx, "target"))))))
+                        .then(Commands.literal("remove")
+                                .then(Commands.argument("amount", IntegerArgumentType.integer(1))
+                                        .executes(ctx -> removeCoins(ctx, null))
+                                        .then(Commands.argument("target", EntityArgument.player())
+                                                .executes(ctx -> removeCoins(ctx, EntityArgument.getPlayer(ctx, "target"))))))
+                        .then(Commands.literal("get")
+                                .executes(ctx -> getCoins(ctx, null))
+                                .then(Commands.argument("target", EntityArgument.player())
+                                        .executes(ctx -> getCoins(ctx, EntityArgument.getPlayer(ctx, "target"))))))
         );
+    }
+
+    private static int setCoins(CommandContext<CommandSourceStack> context, ServerPlayer target) {
+        try {
+            if (target == null) target = context.getSource().getPlayerOrException();
+            int amount = IntegerArgumentType.getInteger(context, "amount");
+            
+            TeamManager manager = TeamManager.getInstance();
+            TeamData team = manager.getPlayerTeam(target);
+            
+            if (team == null) {
+                context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.target_no_team"));
+                return 0;
+            }
+            
+            team.setCoins(amount);
+            manager.syncTeam(team, context.getSource().getServer());
+            
+            context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.coins.set", team.getName(), amount), true);
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int addCoins(CommandContext<CommandSourceStack> context, ServerPlayer target) {
+        try {
+            if (target == null) target = context.getSource().getPlayerOrException();
+            int amount = IntegerArgumentType.getInteger(context, "amount");
+            
+            TeamManager manager = TeamManager.getInstance();
+            TeamData team = manager.getPlayerTeam(target);
+            
+            if (team == null) {
+                context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.target_no_team"));
+                return 0;
+            }
+            
+            team.addCoins(amount);
+            manager.syncTeam(team, context.getSource().getServer());
+            
+            context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.coins.add", team.getName(), amount, team.getCoins()), true);
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int removeCoins(CommandContext<CommandSourceStack> context, ServerPlayer target) {
+        try {
+            if (target == null) target = context.getSource().getPlayerOrException();
+            int amount = IntegerArgumentType.getInteger(context, "amount");
+            
+            TeamManager manager = TeamManager.getInstance();
+            TeamData team = manager.getPlayerTeam(target);
+            
+            if (team == null) {
+                context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.target_no_team"));
+                return 0;
+            }
+            
+            if (team.removeCoins(amount)) {
+                manager.syncTeam(team, context.getSource().getServer());
+                context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.coins.remove", team.getName(), amount, team.getCoins()), true);
+                return 1;
+            } else {
+                context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.coins.remove_fail", team.getCoins()));
+                return 0;
+            }
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int getCoins(CommandContext<CommandSourceStack> context, ServerPlayer target) {
+        try {
+            if (target == null) target = context.getSource().getPlayerOrException();
+            
+            TeamManager manager = TeamManager.getInstance();
+            TeamData team = manager.getPlayerTeam(target);
+            
+            if (team == null) {
+                context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.target_no_team"));
+                return 0;
+            }
+            
+            context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.coins.get", team.getName(), team.getCoins()), false);
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
+            return 0;
+        }
     }
 
     private static int unlockMapPoint(CommandContext<CommandSourceStack> context) {

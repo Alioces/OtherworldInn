@@ -10,6 +10,8 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -70,7 +72,7 @@ public class RoomRegisterItem extends Item {
                 BlockPos maxPos = new BlockPos(Math.max(pos1.getX(), pos.getX()), Math.max(pos1.getY(), pos.getY()), Math.max(pos1.getZ(), pos.getZ()));
                 
                 // 判定是否有效
-                RoomData.ValidationResult result = RoomData.validate(minPos, maxPos, level, team);
+                RoomData.ValidationResult result = RoomData.validate(minPos, maxPos, level, team, null);
                 if (result.isSuccess()) {
                     // 生成新ID
                     int newId = innData.getRooms().keySet().stream().max(Integer::compareTo).orElse(0) + 1;
@@ -86,8 +88,11 @@ public class RoomRegisterItem extends Item {
                     // 立即同步队伍数据
                     TeamManager.getInstance().syncTeam(team, serverPlayer.getServer());
                     
-                    player.displayClientMessage(Component.translatable("message.otherworldinn.room_register.create_success", newId)
+                    player.displayClientMessage(Component.translatable("message.otherworldinn.room_register.create_success")
                             .withStyle(style -> style.withColor(ModColors.SUCCESS)), true);
+                    
+                    // 播放翻书页声音
+                    level.playSound(null, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 1.0F);
                     
                     // 清除标记
                     tag.remove("Pos1");

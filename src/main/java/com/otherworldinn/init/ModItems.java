@@ -3,14 +3,14 @@ package com.otherworldinn.init;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ItemDataGenInfo;
 import com.otherworldinn.foundation.ItemReg;
+import com.otherworldinn.item.BedSheetItem;
+import com.otherworldinn.item.LandDeedItem;
+import com.otherworldinn.item.RecallScrollItem;
+import com.otherworldinn.item.RoomRegisterItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import com.otherworldinn.item.BedSheetItem;
-import com.otherworldinn.item.RecallScrollItem;
-import com.otherworldinn.item.RoomRegisterItem;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +20,7 @@ import java.util.function.Function;
  * 物品注册中心
  * <p>
  * 负责注册模组中的所有物品。
+ * </p>
  */
 public class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(OtherworldInn.MODID);
@@ -52,6 +53,13 @@ public class ModItems {
             .lang("Bed Sheet", "床单");
     public static final DeferredItem<BedSheetItem> BED_SHEET = BED_SHEET_REG.register();
 
+    public static final ItemReg<LandDeedItem> LAND_DEED_REG = new ItemReg<>("land_deed", LandDeedItem::new)
+            .rarity(Rarity.RARE)
+            .stacksTo(1)
+            .lang("Land Deed", "地契")
+            .tooltip("Use on two corners to expand Inn area", "在两个角落使用以扩展旅社区域");
+    public static final DeferredItem<LandDeedItem> LAND_DEED = LAND_DEED_REG.register();
+
     // --- 辅助方法 ---
 
     /**
@@ -76,4 +84,3 @@ public class ModItems {
         return new ItemReg<>(name, Item::new);
     }
 }
-

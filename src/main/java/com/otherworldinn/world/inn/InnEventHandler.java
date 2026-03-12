@@ -1,27 +1,32 @@
 package com.otherworldinn.world.inn;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.init.ModItems;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
-import com.otherworldinn.init.ModItems;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.minecraft.network.chat.Component;
-
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -132,14 +137,70 @@ public class InnEventHandler {
     }
 
     /**
+     * 监听装备变更事件 (服务器端)
+     * <p>
+     * 当房间登记册进入副手时，播放翻页音效。
+     * 这通常发生在玩家将物品从主手切换到副手时。
+     * </p>
+     */
+    @SubscribeEvent
+    public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
+        if (event.getEntity() instanceof Player player && !player.level().isClientSide) {
+            // 避免登录时触发
+            if (player.tickCount < 10) return;
+
+            // 仅关注副手变化
+            if (event.getSlot() == EquipmentSlot.OFFHAND) {
+                ItemStack to = event.getTo();
+                ItemStack from = event.getFrom();
+                
+                // 检查是否切换到了房间登记册，且之前不是房间登记册
+                if (to.is(ModItems.ROOM_REGISTER.get()) && !from.is(ModItems.ROOM_REGISTER.get())) {
+                    // 使用 null 作为 player 参数，确保包括触发者在内的所有附近玩家都能听到声音
+                    player.level().playSound(null, player.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 1.0F);
+                }
+            }
+        }
+    }
+
+    /**
      * 处理玩家左键点击方块事件 (服务器端)
      * <p>
-     * 用于“房间登记册”在副手手持时的房间删除功能。
+     * 1. 地契：清除选定范围
+     * 2. 房间登记册：删除房间（并阻止方块破坏）
      * </p>
      */
     @SubscribeEvent
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
-        handleLeftClick(event.getEntity(), event.getPos(), event.getLevel());
+        Player player = event.getEntity();
+        Level level = event.getLevel();
+        BlockPos relativePos = event.getPos().relative(event.getFace());
+
+        // 1. 处理地契逻辑 (主手)
+        ItemStack mainHandItem = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (mainHandItem.is(ModItems.LAND_DEED.get())) {
+            CustomData customData = mainHandItem.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+            CompoundTag tag = customData.copyTag();
+
+            if (tag.contains("Pos1")) {
+                if (!level.isClientSide) {
+                    tag.remove("Pos1");
+                    tag.remove("Pos2");
+                    mainHandItem.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+                    player.displayClientMessage(Component.translatable("message.otherworldinn.land_deed.selection_cleared"), true);
+                }
+                event.setCanceled(true); // 取消方块破坏
+                return;
+            }
+        }
+
+        // 2. 处理房间登记册逻辑 (副手)
+        ItemStack offhandItem = player.getItemInHand(InteractionHand.OFF_HAND);
+        if (offhandItem.is(ModItems.ROOM_REGISTER.get())) {
+            // 只要副手持有房间登记册，就取消方块破坏，尝试执行删除房间逻辑
+            event.setCanceled(true);
+            handleLeftClick(player, relativePos, level);
+        }
     }
 
     /**
@@ -158,6 +219,7 @@ public class InnEventHandler {
             return;
         }
 
+        // 再次检查物品（虽然调用前已检查，但作为独立方法保留检查更安全）
         ItemStack offhandItem = player.getItemInHand(InteractionHand.OFF_HAND);
         if (!offhandItem.is(ModItems.ROOM_REGISTER.get())) {
             return;
