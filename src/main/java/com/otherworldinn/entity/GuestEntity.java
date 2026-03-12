@@ -20,6 +20,10 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.ai.goal.Goal;
+import java.util.EnumSet;
+
 /**
  * 旅客实体
  * <p>
@@ -33,6 +37,11 @@ public abstract class GuestEntity extends PathfinderMob {
      */
     @Getter
     private GuestData guestData;
+    
+    /**
+     * 导航目标
+     */
+    private BlockPos navigationTarget;
 
     protected GuestEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
@@ -43,6 +52,46 @@ public abstract class GuestEntity extends PathfinderMob {
         this.initGuestPreferences();
         // 初始化奖励物品
         this.initRewardItems();
+    }
+
+    private class MoveToTargetGoal extends Goal {
+        public MoveToTargetGoal() {
+            this.setFlags(EnumSet.of(Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            return GuestEntity.this.navigationTarget != null;
+        }
+
+        @Override
+        public void start() {
+            if (GuestEntity.this.navigationTarget != null) {
+                GuestEntity.this.getNavigation().moveTo(
+                    GuestEntity.this.navigationTarget.getX(), 
+                    GuestEntity.this.navigationTarget.getY(), 
+                    GuestEntity.this.navigationTarget.getZ(), 
+                    1.0D
+                );
+            }
+        }
+
+        @Override
+        public void tick() {
+            if (GuestEntity.this.navigationTarget != null) {
+                double distSqr = GuestEntity.this.distanceToSqr(
+                    GuestEntity.this.navigationTarget.getX(), 
+                    GuestEntity.this.navigationTarget.getY(), 
+                    GuestEntity.this.navigationTarget.getZ()
+                );
+                
+                // 如果距离小于 2 格 (平方 < 4)，认为到达
+                if (distSqr < 4.0D) {
+                    GuestEntity.this.navigationTarget = null;
+                    GuestEntity.this.getNavigation().stop();
+                }
+            }
+        }
     }
 
     /**
@@ -117,13 +166,18 @@ public abstract class GuestEntity extends PathfinderMob {
         // 默认无奖励，由子类实现
     }
 
+    public void setNavigationTarget(BlockPos pos) {
+        this.navigationTarget = pos;
+    }
+
     @Override
     protected void registerGoals() {
         super.registerGoals();
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new RandomStrollGoal(this, 0.6D));
-        this.goalSelector.addGoal(2, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(3, new RandomLookAroundGoal(this));
+        this.goalSelector.addGoal(1, new MoveToTargetGoal());
+        this.goalSelector.addGoal(2, new RandomStrollGoal(this, 0.6D));
+        this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 6.0F));
+        this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
     }
 
     @Override

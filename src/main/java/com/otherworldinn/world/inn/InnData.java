@@ -387,6 +387,13 @@ public class InnData {
             // 更新偏好分数
             guest.updatePreferenceScore(room);
             this.addGuest(guestId);
+            
+            // 让实体寻路到房间
+            Entity entity = level.getEntity(guestId);
+            if (entity instanceof GuestEntity guestEntity) {
+                guestEntity.setNavigationTarget(room.getMinPos());
+            }
+            
             return true;
         }
         
@@ -493,6 +500,13 @@ public class InnData {
                                 team.addCoins(price, level.getServer());
                                 TeamManager.getInstance().syncTeam(team, level.getServer());
                             }
+                            
+                            // 计算并增加声望
+                            guest.updatePreferenceScore(room);
+                            int score = guest.getPreferenceScore();
+                            // 最低提升 2，最高提升 10 (score 本身是 0-10)
+                            int reputationGain = Math.max(2, Math.min(10, score));
+                            this.addReputation(reputationGain);
                         } else {
                             // 即使非正常退房，如果修改了 maxGuests，仍需同步队伍数据
                             TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
@@ -546,7 +560,13 @@ public class InnData {
         // 2. 从旅社旅客名单中彻底移除
         removeGuest(guestId);
         
-        // 3. 安排实体消失 (如果实体存在)
+        // 3. 安排实体寻路到指定位置并自行消失
+        if (entity instanceof GuestEntity guestEntity) {
+            // 设置目标位置 (10, 71, 0)
+            guestEntity.setNavigationTarget(new BlockPos(10, 71, 0));
+        }
+        
+        // 4. 安排实体消失 (如果实体存在)
         if (entity != null) {
             EntityUtils.scheduleDisappear(entity);
         }
