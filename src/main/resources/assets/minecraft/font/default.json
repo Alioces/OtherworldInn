@@ -12,8 +12,8 @@
     {
       "type": "bitmap",
       "file": "otherworldinn:font/comfort.png",
-      "height": 12,
-      "ascent": 10,
+      "height": 8,
+      "ascent": 6,
       "chars": [
         "\uE002"
       ]
@@ -21,8 +21,8 @@
     {
       "type": "bitmap",
       "file": "otherworldinn:font/light.png",
-      "height": 12,
-      "ascent": 10,
+      "height": 8,
+      "ascent": 6,
       "chars": [
         "\uE003"
       ]
@@ -30,8 +30,8 @@
     {
       "type": "bitmap",
       "file": "otherworldinn:font/humidity.png",
-      "height": 12,
-      "ascent": 10,
+      "height": 8,
+      "ascent": 6,
       "chars": [
         "\uE004"
       ]

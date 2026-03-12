@@ -33,6 +33,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import net.minecraft.world.level.block.state.BlockState;
+import com.simibubi.create.AllBlocks;
+import com.otherworldinn.world.team.TeamSavedData;
+import net.minecraft.world.phys.AABB;
+
 /**
  * 旅社事件处理器
  * <p>
@@ -71,6 +76,7 @@ public class InnEventHandler {
      * 监听方块放置事件
      * <p>
      * NeighborNotifyEvent 可能不覆盖所有情况（如直接放置），补充监听 PlaceEvent。
+     * 同时也负责检测剪贴板的放置，同步缓存的待办事项。
      * </p>
      */
     @SubscribeEvent
@@ -81,9 +87,21 @@ public class InnEventHandler {
         BlockPos pos = event.getPos();
         TeamData team = TeamManager.getInstance().getTeamAt(pos, level.getServer());
 
-        if (team != null && team.getInnData().isEditMode()) {
-            synchronized (pendingChecks) {
-                pendingChecks.add(team.getTeamId());
+        if (team != null) {
+            // 如果是编辑模式，触发房间检查
+            if (team.getInnData().isEditMode()) {
+                synchronized (pendingChecks) {
+                    pendingChecks.add(team.getTeamId());
+                }
+            }
+            
+            // 检查是否放置了剪贴板
+            BlockState state = event.getState();
+            if (AllBlocks.CLIPBOARD.has(state)) {
+                // 如果是剪贴板，尝试同步缓存的待办事项
+                // 扫描范围只需包含该方块即可，syncTodosToClipboard 会调用 modifyClipboards，后者会检查 BlockEntity
+                AABB area = new AABB(pos);
+                team.getInnData().syncTodosToClipboard(level, area);
             }
         }
     }
@@ -109,13 +127,23 @@ public class InnEventHandler {
     /**
      * 在 Level Tick 结束时处理待定检查
      * <p>
-     * 确保每个 tick 每个队伍最多只检查一次房间合法性，避免性能浪费。
+     * 确保每个 tick 每个队伍最多只执行检查一次。
      * </p>
      */
     @SubscribeEvent
     public static void onLevelTick(LevelTickEvent.Post event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
         if (level.dimension() != TownDimensions.TOWN_LEVEL) return;
+
+        TeamManager teamManager = TeamManager.getInstance();
+
+        // 全局 Tick 更新 (处理旅客超时等)
+        TeamSavedData data = teamManager.getData(level.getServer());
+        if (data != null) {
+            for (TeamData team : data.getTeams().values()) {
+                team.getInnData().tick(level, team);
+            }
+        }
 
         Set<UUID> teamsToCheck;
         synchronized (pendingChecks) {
@@ -124,7 +152,6 @@ public class InnEventHandler {
             pendingChecks.clear();
         }
 
-        TeamManager teamManager = TeamManager.getInstance();
         for (UUID teamId : teamsToCheck) {
             TeamData team = teamManager.getTeam(teamId, level.getServer());
             if (team != null) {

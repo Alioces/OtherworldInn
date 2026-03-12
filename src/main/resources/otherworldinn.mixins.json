@@ -4,7 +4,8 @@
   "package": "com.otherworldinn.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "MixinContraption"
+    "MixinContraption",
+    "MixinBedBlock"
   ],
   "injectors": {
     "defaultRequire": 1

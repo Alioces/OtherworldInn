@@ -3,10 +3,11 @@ package com.otherworldinn.world.inn;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.entity.GuestEntity;
 import com.otherworldinn.foundation.ModColors;
-import com.otherworldinn.mixin.BedBlockExtension;
+import com.otherworldinn.foundation.ModBlockProperties;
 import com.otherworldinn.util.EntityUtils;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.TeamSavedData;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
@@ -14,9 +15,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -25,6 +28,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 
 import java.util.*;
+
+import com.otherworldinn.world.event.ClipboardManager;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import com.otherworldinn.init.ModEntities;
+import net.minecraft.world.entity.MobSpawnType;
 
 /**
  * 旅社数据
@@ -50,6 +61,12 @@ public class InnData {
     
     private final Set<UUID> guestIds = new HashSet<>();
     private final Map<Integer, RoomData> rooms = new HashMap<>();
+    
+    // 待办事项缓存列表
+    private final List<String> todoList = new ArrayList<>();
+    
+    // 下一次生成旅客的时间 (GameTime)
+    private long nextGuestSpawnTime = 0;
 
     public InnData() {
     }
@@ -129,6 +146,28 @@ public class InnData {
         this.guestIds.add(guestId);
         // 有客人时自动关闭编辑模式
         this.editMode = false;
+    }
+
+    /**
+     * 添加旅客（进入旅社范围）
+     * 
+     * @param guest 旅客实体
+     * @param team 队伍数据
+     * @param level 世界
+     */
+    public void addGuest(GuestEntity guest, TeamData team, ServerLevel level) {
+        if (!guestIds.contains(guest.getUUID())) {
+            addGuest(guest.getUUID());
+            
+            // 设置状态为等待
+            GuestData data = guest.getGuestData();
+            data.setWaiting(true, level.getGameTime());
+            
+            // 添加待办事项
+            String guestName = guest.getCustomName() != null ? guest.getCustomName().getString() : "Guest";
+            String todoText = Component.translatable("todo.otherworldinn.guest_waiting", guestName).getString();
+            addTodo(level, team, todoText);
+        }
     }
 
     public void removeGuest(UUID uuid) {
@@ -388,16 +427,156 @@ public class InnData {
             guest.updatePreferenceScore(room);
             this.addGuest(guestId);
             
-            // 让实体寻路到房间
+            // 让实体寻路到房间中心
             Entity entity = level.getEntity(guestId);
             if (entity instanceof GuestEntity guestEntity) {
-                guestEntity.setNavigationTarget(room.getMinPos());
+                // 计算房间中心点
+                BlockPos min = room.getMinPos();
+                BlockPos max = room.getMaxPos();
+                double centerX = (min.getX() + max.getX()) / 2.0;
+                double bottomY = min.getY();
+                double centerZ = (min.getZ() + max.getZ()) / 2.0;
+                BlockPos centerPos = BlockPos.containing(centerX, bottomY, centerZ);
+                
+                // 确保目标位置不是固体方块 (如果是地板层，往上移一格)
+                if (level.getBlockState(centerPos).isSolid()) {
+                    centerPos = centerPos.above();
+                }
+                
+                guestEntity.setNavigationTarget(centerPos);
+                
+                // 移除剪贴板 TODO
+                String guestName = entity.getCustomName() != null ? entity.getCustomName().getString() : "Guest";
+                // 使用与生成时相同的 Key
+                String todoText = Component.translatable("todo.otherworldinn.guest_waiting", guestName).getString();
+                
+                // 获取当前队伍并移除 TODO
+                TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
+                if (team != null) {
+                    removeTodo(level, team, todoText);
+                    // 触发客户端同步，更新 Tooltip
+                    TeamManager.getInstance().syncTeam(team, level.getServer());
+                }
             }
             
             return true;
         }
         
         return false;
+    }
+
+    // --- 旅客生成 ---
+
+    /**
+     * 尝试生成新旅客
+     *
+     * @param level 服务器等级
+     */
+    private void trySpawnGuest(ServerLevel level) {
+        long currentTime = level.getGameTime();
+
+        // 1. 检查是否到达生成时间
+        if (currentTime < nextGuestSpawnTime) {
+            return;
+        }
+
+        // 2. 检查旅社是否开业
+        if (!this.open) {
+            return;
+        }
+
+        // 3. 检查是否有可用床位
+        if (!hasAvailableBed()) {
+            return;
+        }
+
+        // 4. 检查当前世界中等待入住的旅客数量
+        if (getWaitingGuestCount(level) >= 3) {
+            // 如果等待人数过多，推迟生成
+            scheduleNextSpawn(level.getRandom(), currentTime);
+            return;
+        }
+
+        // 5. 生成旅客
+        spawnGuest(level);
+        
+        // 6. 安排下一次生成
+        scheduleNextSpawn(level.getRandom(), currentTime);
+    }
+
+    /**
+     * 检查是否有可用床位
+     */
+    private boolean hasAvailableBed() {
+        for (RoomData room : rooms.values()) {
+            if (room.getCurrentGuests().size() < room.getMaxGuests()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 获取当前世界中正在等待入住的旅客数量
+     * <p>
+     * 统计所有处于 IDLE 或 WAITING 状态的旅客实体。
+     * </p>
+     */
+    private int getWaitingGuestCount(ServerLevel level) {
+        int count = 0;
+        // 遍历所有加载的实体，筛选出 GuestEntity
+        for (Entity entity : level.getAllEntities()) {
+            if (entity instanceof GuestEntity guest) {
+                GuestData.GuestState state = guest.getGuestData().getState();
+                if (state == GuestData.GuestState.IDLE || state == GuestData.GuestState.WAITING) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
+     * 生成旅客实体
+     */
+    private void spawnGuest(ServerLevel level) {
+        // 随机坐标范围：(20, 71, 2) ~ (5, 71, -2)
+        // X: 5 ~ 20
+        // Z: -2 ~ 2
+        // Y: 71
+        double x = 5 + level.random.nextDouble() * (20 - 5);
+        double z = -2 + level.random.nextDouble() * (2 - (-2));
+        double y = 71;
+
+        // 检查该位置所在的区块是否加载
+        if (!level.isLoaded(BlockPos.containing(x, y, z))) {
+            return;
+        }
+
+        GuestEntity guest = ModEntities.ORDINARY_GUEST.get().create(level);
+        if (guest != null) {
+            guest.moveTo(x, y, z, level.random.nextFloat() * 360F, 0.0F);
+            guest.finalizeSpawn(level, level.getCurrentDifficultyAt(guest.blockPosition()), MobSpawnType.EVENT, null);
+            guest.setNoAi(false);
+            guest.setPersistenceRequired();
+            level.addFreshEntity(guest);
+        }
+    }
+    
+    // 修改 scheduleNextSpawn 为返回 delay
+    private int calculateNextSpawnDelay(RandomSource random) {
+        double gaussian = random.nextGaussian();
+        int delay = (int) (1900 + gaussian * 566);
+        return Math.max(200, Math.min(3600, delay));
+    }
+    
+    /**
+     * 辅助方法：安排下一次生成
+     * @param random 随机源
+     * @param currentTime 当前游戏时间
+     */
+    private void scheduleNextSpawn(RandomSource random, long currentTime) {
+        this.nextGuestSpawnTime = currentTime + calculateNextSpawnDelay(random);
     }
 
     // --- 辅助方法 ---
@@ -422,10 +601,10 @@ public class InnData {
                 // 确保我们设置的是床头，或者两部分都设置
                 // 实际上只需要设置一部分，因为床通常是联动的，但为了保险起见，或者只设置床头
                 // 这里我们简单地找到第一张床并设置其为脏乱
-                if (state.hasProperty(BedBlockExtension.MESSY)) {
+                if (state.hasProperty(ModBlockProperties.MESSY)) {
                     // 检查是否已经是脏乱的，我们只弄乱干净的床
-                    if (!state.getValue(BedBlockExtension.MESSY)) {
-                        level.setBlock(pos, state.setValue(BedBlockExtension.MESSY, true), 3);
+                    if (!state.getValue(ModBlockProperties.MESSY)) {
+                        level.setBlock(pos, state.setValue(ModBlockProperties.MESSY, true), 3);
                         
                         // 如果是床头，还需要处理床脚，反之亦然。
                         BedPart part = state.getValue(BedBlock.PART);
@@ -436,10 +615,10 @@ public class InnData {
                         BlockState otherState = level.getBlockState(otherPos);
                         // 检查另一半是否也是床且也是正确的部分
                         if (otherState.getBlock() instanceof BedBlock && 
-                            otherState.hasProperty(BedBlockExtension.MESSY)) {
+                            otherState.hasProperty(ModBlockProperties.MESSY)) {
                             // 简单的双重检查，确保是同一张床
                             if (otherState.getValue(BedBlock.PART) != part) {
-                                level.setBlock(otherPos, otherState.setValue(BedBlockExtension.MESSY, true), 3);
+                                level.setBlock(otherPos, otherState.setValue(ModBlockProperties.MESSY, true), 3);
                             }
                         }
                         
@@ -454,6 +633,126 @@ public class InnData {
 
 
     /**
+     * 每 tick 更新
+     * <p>
+     * 检查等待超时的旅客。
+     * </p>
+     * 
+     * @param level 世界
+     * @param team 队伍数据
+     */
+    public void tick(ServerLevel level, TeamData team) {
+        long currentTime = level.getGameTime();
+        
+        // 尝试生成旅客 (每 20 tick 检查一次，减少开销)
+        if (currentTime % 20 == 0) {
+            trySpawnGuest(level);
+        }
+        
+        // 每 5 tick 检查一次
+        if (currentTime % 5 != 0) return;
+        
+        // 遍历旅客检查状态
+
+        List<UUID> guestsToDepart = new ArrayList<>();
+        List<UUID> guestsToCheckOut = new ArrayList<>();
+        
+        for (UUID guestId : guestIds) {
+            Entity entity = level.getEntity(guestId);
+            if (entity instanceof GuestEntity guestEntity) {
+                GuestData guestData = guestEntity.getGuestData();
+                if (guestData.getState() == GuestData.GuestState.WAITING) {
+                    // 检查是否超时 (5分钟 = 6000 ticks)
+                    if (currentTime - guestData.getWaitingSince() > 6000 || !this.open) {
+                        guestsToDepart.add(guestId);
+                    }
+                } else if (guestData.getState() == GuestData.GuestState.CHECKED_IN) {
+                    // 检查是否到达退房时间
+                    if (currentTime >= guestData.getCheckoutTime()) {
+                        guestsToCheckOut.add(guestId);
+                    }
+                }
+            }
+        }
+        
+        // 处理离开
+        for (UUID guestId : guestsToDepart) {
+            handleGuestDeparture(guestId, true, level, team);
+            // handleGuestDeparture 内部不调用 removeGuest，所以这里手动移除
+            removeGuest(guestId); 
+        }
+        
+        // 处理退房
+        for (UUID guestId : guestsToCheckOut) {
+            checkOut(guestId, level, true);
+            // checkOut 内部会调用 removeGuest
+        }
+    }
+
+    /**
+     * 处理旅客离开
+     * 
+     * @param guestId 旅客 ID
+     * @param isAngry 是否生气离开
+     * @param level 世界
+     * @param team 队伍数据
+     */
+    public void handleGuestDeparture(UUID guestId, boolean isAngry, ServerLevel level, TeamData team) {
+        Entity entity = level.getEntity(guestId);
+        
+        // 1. 获取并移除待办事项 (如果是等待中离开)
+        if (entity instanceof GuestEntity guestEntity) {
+            GuestData guestData = guestEntity.getGuestData();
+            if (guestData.getState() == GuestData.GuestState.WAITING) {
+                String guestName = entity.getCustomName() != null ? entity.getCustomName().getString() : "Guest";
+                String todoText = Component.translatable("todo.otherworldinn.guest_waiting", guestName).getString();
+                removeTodo(level, team, todoText);
+            }
+        }
+        
+        if (isAngry) {
+            // 生气离开逻辑
+            // 1. 扣除声望 (2-6点)
+            int reputationLoss = 2 + level.random.nextInt(5);
+            this.addReputation(-reputationLoss);
+            
+            // 2. 播放特效
+            if (entity != null) {
+                // 生气粒子
+                level.sendParticles(net.minecraft.core.particles.ParticleTypes.ANGRY_VILLAGER, 
+                        entity.getX(), entity.getY() + entity.getEyeHeight() + 0.5, entity.getZ(), 
+                        5, 0.5, 0.5, 0.5, 0.02);
+                
+                // 生气音效
+                level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), 
+                        net.minecraft.sounds.SoundEvents.VILLAGER_NO, SoundSource.NEUTRAL, 1.0f, 1.0f);
+            }
+        } else {
+            // 正常退房逻辑 (checkOut 中已有部分逻辑，这里作为统一入口可能更好，但 checkOut 包含更多结算逻辑)
+            // 目前 checkOut 处理正常退房，handleGuestDeparture 处理异常离开
+        }
+
+        // 3. 通用离开逻辑 (移除房间占用、寻路离开)
+        // 复用 checkOut 的后半部分逻辑，但 checkOut 需要 RoomData
+        // 这里如果是等待状态离开，可能没有 RoomData
+        
+        if (entity instanceof GuestEntity guestEntity) {
+            guestEntity.setNavigationTarget(new BlockPos(10, 71, 0));
+            EntityUtils.scheduleDisappear(guestEntity);
+            
+            // 更新状态
+            guestEntity.getGuestData().setCheckedOut(true);
+        }
+        
+        // 从列表中移除 (调用者处理，或者在这里处理)
+        // 注意：tick 中遍历时移除需要迭代器，这里如果是 tick 调用，则由 tick 移除
+        // 如果是外部调用，需要确保从 guestIds 移除
+        if (!isAngry) { // 仅非 tick 调用的情况
+             removeGuest(guestId);
+        }
+    }
+
+    /**
      * 旅客退房
      * <p>
      * 将旅客从当前房间移除，并从旅社旅客名单中删除。
@@ -466,113 +765,149 @@ public class InnData {
      * @param isNormalCheckout 是否为正常退房（如果为 false，则不计算房费）
      */
     public void checkOut(UUID guestId, ServerLevel level, boolean isNormalCheckout) {
-        // 尝试获取实体（如果已加载）
         Entity entity = level.getEntity(guestId);
         GuestData guest = null;
-        
         if (entity instanceof GuestEntity guestEntity) {
             guest = guestEntity.getGuestData();
-            
-            // 触发奖励掉落
             if (guest != null) {
                 guest.dropRewards(level, entity.blockPosition());
             }
         }
-        
-        // 1. 清理房间记录
-        // 如果能获取到 GuestData，直接定位房间清理
-        if (guest != null) {
-            int currentRoomId = guest.getRoomId();
-            if (currentRoomId != -1) {
-                // 将一张干净的床弄乱
-                if (setRoomBedMessy(currentRoomId, level)) {
-                    // 如果成功弄乱了床，说明可用床位减少了一个
-                    // 直接减少最大可入住人数，避免全量重新计算
-                    RoomData room = rooms.get(currentRoomId);
-                    if (room != null) {
-                        room.setMaxGuests(Math.max(0, room.getMaxGuests() - 1));
-                        
-                        // 计算房费并添加到队伍金币 (仅在正常退房时执行)
-                        if (isNormalCheckout) {
-                            TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
-                            if (team != null) {
-                                int price = room.getBedPrice(this.rating);
-                                team.addCoins(price, level.getServer());
-                                TeamManager.getInstance().syncTeam(team, level.getServer());
-                            }
-                            
-                            // 计算并增加声望
-                            guest.updatePreferenceScore(room);
-                            int score = guest.getPreferenceScore();
-                            // 最低提升 2，最高提升 10 (score 本身是 0-10)
-                            int reputationGain = Math.max(2, Math.min(10, score));
-                            this.addReputation(reputationGain);
-                        } else {
-                            // 即使非正常退房，如果修改了 maxGuests，仍需同步队伍数据
-                            TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
-                            if (team != null) {
-                                TeamManager.getInstance().syncTeam(team, level.getServer());
-                            }
-                        }
-                    }
-                }
-                
-                RoomData room = rooms.get(currentRoomId);
-                if (room != null) {
-                    room.removeGuest(guestId);
-                }
-                guest.setRoomId(-1);
-                // 标记为已退房
-                guest.setCheckedOut(true);
-            }
-        } else {
-            // 如果无法获取 GuestData，也尝试清理
+        RoomData targetRoom = null;
+        if (guest != null && guest.getRoomId() != -1) {
+            targetRoom = rooms.get(guest.getRoomId());
+        }
+        if (targetRoom == null) {
             for (RoomData room : rooms.values()) {
                 if (room.hasGuest(guestId)) {
-                    // 将一张干净的床弄乱
-                    if (setRoomBedMessy(room.getId(), level)) {
-                        room.setMaxGuests(Math.max(0, room.getMaxGuests() - 1));
-                        
-                        // 计算房费并添加到队伍金币 (仅在正常退房时执行)
-                        if (isNormalCheckout) {
-                            TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
-                            if (team != null) {
-                                int price = room.getBedPrice(this.rating);
-                                team.addCoins(price, level.getServer());
-                                TeamManager.getInstance().syncTeam(team, level.getServer());
-                            }
-                        } else {
-                            // 即使非正常退房，如果修改了 maxGuests，仍需同步队伍数据
-                            TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
-                            if (team != null) {
-                                TeamManager.getInstance().syncTeam(team, level.getServer());
-                            }
-                        }
-                    }
-                    
-                    room.removeGuest(guestId);
-                    // 找到并移除后即可停止遍历，因为一个旅客只能住一个房间
+                    targetRoom = room;
                     break;
                 }
             }
         }
-
-        // 2. 从旅社旅客名单中彻底移除
+        TeamData team = null;
+        if (targetRoom != null) {
+            boolean bedMessy = setRoomBedMessy(targetRoom.getId(), level);
+            if (bedMessy) {
+                targetRoom.setMaxGuests(Math.max(0, targetRoom.getMaxGuests() - 1));
+            }
+            targetRoom.removeGuest(guestId);
+            team = TeamManager.getInstance().getTeamAt(targetRoom.getMinPos(), level.getServer());
+            if (team == null) {
+                TeamSavedData data = TeamManager.getInstance().getData(level.getServer());
+                if (data != null) {
+                    for (TeamData candidate : data.getTeams().values()) {
+                        RoomData candidateRoom = candidate.getInnData().getRoom(targetRoom.getId());
+                        if (candidateRoom != null && candidateRoom.getUuid().equals(targetRoom.getUuid())) {
+                            team = candidate;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (isNormalCheckout && team != null) {
+                int price = targetRoom.getBedPrice(this.rating);
+                team.addCoins(price, level.getServer());
+                if (bedMessy) {
+                    String todoText = Component.translatable("todo.otherworldinn.room_cleaning", targetRoom.getId()).getString();
+                    this.addTodo(level, team, todoText);
+                }
+            }
+            if (isNormalCheckout && guest != null) {
+                guest.updatePreferenceScore(targetRoom);
+                int score = guest.getPreferenceScore();
+                int reputationGain = Math.max(2, Math.min(10, score));
+                this.addReputation(reputationGain);
+            }
+        }
+        if (guest != null) {
+            guest.setRoomId(-1);
+            guest.setCheckedOut(true);
+        }
         removeGuest(guestId);
-        
-        // 3. 安排实体寻路到指定位置并自行消失
+        if (team != null) {
+            TeamManager.getInstance().syncTeam(team, level.getServer());
+        }
         if (entity instanceof GuestEntity guestEntity) {
-            // 设置目标位置 (10, 71, 0)
             guestEntity.setNavigationTarget(new BlockPos(10, 71, 0));
         }
-        
-        // 4. 安排实体消失 (如果实体存在)
         if (entity != null) {
             EntityUtils.scheduleDisappear(entity);
         }
     }
 
-    // --- NBT 序列化 ---
+    /**
+     * 添加待办事项
+     * <p>
+     * 同时添加到缓存列表和实际剪贴板中。
+     * </p>
+     * 
+     * @param level 世界
+     * @param team 队伍数据
+     * @param todoText 待办事项文本
+     * @return 是否成功添加到剪贴板（如果只添加到缓存也算处理成功，但返回 false 表示没有物理剪贴板更新）
+     */
+    public boolean addTodo(Level level, TeamData team, String todoText) {
+        // 1. 添加到缓存
+        if (!todoList.contains(todoText)) {
+            todoList.add(todoText);
+        }
+        
+        // 2. 尝试同步到剪贴板
+        boolean addedToClipboard = false;
+        for (TeamData.InnRegion region : team.getInnRegions()) {
+            AABB area = new AABB(region.minX(), -64, region.minZ(), region.maxX(), 320, region.maxZ());
+            if (ClipboardManager.addTodo(level, area, todoText)) {
+                addedToClipboard = true;
+            }
+        }
+        
+        // 3. 广播通知
+        if (addedToClipboard && level instanceof ServerLevel serverLevel) {
+            team.getMembers().forEach(uuid -> {
+                ServerPlayer player = serverLevel.getServer().getPlayerList().getPlayer(uuid);
+                if (player != null) {
+                    player.displayClientMessage(Component.translatable("message.otherworldinn.todo.new_task", todoText)
+                            .withStyle(style -> style.withColor(ModColors.INFO)), false);
+                    player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 1.0f, 1.0f);
+                }
+            });
+        }
+        
+        return addedToClipboard;
+    }
+
+    /**
+     * 移除待办事项
+     * 
+     * @param level 世界
+     * @param team 队伍数据
+     * @param todoText 待办事项文本
+     */
+    public void removeTodo(Level level, TeamData team, String todoText) {
+        // 1. 从缓存移除
+        todoList.remove(todoText);
+        
+        // 2. 从剪贴板移除
+        for (TeamData.InnRegion region : team.getInnRegions()) {
+            AABB area = new AABB(region.minX(), -64, region.minZ(), region.maxX(), 320, region.maxZ());
+            ClipboardManager.removeTodo(level, area, todoText);
+        }
+    }
+
+    /**
+     * 同步缓存的待办事项到指定区域的剪贴板
+     * <p>
+     * 通常在放置新的剪贴板时调用。
+     * </p>
+     */
+    public void syncTodosToClipboard(Level level, AABB area) {
+        if (todoList.isEmpty()) return;
+        
+        for (String todo : todoList) {
+            ClipboardManager.addTodo(level, area, todo);
+        }
+    }
 
     /**
      * 保存数据到 NBT
@@ -601,6 +936,15 @@ public class InnData {
         }
         tag.put("Rooms", roomsTag);
         
+        // 保存待办事项
+        ListTag todosTag = new ListTag();
+        for (String todo : todoList) {
+            todosTag.add(StringTag.valueOf(todo));
+        }
+        tag.put("TodoList", todosTag);
+        
+        tag.putLong("NextGuestSpawnTime", nextGuestSpawnTime);
+        
         return tag;
     }
 
@@ -625,6 +969,9 @@ public class InnData {
         if (tag.contains("EditMode")) {
             editMode = tag.getBoolean("EditMode");
         }
+        if (tag.contains("NextGuestSpawnTime")) {
+            nextGuestSpawnTime = tag.getLong("NextGuestSpawnTime");
+        }
 
         guestIds.clear();
         if (tag.contains("Guests")) {
@@ -644,6 +991,14 @@ public class InnData {
                     RoomData room = RoomData.load(roomTag);
                     rooms.put(room.getId(), room);
                 }
+            }
+        }
+        
+        todoList.clear();
+        if (tag.contains("TodoList")) {
+            ListTag todosTag = tag.getList("TodoList", Tag.TAG_STRING);
+            for (Tag t : todosTag) {
+                todoList.add(t.getAsString());
             }
         }
     }

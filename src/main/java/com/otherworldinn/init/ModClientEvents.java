@@ -8,7 +8,8 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import com.otherworldinn.client.renderer.GuestRenderer;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 /**
  * 模组客户端事件处理器
@@ -28,15 +29,16 @@ public class ModClientEvents {
                         if (entity == null) return 0.0F;
                         return entity.getOffhandItem() == stack ? 1.0F : 0.0F;
                     });
-
-            ItemProperties.register(ModItems.BED_SHEET.get(), 
-                    ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "messy"), 
-                    (stack, level, entity, seed) -> BedSheetItem.isMessy(stack) ? 1.0F : 0.0F);
         });
     }
 
     @SubscribeEvent
-    public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
+    public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModEntities.ORDINARY_GUEST.get(), GuestRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterKeyMappings(net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent event) {
         event.register(ModKeyBindings.TOGGLE_MAP_MODE);
     }
 }

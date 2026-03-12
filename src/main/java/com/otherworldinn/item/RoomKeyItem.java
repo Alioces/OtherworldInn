@@ -6,6 +6,7 @@ import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.RoomData;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.TeamSavedData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -63,8 +64,9 @@ public class RoomKeyItem extends Item {
             int roomId = roomIdOpt.get();
             GuestData guestData = guestEntity.getGuestData();
             
-            // 检查旅客是否已入住
-            if (guestData.getRoomId() != -1) {
+            // 检查旅客是否能入住
+            GuestData.GuestState state = guestData.getState();
+            if (guestData.getRoomId() != -1 && state != GuestData.GuestState.WAITING) {
                 player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.checkin_fail_guest_busy")
                         .withStyle(style -> style.withColor(ModColors.ERROR)), true);
                 return InteractionResult.FAIL;
@@ -78,7 +80,35 @@ public class RoomKeyItem extends Item {
             }
 
             TeamData team = TeamManager.getInstance().getTeamAt(interactionTarget.blockPosition(), serverPlayer.getServer());
+            
+            // 如果不在旅社范围内，且旅客处于等待状态，尝试在所有队伍中寻找匹配的房间
+            if (team == null && state == GuestData.GuestState.WAITING) {
+                TeamSavedData teamData = TeamManager.getInstance().getData(serverPlayer.getServer());
+                Optional<UUID> boundUuidOpt = getBoundRoomUUID(stack);
+                
+                if (teamData != null) {
+                    for (TeamData t : teamData.getTeams().values()) {
+                        RoomData potentialRoom = t.getInnData().getRoom(roomId);
+                        if (potentialRoom != null) {
+                            // 如果绑定了UUID，必须匹配
+                            if (boundUuidOpt.isPresent()) {
+                                if (boundUuidOpt.get().equals(potentialRoom.getUuid())) {
+                                    team = t;
+                                    break;
+                                }
+                            } else {
+                                // 如果没有UUID绑定（旧数据？），直接匹配ID（可能不准确，但在单人/少队伍情况下通常没问题）
+                                team = t;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             if (team == null) {
+                player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.checkin_fail_not_in_inn")
+                        .withStyle(style -> style.withColor(ModColors.ERROR)), true);
                 return InteractionResult.FAIL;
             }
 

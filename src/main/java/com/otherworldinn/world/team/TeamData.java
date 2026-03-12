@@ -34,6 +34,7 @@ import net.minecraft.sounds.SoundSource;
 public class TeamData {
     
     public record InnRegion(int minX, int minZ, int maxX, int maxZ) {
+
         public boolean contains(int x, int z) {
             return x >= minX && x <= maxX && z >= minZ && z <= maxZ;
         }

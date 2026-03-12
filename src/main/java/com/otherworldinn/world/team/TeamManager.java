@@ -273,6 +273,40 @@ public class TeamManager {
         return null;
     }
     
+    /**
+     * 获取最近的队伍
+     * <p>
+     * 查找距离指定坐标最近的队伍旅社（基于其第一个旅社区域的中心点）。
+     * </p>
+     * 
+     * @param pos 参考坐标
+     * @param server 服务器实例
+     * @return 最近的队伍数据或 null
+     */
+    public TeamData getNearestInn(BlockPos pos, MinecraftServer server) {
+        TeamSavedData data = getData(server);
+        TeamData nearestTeam = null;
+        double minDistanceSq = Double.MAX_VALUE;
+
+        for (TeamData team : data.getTeams().values()) {
+            if (team.getInnRegions().isEmpty()) continue;
+            
+            // 使用第一个区域的中心作为参考点
+            TeamData.InnRegion region = team.getInnRegions().get(0);
+            double centerX = (region.minX() + region.maxX()) / 2.0;
+            double centerZ = (region.minZ() + region.maxZ()) / 2.0;
+            
+            double distSq = (pos.getX() - centerX) * (pos.getX() - centerX) + (pos.getZ() - centerZ) * (pos.getZ() - centerZ);
+            
+            if (distSq < minDistanceSq) {
+                minDistanceSq = distSq;
+                nearestTeam = team;
+            }
+        }
+        
+        return nearestTeam;
+    }
+
     // --- 辅助修改方法 ---
     
     public void renameTeam(TeamData team, String newName, MinecraftServer server) {

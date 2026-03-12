@@ -6,6 +6,7 @@ import com.otherworldinn.foundation.ClientConfig;
 import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModCreativeModeTabs;
 import com.otherworldinn.init.ModDimensions;
+import com.otherworldinn.init.ModEntities;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.init.ModSounds;
 import net.minecraft.core.registries.Registries;
@@ -39,6 +40,7 @@ public class OtherworldInn {
         // 注册物品和方块
         ModBlocks.BLOCKS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
+        ModEntities.ENTITY_TYPES.register(modEventBus);
         ModCreativeModeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         ModDimensions.register(modEventBus);
         ModSounds.SOUND_EVENTS.register(modEventBus);

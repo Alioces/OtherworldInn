@@ -5,6 +5,7 @@ import com.otherworldinn.foundation.ItemDataGenInfo;
 import com.otherworldinn.foundation.ItemReg;
 import com.otherworldinn.item.BedSheetItem;
 import com.otherworldinn.item.LandDeedItem;
+import com.otherworldinn.item.MessyBedSheetItem;
 import com.otherworldinn.item.RecallScrollItem;
 import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.item.RoomRegisterItem;
@@ -56,9 +57,14 @@ public class ModItems {
     public static final ItemReg<BedSheetItem> BED_SHEET_REG = new ItemReg<>("bed_sheet", BedSheetItem::new)
             .stacksTo(16)
             .durability(64)
-            .noModel()
             .lang("Bed Sheet", "床单");
     public static final DeferredItem<BedSheetItem> BED_SHEET = BED_SHEET_REG.register();
+
+    public static final ItemReg<MessyBedSheetItem> MESSY_BED_SHEET_REG = new ItemReg<>("messy_bed_sheet", MessyBedSheetItem::new)
+            .stacksTo(16)
+            .durability(64)
+            .lang("Messy Bed Sheet", "脏乱的床单");
+    public static final DeferredItem<MessyBedSheetItem> MESSY_BED_SHEET = MESSY_BED_SHEET_REG.register();
 
     public static final ItemReg<LandDeedItem> LAND_DEED_REG = new ItemReg<>("land_deed", LandDeedItem::new)
             .rarity(Rarity.RARE)

@@ -4,6 +4,7 @@ import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.BlockDataGenInfo;
 import com.otherworldinn.foundation.ItemDataGenInfo;
 import com.otherworldinn.init.ModBlocks;
+import com.otherworldinn.init.ModEntities;
 import com.otherworldinn.init.ModItems;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
@@ -112,6 +113,10 @@ public class ModLanguageProvider extends LanguageProvider {
             add("message.otherworldinn.room_register.overlay.delete_room", "删除房间");
             add("message.otherworldinn.room_register.overlay.add_room", "添加房间");
             
+            // 待办事项
+            add("todo.otherworldinn.room_cleaning", "%s 号房间需要打扫");
+            add("todo.otherworldinn.guest_waiting", "%s 正在等待办理入住");
+
             // 生物群系
             add("biome.otherworldinn.town", "城镇");
 
@@ -152,10 +157,64 @@ public class ModLanguageProvider extends LanguageProvider {
             add("message.otherworldinn.room_key.checkin_success", "旅客成功入住到 %d 号房间！");
             add("message.otherworldinn.room_key.checkin_fail_guest_busy", "该旅客已经住在其他房间了");
             add("message.otherworldinn.room_key.checkin_fail_checked_out", "该旅客已经退房，准备离开了");
+            add("message.otherworldinn.room_key.checkin_fail_not_in_inn", "错误：旅客不在旅社范围内！");
+            add("message.otherworldinn.guest.checkout_payment", "旅客已支付房费：§f\uE001§r %d");
+
+            // Todo
+            add("message.otherworldinn.todo.new_task", "新待办事项: %s");
             add("message.otherworldinn.room_key.checkin_fail_no_room", "房间不存在或已被拆除");
             add("message.otherworldinn.room_key.checkin_fail_id_mismatch", "房间信息不匹配 请重新绑定钥匙");
             add("message.otherworldinn.room_key.checkin_fail_full", "这间房似乎满了...");
             add("message.otherworldinn.room_key.overlay.checkin", "安排入住 (消耗钥匙)");
+            
+            // 旅客姓名
+            add("guest.name.format", "%s·%s");
+            // First Names (20)
+            add("guest.name.first.1", "亚瑟");
+            add("guest.name.first.2", "贝阿特丽丝");
+            add("guest.name.first.3", "凯斯宾");
+            add("guest.name.first.4", "多里安");
+            add("guest.name.first.5", "埃莉诺");
+            add("guest.name.first.6", "菲利克斯");
+            add("guest.name.first.7", "吉迪恩");
+            add("guest.name.first.8", "海泽尔");
+            add("guest.name.first.9", "艾瑞丝");
+            add("guest.name.first.10", "朱利安");
+            add("guest.name.first.11", "凯尔");
+            add("guest.name.first.12", "莉珊德拉");
+            add("guest.name.first.13", "马格努斯");
+            add("guest.name.first.14", "诺拉");
+            add("guest.name.first.15", "奥赖恩");
+            add("guest.name.first.16", "帕西瓦尔");
+            add("guest.name.first.17", "奎因");
+            add("guest.name.first.18", "罗伊纳");
+            add("guest.name.first.19", "塞拉斯");
+            add("guest.name.first.20", "塔莉亚");
+            // Last Names (20)
+            add("guest.name.last.1", "阿什福德");
+            add("guest.name.last.2", "布莱克伍德");
+            add("guest.name.last.3", "克劳利");
+            add("guest.name.last.4", "达文波特");
+            add("guest.name.last.5", "埃弗哈特");
+            add("guest.name.last.6", "弗罗斯特");
+            add("guest.name.last.7", "格林");
+            add("guest.name.last.8", "霍桑");
+            add("guest.name.last.9", "铁木");
+            add("guest.name.last.10", "金克斯");
+            add("guest.name.last.11", "奈特");
+            add("guest.name.last.12", "洛夫莱斯");
+            add("guest.name.last.13", "穆恩");
+            add("guest.name.last.14", "夜影");
+            add("guest.name.last.15", "橡心");
+            add("guest.name.last.16", "潘德加斯特");
+            add("guest.name.last.17", "雷文斯克罗夫特");
+            add("guest.name.last.18", "斯托姆");
+            add("guest.name.last.19", "索恩");
+            add("guest.name.last.20", "温特");
+            
+            // 实体
+            add(ModEntities.ORDINARY_GUEST.get(), "普通旅客");
+
         } else {
             add("itemGroup.otherworldinn", "Otherworld Inn");
             add("key.categories.otherworldinn", "Otherworld Inn");
@@ -198,6 +257,54 @@ public class ModLanguageProvider extends LanguageProvider {
             add("command.otherworldinn.team.coins.remove_fail", "Failed to remove! Not enough balance (Current: §f\uE001§r %d)");
             add("command.otherworldinn.team.coins.get", "Team %s current balance: §f\uE001§r %d");
             
+            // Guest Names
+            add("guest.name.format", "%s %s");
+            // First Names (20)
+            add("guest.name.first.1", "Arthur");
+            add("guest.name.first.2", "Beatrice");
+            add("guest.name.first.3", "Caspian");
+            add("guest.name.first.4", "Dorian");
+            add("guest.name.first.5", "Eleanor");
+            add("guest.name.first.6", "Felix");
+            add("guest.name.first.7", "Gideon");
+            add("guest.name.first.8", "Hazel");
+            add("guest.name.first.9", "Iris");
+            add("guest.name.first.10", "Julian");
+            add("guest.name.first.11", "Kael");
+            add("guest.name.first.12", "Lysandra");
+            add("guest.name.first.13", "Magnus");
+            add("guest.name.first.14", "Nora");
+            add("guest.name.first.15", "Orion");
+            add("guest.name.first.16", "Percival");
+            add("guest.name.first.17", "Quinn");
+            add("guest.name.first.18", "Rowena");
+            add("guest.name.first.19", "Silas");
+            add("guest.name.first.20", "Thalia");
+            // Last Names (20)
+            add("guest.name.last.1", "Ashford");
+            add("guest.name.last.2", "Blackwood");
+            add("guest.name.last.3", "Crowley");
+            add("guest.name.last.4", "Davenport");
+            add("guest.name.last.5", "Everhart");
+            add("guest.name.last.6", "Frost");
+            add("guest.name.last.7", "Grimm");
+            add("guest.name.last.8", "Hawthorne");
+            add("guest.name.last.9", "Ironwood");
+            add("guest.name.last.10", "Jinx");
+            add("guest.name.last.11", "Knight");
+            add("guest.name.last.12", "Lovelace");
+            add("guest.name.last.13", "Moon");
+            add("guest.name.last.14", "Nightshade");
+            add("guest.name.last.15", "Oakheart");
+            add("guest.name.last.16", "Pendergast");
+            add("guest.name.last.17", "Ravenscroft");
+            add("guest.name.last.18", "Storm");
+            add("guest.name.last.19", "Thorne");
+            add("guest.name.last.20", "Winter");
+            
+            // Entities
+            add(ModEntities.ORDINARY_GUEST.get(), "Ordinary Guest");
+
             // Admin Commands
             add("command.otherworldinn.admin.reset_dimensions.start", "§c[Admin] Triggering forced dimension reset...");
             
@@ -237,6 +344,10 @@ public class ModLanguageProvider extends LanguageProvider {
             add("message.otherworldinn.room_register.overlay.delete_room", "Delete Room");
             add("message.otherworldinn.room_register.overlay.add_room", "Add Room");
             
+            // Todos
+            add("todo.otherworldinn.room_cleaning", "Room %s needs cleaning");
+            add("todo.otherworldinn.guest_waiting", "%s is waiting for check-in");
+
             // Biomes
             add("biome.otherworldinn.town", "Town");
 
@@ -277,6 +388,11 @@ public class ModLanguageProvider extends LanguageProvider {
             add("message.otherworldinn.room_key.checkin_success", "Guest checked into room %d!");
             add("message.otherworldinn.room_key.checkin_fail_guest_busy", "Guest is already in a room!");
             add("message.otherworldinn.room_key.checkin_fail_checked_out", "Guest has already checked out!");
+            add("message.otherworldinn.room_key.checkin_fail_not_in_inn", "Error: Guest is not within any Inn area!");
+            add("message.otherworldinn.guest.checkout_payment", "Guest paid room fee: §f\uE001§r %d");
+            
+            // Todo
+            add("message.otherworldinn.todo.new_task", "New Task: %s");
             add("message.otherworldinn.room_key.checkin_fail_no_room", "Room does not exist!");
             add("message.otherworldinn.room_key.checkin_fail_id_mismatch", "Room mismatch! Please re-bind the key.");
             add("message.otherworldinn.room_key.checkin_fail_full", "Room is full!");

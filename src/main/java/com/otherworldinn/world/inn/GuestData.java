@@ -28,13 +28,61 @@ import java.util.UUID;
 public class GuestData {
     private final UUID uuid;
     private long checkoutTime; // 预计退房时间 (GameTime)
-    private int roomId = -1; // 居住的房间ID (-1 表示无房间)
-    private boolean checkedOut = false; // 是否已退房
+    // 旅客状态
+    public enum GuestState {
+        IDLE,       // 空闲
+        WAITING,    // 等待入住
+        CHECKED_IN, // 已入住
+        CHECKED_OUT // 已退房
+    }
+
+    private GuestState state = GuestState.IDLE;
+    private long waitingSince = 0; // 开始等待的时间 (GameTime)
 
     // 房间属性偏好 (区间)
     private IntRange comfortPreference = new IntRange(0, 100);
     private IntRange lightPreference = new IntRange(0, 100);
     private IntRange humidityPreference = new IntRange(0, 100);
+
+    // 房间 ID
+    private int roomId = -1;
+
+    public void setRoomId(int roomId) {
+        this.roomId = roomId;
+        if (roomId != -1) {
+            this.state = GuestState.CHECKED_IN;
+            this.waitingSince = 0;
+        } else if (this.state == GuestState.CHECKED_IN) {
+            this.state = GuestState.IDLE;
+        }
+    }
+
+    public void setCheckedOut(boolean checkedOut) {
+        if (checkedOut) {
+            this.state = GuestState.CHECKED_OUT;
+            this.roomId = -1;
+        } else if (this.state == GuestState.CHECKED_OUT) {
+            this.state = GuestState.IDLE;
+        }
+    }
+    
+    public boolean isCheckedOut() {
+        return this.state == GuestState.CHECKED_OUT;
+    }
+
+    public void setWaiting(boolean waiting, long currentTime) {
+        if (waiting) {
+            if (this.state != GuestState.WAITING) {
+                this.state = GuestState.WAITING;
+                this.waitingSince = currentTime;
+            }
+        } else {
+            if (this.state == GuestState.WAITING) {
+                this.state = GuestState.IDLE;
+                this.waitingSince = 0;
+            }
+        }
+    }
 
     // 隐式偏好分数 (0-10)
     @Setter(AccessLevel.NONE)
@@ -194,12 +242,13 @@ public class GuestData {
     public CompoundTag save(CompoundTag tag) {
         tag.putUUID("UUID", uuid);
         tag.putLong("CheckoutTime", checkoutTime);
-        tag.putInt("RoomId", roomId);
-        tag.putBoolean("CheckedOut", checkedOut);
+        tag.putInt("RoomID", roomId);
+        tag.putInt("State", state.ordinal());
+        tag.putLong("WaitingSince", waitingSince);
         
-        tag.put("ComfortPref", comfortPreference.save());
-        tag.put("LightPref", lightPreference.save());
-        tag.put("HumidityPref", humidityPreference.save());
+        tag.put("Comfort", comfortPreference.save());
+        tag.put("Light", lightPreference.save());
+        tag.put("Humidity", humidityPreference.save());
         tag.putInt("PreferenceScore", preferenceScore);
 
         ListTag rewardsTag = new ListTag();
@@ -207,7 +256,7 @@ public class GuestData {
             rewardsTag.add(reward.save());
         }
         tag.put("Rewards", rewardsTag);
-        
+
         return tag;
     }
 
@@ -220,23 +269,41 @@ public class GuestData {
     public static GuestData load(CompoundTag tag) {
         UUID uuid = tag.getUUID("UUID");
         long checkoutTime = tag.getLong("CheckoutTime");
-        
         GuestData guest = new GuestData(uuid, checkoutTime);
-        if (tag.contains("RoomId")) {
-            guest.setRoomId(tag.getInt("RoomId"));
-        }
-        if (tag.contains("CheckedOut")) {
-            guest.setCheckedOut(tag.getBoolean("CheckedOut"));
+
+        if (tag.contains("RoomID")) {
+            guest.roomId = tag.getInt("RoomID");
         }
         
-        if (tag.contains("ComfortPref")) {
-            guest.comfortPreference = IntRange.load(tag.getCompound("ComfortPref"));
+        if (tag.contains("State")) {
+            int stateOrdinal = tag.getInt("State");
+            if (stateOrdinal >= 0 && stateOrdinal < GuestState.values().length) {
+                guest.state = GuestState.values()[stateOrdinal];
+            }
+        } else if (tag.contains("CheckedOut")) {
+            // 兼容旧数据
+            boolean checkedOut = tag.getBoolean("CheckedOut");
+            if (checkedOut) {
+                guest.state = GuestState.CHECKED_OUT;
+            } else if (guest.roomId != -1) {
+                guest.state = GuestState.CHECKED_IN;
+            } else {
+                guest.state = GuestState.IDLE;
+            }
         }
-        if (tag.contains("LightPref")) {
-            guest.lightPreference = IntRange.load(tag.getCompound("LightPref"));
+        
+        if (tag.contains("WaitingSince")) {
+            guest.waitingSince = tag.getLong("WaitingSince");
         }
-        if (tag.contains("HumidityPref")) {
-            guest.humidityPreference = IntRange.load(tag.getCompound("HumidityPref"));
+
+        if (tag.contains("Comfort")) {
+            guest.comfortPreference = IntRange.load(tag.getCompound("Comfort"));
+        }
+        if (tag.contains("Light")) {
+            guest.lightPreference = IntRange.load(tag.getCompound("Light"));
+        }
+        if (tag.contains("Humidity")) {
+            guest.humidityPreference = IntRange.load(tag.getCompound("Humidity"));
         }
         if (tag.contains("PreferenceScore")) {
             guest.preferenceScore = tag.getInt("PreferenceScore");
@@ -250,7 +317,7 @@ public class GuestData {
                 }
             }
         }
-        
+
         return guest;
     }
     

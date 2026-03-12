@@ -1,0 +1,14 @@
+{
+  "type": "create:splashing",
+  "ingredients": [
+    {
+      "item": "otherworldinn:messy_bed_sheet"
+    }
+  ],
+  "results": [
+    {
+      "item": "otherworldinn:bed_sheet",
+      "count": 1
+    }
+  ]
+}
