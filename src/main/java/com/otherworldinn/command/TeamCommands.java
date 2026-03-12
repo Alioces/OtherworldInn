@@ -112,7 +112,7 @@ public class TeamCommands {
                 return 0;
             }
             
-            team.setCoins(amount);
+            team.setCoins(amount, context.getSource().getServer());
             manager.syncTeam(team, context.getSource().getServer());
             
             context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.coins.set", team.getName(), amount), true);
@@ -136,7 +136,7 @@ public class TeamCommands {
                 return 0;
             }
             
-            team.addCoins(amount);
+            team.addCoins(amount, context.getSource().getServer());
             manager.syncTeam(team, context.getSource().getServer());
             
             context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.coins.add", team.getName(), amount, team.getCoins()), true);
@@ -160,7 +160,7 @@ public class TeamCommands {
                 return 0;
             }
             
-            if (team.removeCoins(amount)) {
+            if (team.removeCoins(amount, context.getSource().getServer())) {
                 manager.syncTeam(team, context.getSource().getServer());
                 context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.coins.remove", team.getName(), amount, team.getCoins()), true);
                 return 1;

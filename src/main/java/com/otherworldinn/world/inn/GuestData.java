@@ -157,6 +157,13 @@ public class GuestData {
                      ItemStack stack = new ItemStack(itemOptional.get(), count);
                      ItemEntity itemEntity = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
                      itemEntity.setDeltaMovement(random.nextGaussian() * 0.05, random.nextGaussian() * 0.05 + 0.2, random.nextGaussian() * 0.05);
+                     
+                     // 设置特殊属性：发光、无重力、无敌、永不消失
+                     itemEntity.setGlowingTag(true);
+                     itemEntity.setNoGravity(true);
+                     itemEntity.setInvulnerable(true);
+                     itemEntity.setUnlimitedLifetime();
+                     
                      level.addFreshEntity(itemEntity);
                 }
             }

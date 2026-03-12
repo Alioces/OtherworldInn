@@ -7,6 +7,7 @@ import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModCreativeModeTabs;
 import com.otherworldinn.init.ModDimensions;
 import com.otherworldinn.init.ModItems;
+import com.otherworldinn.init.ModSounds;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -40,6 +41,7 @@ public class OtherworldInn {
         ModItems.ITEMS.register(modEventBus);
         ModCreativeModeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         ModDimensions.register(modEventBus);
+        ModSounds.SOUND_EVENTS.register(modEventBus);
 
         // 注册配置
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);

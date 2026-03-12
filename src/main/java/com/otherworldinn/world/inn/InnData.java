@@ -490,7 +490,7 @@ public class InnData {
                             TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
                             if (team != null) {
                                 int price = room.getBedPrice(this.rating);
-                                team.addCoins(price);
+                                team.addCoins(price, level.getServer());
                                 TeamManager.getInstance().syncTeam(team, level.getServer());
                             }
                         } else {
@@ -524,7 +524,7 @@ public class InnData {
                             TeamData team = TeamManager.getInstance().getTeamAt(room.getMinPos(), level.getServer());
                             if (team != null) {
                                 int price = room.getBedPrice(this.rating);
-                                team.addCoins(price);
+                                team.addCoins(price, level.getServer());
                                 TeamManager.getInstance().syncTeam(team, level.getServer());
                             }
                         } else {

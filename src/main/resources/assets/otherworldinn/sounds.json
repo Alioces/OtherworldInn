@@ -1,0 +1,8 @@
+{
+  "payment": {
+    "subtitle": "subtitles.otherworldinn.payment",
+    "sounds": [
+      "otherworldinn:payment"
+    ]
+  }
+}

@@ -17,9 +17,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import com.otherworldinn.init.ModSounds;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.map.MapPoint;
 import com.otherworldinn.world.map.TownDataProvider;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 
 /**
  * 队伍数据
@@ -140,21 +143,59 @@ public class TeamData {
     }
 
     public void setCoins(int coins) {
-        this.coins = Math.max(0, coins);
+        if (this.coins != coins) {
+            this.coins = Math.max(0, coins);
+        }
     }
 
+    public void setCoins(int coins, net.minecraft.server.MinecraftServer server) {
+        if (this.coins != coins) {
+            this.coins = Math.max(0, coins);
+            playPaymentSound(server);
+        }
+    }
+
+    public void addCoins(int amount, net.minecraft.server.MinecraftServer server) {
+        if (amount > 0) {
+            this.coins += amount;
+            playPaymentSound(server);
+        }
+    }
+    
+    // 保留旧方法以兼容，但不播放声音
     public void addCoins(int amount) {
         if (amount > 0) {
             this.coins += amount;
         }
     }
 
+    public boolean removeCoins(int amount, net.minecraft.server.MinecraftServer server) {
+        if (amount >= 0 && this.coins >= amount) {
+            this.coins -= amount;
+            playPaymentSound(server);
+            return true;
+        }
+        return false;
+    }
+    
+    // 保留旧方法以兼容
     public boolean removeCoins(int amount) {
         if (amount >= 0 && this.coins >= amount) {
             this.coins -= amount;
             return true;
         }
         return false;
+    }
+    
+    private void playPaymentSound(net.minecraft.server.MinecraftServer server) {
+        if (server == null) return;
+        
+        for (UUID memberId : members) {
+            ServerPlayer player = server.getPlayerList().getPlayer(memberId);
+            if (player != null) {
+                player.playNotifySound(ModSounds.PAYMENT.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
+            }
+        }
     }
 
     public void setUnlockedMapPoints(Set<ResourceLocation> points) {

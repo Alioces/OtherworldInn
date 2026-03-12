@@ -43,6 +43,9 @@ public class ModLanguageProvider extends LanguageProvider {
             add("map_point.otherworldinn.locked", "未解锁");
             add("map_point.otherworldinn.cant_teleport", "无法传送至");
             
+            // 字幕
+            add("subtitles.otherworldinn.payment", "金币：叮铃");
+            
             // 队伍命令
             add("command.otherworldinn.team.already_in_team", "你已经在一个队伍中了！");
             add("command.otherworldinn.team.created", "已创建队伍：%s");
@@ -164,6 +167,9 @@ public class ModLanguageProvider extends LanguageProvider {
             add("map_point.otherworldinn.town_gate", "Town Gate");
             add("map_point.otherworldinn.locked", "Locked");
             add("map_point.otherworldinn.cant_teleport", "Cannot teleport to");
+            
+            // Subtitles
+            add("subtitles.otherworldinn.payment", "Coins: Ding-ling");
             
             // 队伍命令 (Team Commands)
             add("command.otherworldinn.team.already_in_team", "You are already in a team!");
