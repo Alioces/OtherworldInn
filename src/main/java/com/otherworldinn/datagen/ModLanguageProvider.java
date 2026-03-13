@@ -168,6 +168,9 @@ public class ModLanguageProvider extends LanguageProvider {
                 .en("This item is usable only in the Town dimension.");
 
         // 物品提示
+        entry("tooltip.otherworldinn.sell_price")
+                .zh("售价: §f\uE001§r %s")
+                .en("Sell Price: §f\uE001§r %s");
         entry("item.otherworldinn.recall_scroll.fail_in_town")
                 .zh("回程卷轴无法在城镇中使用")
                 .en("Recall Scroll cannot be used in Town!");
@@ -250,14 +253,14 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // 家具属性
         entry("tooltip.otherworldinn.furniture.comfort")
-                .zh("§f\uE002§r 舒适度: %s")
-                .en("§f\uE002§r Comfort: %s");
+                .zh("§f\uE002§r舒适度: %s")
+                .en("§f\uE002§rComfort: %s");
         entry("tooltip.otherworldinn.furniture.light")
-                .zh("§f\uE003§r 光照度: %s")
-                .en("§f\uE003§r Light: %s");
+                .zh("§f\uE003§r光照度: %s")
+                .en("§f\uE003§rLight: %s");
         entry("tooltip.otherworldinn.furniture.humidity")
-                .zh("§f\uE004§r 湿度: %s")
-                .en("§f\uE004§r Humidity: %s");
+                .zh("§f\uE004§r湿度: %s")
+                .en("§f\uE004§rHumidity: %s");
 
         // 地契
         entry("message.otherworldinn.land_deed.pos1_set")
@@ -326,8 +329,8 @@ public class ModLanguageProvider extends LanguageProvider {
                 .zh("床位: %d/%d")
                 .en("Beds: %d/%d");
         entry("tooltip.otherworldinn.room_key.price")
-                .zh("床位价格: §f\uE001§r %d")
-                .en("Price: §f\uE001§r %d");
+                .zh("床位价格: §f\uE001§r%d")
+                .en("Price: §f\uE001§r%d");
 
         // 旅客入住
         entry("message.otherworldinn.room_key.checkin_success")
@@ -467,20 +470,17 @@ public class ModLanguageProvider extends LanguageProvider {
                 .zh("确定")
                 .en("Confirm");
         entry("gui.otherworldinn.store.purchase")
-                .zh("%s§f\uE001§r购买")
-                .en("%s§f\uE001§rBuy");
+                .zh("§f\uE001§r%s购买")
+                .en("§f\uE001§r%sBuy");
         entry("gui.otherworldinn.store.price")
-                .zh("价格: %s§f\uE001§r")
-                .en("Price: %s§f\uE001§r");
+                .zh("价格: §f\uE001§r%s")
+                .en("Price: §f\uE001§r%s");
         entry("gui.otherworldinn.store.stock")
                 .zh("库存: %s/%s")
                 .en("Stock: %s/%s");
         entry("gui.otherworldinn.store.stock.infinite")
-                .zh("库存: 无限")
-                .en("Stock: Infinite");
-        entry("gui.otherworldinn.store.balance")
-                .zh("余额: %s §f\uE001§r")
-                .en("Balance: %s §f\uE001§r");
+                .zh("库存: ∞")
+                .en("Stock: ∞");
     }
 
     private void addGeneratedTranslations() {

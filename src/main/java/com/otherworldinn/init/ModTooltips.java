@@ -7,6 +7,8 @@ import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
+
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
@@ -23,6 +25,8 @@ import net.neoforged.neoforge.registries.DeferredItem;
 
 import java.util.Map;
 
+import com.otherworldinn.world.economy.ItemSellPriceManager;
+
 /**
  * 客户端工具提示处理器
  * <p>
@@ -37,6 +41,13 @@ public class ModTooltips {
         ItemStack itemStack = event.getItemStack();
         Item item = itemStack.getItem();
         Level level = Minecraft.getInstance().level;
+
+        // 显示出售价格
+        int sellPrice = ItemSellPriceManager.getPrice(itemStack);
+        if (sellPrice > 0) {
+            event.getToolTip().add(Component.translatable("tooltip.otherworldinn.sell_price", sellPrice)
+                    .withStyle(ChatFormatting.YELLOW));
+        }
 
         // 检查是否在城镇维度且物品被禁用
         if (level != null) {

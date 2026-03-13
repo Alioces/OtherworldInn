@@ -4,7 +4,7 @@
       "type": "bitmap",
       "file": "otherworldinn:font/coin.png",
       "height": 12,
-      "ascent": 10,
+      "ascent": 9,
       "chars": [
         "\uE001"
       ]

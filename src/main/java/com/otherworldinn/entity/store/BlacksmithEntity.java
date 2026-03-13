@@ -1,6 +1,7 @@
 package com.otherworldinn.entity.store;
 
 import com.otherworldinn.OtherworldInn;
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 
 import net.minecraft.core.registries.Registries;
@@ -97,11 +98,23 @@ public class BlacksmithEntity extends StoreEntity {
     }
 
     private void initDefaultStoreItems() {
+        //原矿
+        this.addStoreItem(new ItemStack(Items.IRON_ORE), 8, 16);
+        this.addStoreItem(new ItemStack(AllBlocks.ZINC_ORE.get()), 6, 16);
+        this.addStoreItem(new ItemStack(Items.COPPER_ORE), 6, 16);
+        this.addStoreItem(new ItemStack(Items.GOLD_ORE), 12, 8);
+
         // 粗矿
         this.addStoreItem(new ItemStack(Items.RAW_IRON), 5, 64);
         this.addStoreItem(new ItemStack(AllItems.RAW_ZINC.get()), 4, 64);
         this.addStoreItem(new ItemStack(Items.RAW_COPPER), 3, 64);
         this.addStoreItem(new ItemStack(Items.RAW_GOLD), 8, 32);
+
+        //粉碎矿
+        this.addStoreItem(new ItemStack(AllItems.CRUSHED_IRON.get()), 5, 32);
+        this.addStoreItem(new ItemStack(AllItems.CRUSHED_ZINC.get()), 4, 32);
+        this.addStoreItem(new ItemStack(AllItems.CRUSHED_COPPER.get()), 3, 32);
+        this.addStoreItem(new ItemStack(AllItems.CRUSHED_GOLD.get()), 8, 16);
 
         // 矿锭
         this.addStoreItem(new ItemStack(Items.IRON_INGOT), 10, 32);

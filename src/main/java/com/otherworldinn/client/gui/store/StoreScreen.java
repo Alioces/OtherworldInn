@@ -32,6 +32,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
 
     private static final int GRID_COLS = 4;
     private static final int GRID_ROWS = 5;
+    private static final int GOODS_DISPLAY_ROWS = 4;
     private static final int SLOT_SIZE = 18;
     private static final int SLOT_SPACING = 2;
 
@@ -52,8 +53,11 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
     private float scrollOffs = 0.0F;
     private boolean isScrolling = false;
     private static final int CART_ITEM_HEIGHT = 20;
-    private static final int CART_DISPLAY_ROWS = 5; // 显示几行
+    private static final int CART_DISPLAY_ROWS = 4; // 显示行数
     private static final int SCROLL_BAR_WIDTH = 4; // 滚动条宽度
+    
+    // 商品列表滚动相关
+    private float goodsScrollOffs = 0.0F;
 
     public StoreScreen(StoreMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -251,7 +255,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             guiGraphics.renderItem(item.getItemStack(), listX, y);
             guiGraphics.renderItemDecorations(this.font, item.getItemStack(), listX, y);
             guiGraphics.drawString(this.font, Component.literal("×" + item.getCurrentStock()), listX + 20, y + 5, 0xFFFFFF);
-            guiGraphics.drawString(this.font, Component.literal(item.getPrice() * item.getCurrentStock() + "§f\uE001§r"), listX + 50, y + 5, 0xFFFF00);
+            guiGraphics.drawString(this.font, Component.literal("§f\uE001§r" + item.getPrice() * item.getCurrentStock()), listX + 50, y + 5, 0xFFFF00);
         }
         
         guiGraphics.disableScissor();
@@ -271,7 +275,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             }
         }
         
-        Component balanceText = Component.literal("§f\uE001§r " + playerBalance);
+        Component balanceText = Component.literal( "§f\uE001§r" + playerBalance);
         int balanceWidth = this.font.width(balanceText);
         guiGraphics.drawString(this.font, balanceText, (this.imageWidth - balanceWidth) / 2, 6, 4210752, false);
     }
@@ -286,13 +290,36 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         // 渲染商品网格
         int startX = this.leftPos + 20;
         int startY = this.topPos + 20;
+        int goodsAreaWidth = GRID_COLS * (SLOT_SIZE + SLOT_SPACING) - SLOT_SPACING;
+        int goodsAreaHeight = GOODS_DISPLAY_ROWS * CART_ITEM_HEIGHT;
+        int goodsScrollBarX = startX + goodsAreaWidth + 2;
+        int goodsScrollBarY = startY;
         
         List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
-        for (int i = 0; i < items.size(); i++) {
-            if (i >= GRID_COLS * GRID_ROWS) break;
+        int totalRows = (int) Math.ceil(items.size() / (float) GRID_COLS);
+        boolean canScrollGoods = totalRows > GOODS_DISPLAY_ROWS;
+        int goodsStartRow = canScrollGoods ? (int) (this.goodsScrollOffs * (totalRows - GOODS_DISPLAY_ROWS)) : 0;
+        int goodsStartIndex = goodsStartRow * GRID_COLS;
+
+        guiGraphics.fill(goodsScrollBarX, goodsScrollBarY, goodsScrollBarX + SCROLL_BAR_WIDTH, goodsScrollBarY + goodsAreaHeight, 0xFF202020);
+        if (canScrollGoods) {
+            int sliderHeight = (int) ((float) (goodsAreaHeight * goodsAreaHeight) / (float) (totalRows * CART_ITEM_HEIGHT));
+            sliderHeight = Math.max(32, sliderHeight);
+            int sliderY = goodsScrollBarY + (int) ((float) (goodsAreaHeight - sliderHeight) * this.goodsScrollOffs);
+            guiGraphics.fill(goodsScrollBarX, sliderY, goodsScrollBarX + SCROLL_BAR_WIDTH, sliderY + sliderHeight, 0xFF808080);
+            guiGraphics.fill(goodsScrollBarX, sliderY, goodsScrollBarX + SCROLL_BAR_WIDTH - 1, sliderY + sliderHeight - 1, 0xFFC0C0C0);
+        } else {
+            guiGraphics.fill(goodsScrollBarX, goodsScrollBarY, goodsScrollBarX + SCROLL_BAR_WIDTH, goodsScrollBarY + goodsAreaHeight, 0xFF404040);
+        }
+
+        guiGraphics.enableScissor(startX, startY, startX + goodsAreaWidth, startY + goodsAreaHeight);
+        
+        for (int i = goodsStartIndex; i < items.size(); i++) {
+            if (i >= goodsStartIndex + GRID_COLS * GOODS_DISPLAY_ROWS) break;
             
-            int col = i % GRID_COLS;
-            int row = i / GRID_COLS;
+            int relative = i - goodsStartIndex;
+            int col = relative % GRID_COLS;
+            int row = relative / GRID_COLS;
             int x = startX + col * (SLOT_SIZE + SLOT_SPACING);
             int y = startY + row * (SLOT_SIZE + SLOT_SPACING);
             
@@ -311,10 +338,41 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             guiGraphics.renderItem(storeItem.getItemStack(), x + 1, y + 1);
             guiGraphics.renderItemDecorations(this.font, storeItem.getItemStack(), x + 1, y + 1);
             
+            // 渲染库存数量 (右下角)
+            int stock = storeItem.getCurrentStock();
+            
+            // 减去购物车中已有的数量
+            for (StoreEntity.StoreItem cartItem : this.cart) {
+                if (ItemStack.isSameItemSameComponents(cartItem.getItemStack(), storeItem.getItemStack())) {
+                    stock -= cartItem.getCurrentStock();
+                }
+            }
+            
+            String stockStr;
+            int color = 0xFFFFFF;
+            
+            if (storeItem.getMaxStock() == -1) {
+                stockStr = "∞";
+            } else {
+                stockStr = String.valueOf(stock);
+                if (stock == 0) {
+                    color = ModColors.ERROR;
+                } else if (stock < storeItem.getCurrentStock()) {
+                    // 如果购物车中有此商品，且当前显示的库存不是原始库存（即被减少了），显示为黄色
+                    color = 0xFFFF00;
+                }
+            }
+            
+            // 渲染带阴影的文字，类似于物品数量
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(0, 0, 200); // 确保在物品上方
+            guiGraphics.drawString(this.font, stockStr, x + SLOT_SIZE - this.font.width(stockStr) - 1, y + SLOT_SIZE - 9, color, true);
+            guiGraphics.pose().popPose();
+            
             // 选中高亮 (最后绘制以覆盖在物品上方，确保可见)
             if (items.get(i) == this.selectedItem) {
                 // renderOutline
-                int color = 0xFFF8F8FF;
+                color = 0xFFF8F8FF;
                 int borderSize = 1;
                 guiGraphics.fill(x - borderSize, y - borderSize, x + SLOT_SIZE + borderSize, y, color); // 上
                 guiGraphics.fill(x - borderSize, y + SLOT_SIZE, x + SLOT_SIZE + borderSize, y + SLOT_SIZE + borderSize, color); // 下
@@ -322,6 +380,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 guiGraphics.fill(x + SLOT_SIZE, y, x + SLOT_SIZE + borderSize, y + SLOT_SIZE, color); // 右
             }
         }
+        guiGraphics.disableScissor();
         
         // 渲染选中物品名称
         if (this.selectedItem != null) {
@@ -337,6 +396,33 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
     
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        int goodsStartX = this.leftPos + 20;
+        int goodsStartY = this.topPos + 20;
+        int goodsWidth = GRID_COLS * (SLOT_SIZE + SLOT_SPACING) - SLOT_SPACING + SCROLL_BAR_WIDTH + 2;
+        int goodsHeight = GOODS_DISPLAY_ROWS * CART_ITEM_HEIGHT;
+        List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
+        int totalGoodsRows = (int) Math.ceil(items.size() / (float) GRID_COLS);
+        boolean canScrollGoods = totalGoodsRows > GOODS_DISPLAY_ROWS;
+        
+        if (mouseX >= goodsStartX && mouseX < goodsStartX + goodsWidth && mouseY >= goodsStartY && mouseY < goodsStartY + goodsHeight && canScrollGoods) {
+            float scrollStep = 1.0F / (float) (totalGoodsRows - GOODS_DISPLAY_ROWS);
+            this.goodsScrollOffs = (float) ((double) this.goodsScrollOffs - scrollY * (double) scrollStep);
+            this.goodsScrollOffs = net.minecraft.util.Mth.clamp(this.goodsScrollOffs, 0.0F, 1.0F);
+            return true;
+        }
+
+        int cartStartX = this.leftPos + 142;
+        int cartStartY = this.topPos + 20;
+        int cartWidth = 90 + SCROLL_BAR_WIDTH;
+        int cartHeight = CART_DISPLAY_ROWS * CART_ITEM_HEIGHT;
+        
+        if (mouseX >= cartStartX && mouseX < cartStartX + cartWidth && mouseY >= cartStartY && mouseY < cartStartY + cartHeight && this.cart.size() > CART_DISPLAY_ROWS) {
+            float scrollStep = 1.0F / (float)(this.cart.size() - CART_DISPLAY_ROWS);
+            this.scrollOffs = (float)((double)this.scrollOffs - scrollY * (double)scrollStep);
+            this.scrollOffs = net.minecraft.util.Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
+            return true;
+        }
+
         if (this.cart.size() > CART_DISPLAY_ROWS) {
             // 每个滚轮单位滚动一项
             float scrollStep = 1.0F / (float)(this.cart.size() - CART_DISPLAY_ROWS);
@@ -349,33 +435,20 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // 先检查父类的点击处理 (例如输入框)
-        if (this.quantityEditBox.mouseClicked(mouseX, mouseY, button)) {
-             return true;
-        }
-        if (this.confirmButton.mouseClicked(mouseX, mouseY, button)) {
-             return true;
-        }
-        if (this.purchaseButton.mouseClicked(mouseX, mouseY, button)) {
-             return true;
-        }
-        // +/- 按钮
-        for (net.minecraft.client.gui.components.events.GuiEventListener child : this.children()) {
-             if (child instanceof Button && child.mouseClicked(mouseX, mouseY, button)) {
-                 return true;
-             }
-        }
-        
         // 检查点击商品
         int startX = this.leftPos + 20;
         int startY = this.topPos + 20;
         List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
+        int totalRows = (int) Math.ceil(items.size() / (float) GRID_COLS);
+        int goodsStartRow = totalRows > GOODS_DISPLAY_ROWS ? (int) (this.goodsScrollOffs * (totalRows - GOODS_DISPLAY_ROWS)) : 0;
+        int goodsStartIndex = goodsStartRow * GRID_COLS;
         
-        for (int i = 0; i < items.size(); i++) {
-            if (i >= GRID_COLS * GRID_ROWS) break;
+        for (int i = goodsStartIndex; i < items.size(); i++) {
+            if (i >= goodsStartIndex + GRID_COLS * GOODS_DISPLAY_ROWS) break;
             
-            int col = i % GRID_COLS;
-            int row = i / GRID_COLS;
+            int relative = i - goodsStartIndex;
+            int col = relative % GRID_COLS;
+            int row = relative / GRID_COLS;
             int x = startX + col * (SLOT_SIZE + SLOT_SPACING);
             int y = startY + row * (SLOT_SIZE + SLOT_SPACING);
             
@@ -408,7 +481,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 return true;
             }
         }
-        
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
     
@@ -420,12 +493,16 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         int startX = this.leftPos + 20;
         int startY = this.topPos + 20;
         List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
+        int totalRows = (int) Math.ceil(items.size() / (float) GRID_COLS);
+        int goodsStartRow = totalRows > GOODS_DISPLAY_ROWS ? (int) (this.goodsScrollOffs * (totalRows - GOODS_DISPLAY_ROWS)) : 0;
+        int goodsStartIndex = goodsStartRow * GRID_COLS;
         
-        for (int i = 0; i < items.size(); i++) {
-            if (i >= GRID_COLS * GRID_ROWS) break;
+        for (int i = goodsStartIndex; i < items.size(); i++) {
+            if (i >= goodsStartIndex + GRID_COLS * GOODS_DISPLAY_ROWS) break;
             
-            int col = i % GRID_COLS;
-            int row = i / GRID_COLS;
+            int relative = i - goodsStartIndex;
+            int col = relative % GRID_COLS;
+            int row = relative / GRID_COLS;
             int x = startX + col * (SLOT_SIZE + SLOT_SPACING);
             int y = startY + row * (SLOT_SIZE + SLOT_SPACING);
             
