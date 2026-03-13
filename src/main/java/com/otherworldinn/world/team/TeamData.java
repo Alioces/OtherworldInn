@@ -66,6 +66,10 @@ public class TeamData {
                 tag.getInt("MaxZ")
             );
         }
+
+        public boolean contains(BlockPos pos) {
+            return contains(pos.getX(), pos.getZ());
+        }
     }
 
     private final UUID teamId;

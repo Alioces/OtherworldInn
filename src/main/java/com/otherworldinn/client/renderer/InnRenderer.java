@@ -62,7 +62,7 @@ public class InnRenderer {
         // 渲染设置
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.disableDepthTest(); // 穿透渲染
+
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.disableCull();
 
@@ -71,20 +71,20 @@ public class InnRenderer {
         // 颜色设置
         float red, green, blue;
         if (state == InnData.InnState.EDIT_MODE) {
-            // 编辑模式：蓝色半透明
-            red = 0.0f;
-            green = 0.0f;
-            blue = 1.0f;
+            // 编辑模式：蓝色 #1E90FF
+            red = 0.118f;
+            green = 0.565f;
+            blue = 0.929f;
         } else if (state == InnData.InnState.CLOSED) {
-            // 歇业模式：淡红色 (#FF6A6A)
+            // 歇业模式：淡红色 #FF6A6A
             red = 1.0f;
-            green = 0.416f; // 0x6A / 255.0 = 0.4156
+            green = 0.416f;
             blue = 0.416f;
         } else {
-            // 营业模式：绿色半透明
+            // 营业模式：绿色 #00FF7F
             red = 0.0f;
             green = 1.0f;
-            blue = 0.0f;
+            blue = 0.498f;
         }
         float alpha = 0.2f;
 

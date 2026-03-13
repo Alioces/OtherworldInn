@@ -119,52 +119,44 @@ public class InnData {
     }
 
     /**
-     * 设置营业状态
-     * @param open 是否营业
-     */
-    public void setOpen(boolean open) {
-        if (open) {
-            this.state = InnState.OPEN;
-        } else {
-            // 如果是从 Open 切换到 Closed，或者从 EditMode 切换到 Closed
-            this.state = InnState.CLOSED;
-        }
-    }
-    
-    /**
-     * 是否营业中
-     */
-    public boolean isOpen() {
-        return this.state == InnState.OPEN;
-    }
-    
-    /**
-     * 是否处于编辑模式
-     */
-    public boolean isEditMode() {
-        return this.state == InnState.EDIT_MODE;
-    }
-
-    /**
      * 尝试开启编辑模式
      * @return 如果成功开启返回 true，否则返回 false (例如正在营业或有客人)
      */
-    public boolean tryEnableEditMode() {
-        if (this.state == InnState.OPEN) {
-            return false; // 营业中不能编辑
+    public boolean setState(InnState newState) {
+        // 如果状态没有改变，直接返回成功
+        if (this.state == newState) {
+            return true;
         }
-        if (!this.guestIds.isEmpty()) {
-            return false; // 有客人不能编辑
+        
+        switch (newState) {
+            case OPEN:
+                // 可以从 CLOSED 切换到 OPEN
+                // 不可以直接从 EDIT_MODE 切换到 OPEN (需要先 CLOSED)
+                if (this.state == InnState.CLOSED) {
+                    this.state = InnState.OPEN;
+                    return true;
+                }
+                break;
+                
+            case EDIT_MODE:
+                // 只能从 CLOSED 切换到 EDIT_MODE
+                // 且必须没有客人
+                if (this.state == InnState.CLOSED && this.guestIds.isEmpty()) {
+                    this.state = InnState.EDIT_MODE;
+                    return true;
+                }
+                break;
+                
+            case CLOSED:
+                // 可以从任何状态切换到 CLOSED
+                this.state = InnState.CLOSED;
+                return true;
         }
-        this.state = InnState.EDIT_MODE;
-        return true;
+        
+        return false;
     }
 
-    public void disableEditMode() {
-        if (this.state == InnState.EDIT_MODE) {
-            this.state = InnState.CLOSED;
-        }
-    }
+
 
     public void addGuest(UUID guestId) {
         this.guestIds.add(guestId);

@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import com.otherworldinn.world.event.TownProtectionHandler;
+import com.otherworldinn.world.inn.InnData.InnState;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.team.TeamManager;
 import com.simibubi.create.content.contraptions.Contraption;
@@ -71,7 +72,7 @@ public class MixinContraption {
                 TeamData team = TeamManager.getInstance().getTeamAt(pos, world.getServer());
 
                 // 如果在城镇维度，且 (不在任何旅社范围内 或 该旅社未开启编辑模式)，则禁止放置
-                if (team == null || !team.getInnData().isEditMode()) {
+                if (team == null || team.getInnData().getState() != InnState.EDIT_MODE) {
                     // 非法区域！
                     
                     // 执行掉落

@@ -47,7 +47,7 @@ public class RoomRegisterItem extends Item {
 
         if (player instanceof ServerPlayer serverPlayer) {
             TeamData team = TeamManager.getInstance().getPlayerTeam(serverPlayer);
-            if (team == null || !team.getInnData().isEditMode()) {
+            if (team == null || team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
                 player.displayClientMessage(Component.translatable("message.otherworldinn.room_register.not_edit_mode"), true);
                 return InteractionResult.FAIL;
             }

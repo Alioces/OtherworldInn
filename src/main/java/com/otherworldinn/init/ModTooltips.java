@@ -4,6 +4,9 @@ import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.BlockDataGenInfo;
 import com.otherworldinn.foundation.ItemDataGenInfo;
 import com.otherworldinn.world.dimension.TownDimensions;
+import com.otherworldinn.world.inn.InnData;
+import com.otherworldinn.world.team.TeamData;
+import com.otherworldinn.world.team.TeamManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
@@ -46,6 +49,35 @@ public class ModTooltips {
             // 检查是否在非城镇维度且物品仅限城镇使用
             if (!inTown && itemStack.is(OtherworldInn.ONLY_IN_TOWN)) {
                  event.getToolTip().add(Component.translatable("tooltip.otherworldinn.only_in_town"));
+            }
+
+            // 为旅社钥匙添加状态提示
+            if (itemStack.is(ModItems.INN_KEY.get())) {
+                TeamData team = TeamManager.getInstance().getClientPlayerTeam();
+                if (team != null) {
+                    InnData.InnState state = team.getInnData().getState();
+                    Component stateText;
+                    int color;
+                    
+                    switch (state) {
+                        case OPEN:
+                            stateText = Component.translatable("message.otherworldinn.desk_bell.status.open");
+                            color = 0x00FF7F;
+                            break;
+                        case EDIT_MODE:
+                            stateText = Component.translatable("message.otherworldinn.desk_bell.status.edit_mode");
+                            color = 0x1E90FF;
+                            break;
+                        case CLOSED:
+                        default:
+                            stateText = Component.translatable("message.otherworldinn.desk_bell.status.closed");
+                            color = 0xFF6A6A;
+                            break;
+                    }
+                    
+                    event.getToolTip().add(Component.translatable("message.otherworldinn.inn_key.status", stateText)
+                            .withStyle(style -> style.withColor(color)));
+                }
             }
         }
 

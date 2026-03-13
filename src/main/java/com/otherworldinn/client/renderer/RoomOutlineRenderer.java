@@ -102,7 +102,7 @@ public class RoomOutlineRenderer {
             }
 
             // 3. 渲染旅社范围 (青色) - 手持房间登记册或地契时都显示
-            if (innData.isEditMode() || holdingLandDeed) {
+            if (innData.getState() == InnData.InnState.EDIT_MODE || holdingLandDeed) {
                 int minBuildHeight = mc.level.getMinBuildHeight();
                 int maxBuildHeight = mc.level.getMaxBuildHeight();
 

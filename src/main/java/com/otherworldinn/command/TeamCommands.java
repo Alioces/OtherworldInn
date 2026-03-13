@@ -5,7 +5,9 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
 import net.minecraft.commands.CommandSourceStack;
@@ -57,14 +59,16 @@ public class TeamCommands {
                         .requires(s -> s.hasPermission(2)) // 需要管理员权限
                         .then(Commands.argument("enabled", BoolArgumentType.bool())
                                 .executes(TeamCommands::toggleTeleport)))
-                .then(Commands.literal("editmode")
+                .then(Commands.literal("state")
                         .requires(s -> s.hasPermission(2))
-                        .then(Commands.argument("enabled", BoolArgumentType.bool())
-                                .executes(TeamCommands::toggleEditMode)))
-                .then(Commands.literal("open")
-                        .requires(s -> s.hasPermission(2))
-                        .then(Commands.argument("enabled", BoolArgumentType.bool())
-                                .executes(TeamCommands::toggleOpenStatus)))
+                        .then(Commands.argument("state", StringArgumentType.word())
+                                .suggests((ctx, builder) -> {
+                                    for (InnData.InnState state : InnData.InnState.values()) {
+                                        builder.suggest(state.name().toLowerCase());
+                                    }
+                                    return builder.buildFuture();
+                                })
+                                .executes(TeamCommands::setInnState)))
                 .then(Commands.literal("unlockpoint")
                         .requires(s -> s.hasPermission(2))
                         .then(Commands.argument("target", EntityArgument.player())
@@ -240,10 +244,10 @@ public class TeamCommands {
         }
     }
 
-    private static int toggleEditMode(CommandContext<CommandSourceStack> context) {
+    private static int setInnState(CommandContext<CommandSourceStack> context) {
         try {
             ServerPlayer player = context.getSource().getPlayerOrException();
-            boolean enabled = BoolArgumentType.getBool(context, "enabled");
+            String stateStr = StringArgumentType.getString(context, "state");
             
             TeamManager manager = TeamManager.getInstance();
             TeamData team = manager.getPlayerTeam(player);
@@ -253,49 +257,24 @@ public class TeamCommands {
                 return 0;
             }
             
-            if (enabled) {
-                if (team.getInnData().tryEnableEditMode()) {
-                    context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.edit_mode_enabled"), true);
+            try {
+                InnData.InnState newState = InnData.InnState.valueOf(stateStr.toUpperCase());
+                if (team.getInnData().setState(newState)) {
+                    context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.state_set", newState.name()), true);
+                    // 同步数据
+                    manager.syncTeamTeleport(team, player);
+                    return 1;
                 } else {
-                    context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.edit_mode_fail"));
+                    context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.state_set_fail"));
                     return 0;
                 }
-            } else {
-                team.getInnData().disableEditMode();
-                context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.edit_mode_disabled"), true);
-            }
-            
-            // 同步数据 (简单起见，复用传送同步包，或者可以新建专门的包)
-            // 这里为了确保数据一致性，建议同步整个 TeamData
-            manager.syncTeamTeleport(team, player); // 这会发送 S2CTeamSyncPacket，包含所有数据
-            
-            return 1;
-        } catch (Exception e) {
-            context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
-            return 0;
-        }
-    }
-
-    private static int toggleOpenStatus(CommandContext<CommandSourceStack> context) {
-        try {
-            ServerPlayer player = context.getSource().getPlayerOrException();
-            boolean enabled = BoolArgumentType.getBool(context, "enabled");
-            
-            TeamManager manager = TeamManager.getInstance();
-            TeamData team = manager.getPlayerTeam(player);
-            
-            if (team == null) {
-                context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.not_in_team"));
+            } catch (IllegalArgumentException e) {
+                context.getSource().sendFailure(Component.literal("Invalid state: " + stateStr));
                 return 0;
             }
-            
-            team.getInnData().setOpen(enabled);
-            context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.open_status_set", enabled), true);
-            
-            // 同步数据
-            manager.syncTeamTeleport(team, player);
-            
-            return 1;
+        } catch (CommandSyntaxException e) {
+            context.getSource().sendFailure(Component.literal("Command Syntax Error: " + e.getMessage()));
+            return 0;
         } catch (Exception e) {
             context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
             return 0;

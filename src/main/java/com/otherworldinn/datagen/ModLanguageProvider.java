@@ -7,6 +7,7 @@ import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModEntities;
 import com.otherworldinn.init.ModItems;
 import net.minecraft.data.PackOutput;
+import net.minecraft.world.entity.EntityType;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -30,375 +31,431 @@ public class ModLanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
-        boolean isZh = "zh_cn".equals(locale);
+        addManualTranslations();
+        addGeneratedTranslations();
+    }
+
+    private void addManualTranslations() {
+        entry("itemGroup.otherworldinn")
+                .zh("旅社物语")
+                .en("Otherworld Inn");
+
+        entry("key.categories.otherworldinn")
+                .zh("旅社物语")
+                .en("Otherworld Inn");
+
+        entry("key.otherworldinn.map_mode")
+                .zh("地图视图")
+                .en("Map View");
+
+        // 地图点名称
+        entry("map_point.otherworldinn.inn")
+                .zh("旅社")
+                .en("The Inn");
+        entry("map_point.otherworldinn.blacksmith")
+                .zh("铁匠铺")
+                .en("Blacksmith");
+        entry("map_point.otherworldinn.town_gate")
+                .zh("城镇大门")
+                .en("Town Gate");
+        entry("map_point.otherworldinn.locked")
+                .zh("未解锁")
+                .en("Locked");
+        entry("map_point.otherworldinn.cant_teleport")
+                .zh("无法传送至")
+                .en("Cannot teleport to");
+
+        // 字幕
+        entry("subtitles.otherworldinn.payment")
+                .zh("金币：叮铃")
+                .en("Coins: Clink");
+
+        // 队伍命令
+        entry("command.otherworldinn.team.already_in_team")
+                .zh("你已经在一个队伍中了！")
+                .en("You are already in a team!");
+        entry("command.otherworldinn.team.created")
+                .zh("已创建队伍：%s")
+                .en("Created team: %s");
+        entry("command.otherworldinn.team.target_no_team")
+                .zh("目标玩家不在队伍中！")
+                .en("Target player is not in a team!");
+        entry("command.otherworldinn.team.joined")
+                .zh("已加入队伍：%s")
+                .en("Joined team: %s");
+        entry("command.otherworldinn.team.not_in_team")
+                .zh("你不在一个队伍中！")
+                .en("You are not in a team!");
+        entry("command.otherworldinn.team.left")
+                .zh("已离开队伍。")
+                .en("Left the team.");
+        entry("command.otherworldinn.team.not_leader")
+                .zh("只有队长可以执行此操作！")
+                .en("Only the leader can perform this action!");
+        entry("command.otherworldinn.team.target_not_in_team")
+                .zh("目标玩家不在你的队伍中！")
+                .en("Target player is not in your team!");
+        entry("command.otherworldinn.team.kick_self")
+                .zh("你不能踢出你自己！请使用离开命令。")
+                .en("You cannot kick yourself! Use leave command.");
+        entry("command.otherworldinn.team.kicked")
+                .zh("已将 %s 踢出队伍。")
+                .en("Kicked %s from the team.");
+        entry("command.otherworldinn.team.you_were_kicked")
+                .zh("你已被踢出队伍。")
+                .en("You were kicked from the team.");
+        entry("command.otherworldinn.team.transferred")
+                .zh("队长职位已移交给 %s")
+                .en("Transferred leadership to %s");
+        entry("command.otherworldinn.team.renamed")
+                .zh("队伍已重命名为：%s")
+                .en("Renamed team to: %s");
+        entry("command.otherworldinn.team.teleport_set")
+                .zh("队伍传送功能已设置为：%s")
+                .en("Team teleport capability set to: %s");
+        entry("command.otherworldinn.team.point_unlocked")
+                .zh("已解锁地图点：%s (队伍：%s)")
+                .en("Unlocked map point: %s (Team: %s)");
+        entry("command.otherworldinn.team.point_locked")
+                .zh("已锁定地图点：%s (队伍：%s)")
+                .en("Locked map point: %s (Team: %s)");
+        entry("command.otherworldinn.team.coins.set")
+                .zh("已将队伍 %s 的余额设置为 §f\uE001§r %d")
+                .en("Set team %s balance to §f\uE001§r %d");
+        entry("command.otherworldinn.team.coins.add")
+                .zh("已向队伍 %s 增加 §f\uE001§r %d (当前: §f\uE001§r %d)")
+                .en("Added §f\uE001§r %d to team %s (Current: §f\uE001§r %d)");
+        entry("command.otherworldinn.team.coins.remove")
+                .zh("已从队伍 %s 扣除 §f\uE001§r %d (当前: §f\uE001§r %d)")
+                .en("Removed §f\uE001§r %d from team %s (Current: §f\uE001§r %d)");
+        entry("command.otherworldinn.team.coins.remove_fail")
+                .zh("扣除失败！余额不足 (当前: §f\uE001§r %d)")
+                .en("Failed to remove! Not enough balance (Current: §f\uE001§r %d)");
+        entry("command.otherworldinn.team.coins.get")
+                .zh("队伍 %s 当前余额: §f\uE001§r %d")
+                .en("Team %s current balance: §f\uE001§r %d");
+
+        // 管理员命令
+        entry("command.otherworldinn.admin.reset_dimensions.start")
+                .zh("§c[管理员] 正在强制触发维度重置...")
+                .en("§c[Admin] Triggering forced dimension reset...");
+
+        entry("message.otherworldinn.reset.warning")
+                .zh("§c[注意] §e外部维度还有%d分钟重置，请尽快回到城镇")
+                .en("§c[Notice] §eExternal dimensions will reset in %d minutes! Please return to Town ASAP.");
+        entry("message.otherworldinn.reset.start")
+                .zh("§c[警告] 外部维度重置中，请暂时不要离开城镇")
+                .en("§c[WARNING] External dimensions resetting... Please do not leave Town.");
+        entry("message.otherworldinn.reset.teleported")
+                .zh("§a你已被传送到城镇安全区域")
+                .en("§aYou have been teleported to the Town safe zone.");
+        entry("message.otherworldinn.reset.complete")
+                .zh("§a外部维度重置完成，准备迎接新的冒险")
+                .en("§aExternal dimension reset complete. Get ready for new adventures!");
+
+        // 保护提示
+        entry("message.otherworldinn.protection.deny")
+                .zh("你不能修改城镇内的方块")
+                .en("You cannot modify blocks within the Town.");
+        entry("message.otherworldinn.protection.banned_item")
+                .zh("此物品在城镇维度被禁用")
+                .en("This item is banned in the Town dimension.");
+        entry("message.otherworldinn.protection.only_in_town")
+                .zh("此物品仅限在城镇维度使用")
+                .en("This item is usable only in the Town dimension.");
+
+        // 物品提示
+        entry("item.otherworldinn.recall_scroll.fail_in_town")
+                .zh("回程卷轴无法在城镇中使用")
+                .en("Recall Scroll cannot be used in Town!");
+        entry("tooltip.otherworldinn.banned_in_town")
+                .zh("§c当前维度内禁用")
+                .en("§cBanned in this dimension");
+        entry("tooltip.otherworldinn.only_in_town")
+                .zh("§c仅限城镇维度使用")
+                .en("§cOnly usable in Town dimension");
+
+        // 房间登记册
+        entry("message.otherworldinn.room_register.not_edit_mode")
+                .zh("旅社未处于编辑模式！")
+                .en("The Inn is not in edit mode!");
+        entry("message.otherworldinn.room_register.pos1_set")
+                .zh("位置1已设置：%s")
+                .en("Position 1 set: %s");
+        entry("message.otherworldinn.room_register.create_success")
+                .zh("房间创建成功！")
+                .en("Room created successfully!");
+        entry("message.otherworldinn.room_register.remove_success")
+                .zh("%s号房间已被移除")
+                .en("Room %s has been removed");
+        entry("message.otherworldinn.room_register.invalid_room")
+                .zh("无效的房间结构")
+                .en("Invalid room structure!");
+        entry("message.otherworldinn.room_register.validation.too_small")
+                .zh("房间空间太小")
+                .en("Room is too small!");
+        entry("message.otherworldinn.room_register.validation.out_of_bounds")
+                .zh("房间超出旅社范围")
+                .en("Room is out of inn bounds!");
+        entry("message.otherworldinn.room_register.validation.hole_in_floor")
+                .zh("房间的地板有漏洞")
+                .en("There is a hole in the floor!");
+        entry("message.otherworldinn.room_register.validation.hole_in_ceiling")
+                .zh("房间的天花板有漏洞")
+                .en("There is a hole in the ceiling!");
+        entry("message.otherworldinn.room_register.validation.hole_in_wall")
+                .zh("房间的墙壁有漏洞")
+                .en("There is a hole in the walls!");
+        entry("message.otherworldinn.room_register.validation.missing_door")
+                .zh("房间缺少门")
+                .en("Room is missing a door!");
+        entry("message.otherworldinn.room_register.validation.missing_bed")
+                .zh("房间缺少干净的床")
+                .en("Room is missing a clean bed!");
+        entry("message.otherworldinn.room_register.validation.overlap")
+                .zh("房间与已有房间重叠！")
+                .en("Room overlaps with an existing room!");
+        entry("message.otherworldinn.room_register.remove_success_with_reason")
+                .zh("%s号房间已被移除。原因：%s")
+                .en("Room %s has been removed. Reason: %s");
+        entry("message.otherworldinn.room_register.manual_removal")
+                .zh("手动移除")
+                .en("Manual removal");
+        entry("message.otherworldinn.room_register.validation.too_crowded")
+                .zh("房间过于拥挤")
+                .en("Room is too crowded!");
+
+        entry("message.otherworldinn.room_register.overlay.delete_room")
+                .zh("删除房间")
+                .en("Delete Room");
+        entry("message.otherworldinn.room_register.overlay.add_room")
+                .zh("添加房间")
+                .en("Add Room");
+
+        // 待办事项
+        entry("todo.otherworldinn.room_cleaning")
+                .zh("%s 号房间需要打扫")
+                .en("Room %s needs cleaning");
+        entry("todo.otherworldinn.guest_waiting")
+                .zh("%s 正在等待办理入住")
+                .en("%s is waiting to check in");
+
+        // 生物群系
+        entry("biome.otherworldinn.town")
+                .zh("城镇")
+                .en("Town");
+
+        // 家具属性
+        entry("tooltip.otherworldinn.furniture.comfort")
+                .zh("§f\uE002§r 舒适度: %s")
+                .en("§f\uE002§r Comfort: %s");
+        entry("tooltip.otherworldinn.furniture.light")
+                .zh("§f\uE003§r 光照度: %s")
+                .en("§f\uE003§r Light: %s");
+        entry("tooltip.otherworldinn.furniture.humidity")
+                .zh("§f\uE004§r 湿度: %s")
+                .en("§f\uE004§r Humidity: %s");
+
+        // 地契
+        entry("message.otherworldinn.land_deed.pos1_set")
+                .zh("位置1已设置：%s")
+                .en("Position 1 set: %s");
+        entry("message.otherworldinn.land_deed.success")
+                .zh("旅社区域扩展成功！")
+                .en("Inn area expanded successfully!");
+        entry("message.otherworldinn.land_deed.overlay.set_pos1")
+                .zh("设置第一点")
+                .en("Set 1st Corner");
+        entry("message.otherworldinn.land_deed.overlay.set_pos2")
+                .zh("设置第二点")
+                .en("Set 2nd Corner");
+        entry("message.otherworldinn.land_deed.overlay.set_pos2_with_cost")
+                .zh("设置第二点 (预计花费: §f\uE001§r %d)")
+                .en("Set 2nd Corner (Est. Cost: §f\uE001§r %d)");
+        entry("message.otherworldinn.land_deed.pos2_set_with_cost")
+                .zh("成功选定区域 (预计花费: §f\uE001§r %d)")
+                .en("Area selected successfully (Est. Cost: §f\uE001§r %d)");
+        entry("message.otherworldinn.land_deed.pos2_set_with_cost_fail")
+                .zh("余额不足以扩展当前选定的范围！需要 §f\uE001§r %d，当前 §f\uE001§r %d")
+                .en("Insufficient balance to expand the selected area! Need §f\uE001§r %d, have §f\uE001§r %d");
+        entry("message.otherworldinn.land_deed.fail_no_money")
+                .zh("余额不足！需要 §f\uE001§r %d，当前 §f\uE001§r %d")
+                .en("Expansion failed: Not enough balance! Need §f\uE001§r %d, have §f\uE001§r %d");
+        entry("message.otherworldinn.land_deed.overlay.confirm_with_cost")
+                .zh("确认花费 §f\uE001§r %d 扩展旅社范围")
+                .en("Confirm Expansion (Cost: §f\uE001§r %d)");
+        entry("message.otherworldinn.land_deed.fail_out_of_bounds")
+                .zh("无法扩展：超出最大范围！")
+                .en("Cannot expand: Exceeds maximum range! ");
+        entry("message.otherworldinn.land_deed.selection_cleared")
+                .zh("已取消选定范围。")
+                .en("Selection cleared.");
+        entry("message.otherworldinn.land_deed.overlay.cancel")
+                .zh("取消选定")
+                .en("Cancel Selection");
+
+        // 房间钥匙
+        entry("item.otherworldinn.room_key.bound")
+                .zh("%d号房间钥匙")
+                .en("Room %d Key");
+        entry("message.otherworldinn.room_key.bound")
+                .zh("成功绑定到 %d 号房间")
+                .en("Successfully bound to Room %d");
+        entry("message.otherworldinn.room_key.unbound")
+                .zh("已解除绑定")
+                .en("Unbound from room");
+        entry("message.otherworldinn.room_key.no_room")
+                .zh("此处没有房间")
+                .en("No room here");
+        entry("message.otherworldinn.room_key.overlay.bind")
+                .zh("绑定房间")
+                .en("Bind Room");
+        entry("message.otherworldinn.room_key.overlay.unbind")
+                .zh("解除绑定")
+                .en("Unbind Room");
+        entry("tooltip.otherworldinn.room_key.room_id")
+                .zh("房间号: %d")
+                .en("Room ID: %d");
+        entry("tooltip.otherworldinn.room_key.pos")
+                .zh("位置: %s -> %s")
+                .en("Pos: %s -> %s");
+        entry("tooltip.otherworldinn.room_key.beds")
+                .zh("床位: %d/%d")
+                .en("Beds: %d/%d");
+        entry("tooltip.otherworldinn.room_key.price")
+                .zh("床位价格: §f\uE001§r %d")
+                .en("Price: §f\uE001§r %d");
+
+        // 旅客入住
+        entry("message.otherworldinn.room_key.checkin_success")
+                .zh("旅客成功入住到 %d 号房间！")
+                .en("Guest successfully checked into Room %d!");
+        entry("message.otherworldinn.room_key.checkin_fail_guest_busy")
+                .zh("该旅客已经住在其他房间了")
+                .en("This guest is already staying in another room.");
+        entry("message.otherworldinn.room_key.checkin_fail_checked_out")
+                .zh("该旅客已经退房，准备离开了")
+                .en("This guest has checked out and is preparing to leave.");
+        entry("message.otherworldinn.room_key.checkin_fail_not_in_inn")
+                .zh("错误：旅客不在旅社区域内！")
+                .en("Error: Guest is not within any Inn area!");
+
+        // Todo
+        entry("message.otherworldinn.todo.new_task")
+                .zh("有新的事项待处理: %s")
+                .en("New Task: %s");
+        entry("message.otherworldinn.room_key.checkin_fail_no_room")
+                .zh("房间不存在或已被拆除")
+                .en("Room does not exist or has been demolished.");
+        entry("message.otherworldinn.room_key.checkin_fail_id_mismatch")
+                .zh("房间信息不匹配 请重新绑定钥匙")
+                .en("Room info mismatch. Please re-bind key.");
+        entry("message.otherworldinn.room_key.checkin_fail_full")
+                .zh("这间房似乎满了...")
+                .en("This room seems full...");
+        entry("message.otherworldinn.room_key.overlay.checkin")
+                .zh("安排入住 (消耗钥匙)")
+                .en("Arrange Check-in (Consumes Key)");
+
+        // 铃铛
+        entry("message.otherworldinn.desk_bell.status.open")
+                .zh("旅社营业中")
+                .en("The Inn is OPEN");
+        entry("message.otherworldinn.desk_bell.status.closed")
+                .zh("旅社已打烊")
+                .en("The Inn is CLOSED");
+        entry("message.otherworldinn.desk_bell.status.edit_mode")
+                .zh("旅社装修中")
+                .en("The Inn is under RENOVATION");
+
+        // 旅社钥匙
+        entry("message.otherworldinn.inn_key.no_permission")
+                .zh("你没有权限管理这间旅社！")
+                .en("You do not have permission to manage this Inn!");
+        entry("message.otherworldinn.inn_key.overlay.toggle_state")
+                .zh("潜行时切换旅社状态")
+                .en("Toggle Inn State while Sneaking");
+        entry("message.otherworldinn.inn_key.fail_open")
+                .zh("旅社营业期间无法进行装修！")
+                .en("Cannot switch to renovation mode while the Inn is OPEN!");
+        entry("message.otherworldinn.inn_key.fail_guests")
+                .zh("旅社内仍有旅客，无法进行装修！")
+                .en("Cannot switch to renovation mode while guests are present!");
+        entry("message.otherworldinn.inn_key.open")
+                .zh("旅社已开业，今天也要努力")
+                .en("The Inn is now OPEN! Let's work hard today.");
+        entry("message.otherworldinn.inn_key.closed")
+                .zh("旅社已歇业，快去休息吧...")
+                .en("The Inn is now CLOSED. Time to rest...");
+        entry("message.otherworldinn.inn_key.status")
+                .zh("当前状态: %s")
+                .en("Current State: %s");
+
+        // 床单
+        entry("message.otherworldinn.bed_sheet.overlay.replace")
+                .zh("替换脏乱床单")
+                .en("Replace Messy Sheet");
+        entry("message.otherworldinn.messy_bed_sheet.overlay.wash")
+                .zh("清洗床单")
+                .en("Wash Sheet");
+  
+        // 旅客姓名
+        entry("guest.name.format")
+                .zh("%s·%s")
+                .en("%s %s");
         
-        if (isZh) {
-            add("itemGroup.otherworldinn", "旅社物语");
-            add("key.categories.otherworldinn", "旅社物语");
-            add("key.otherworldinn.map_mode", "地图视图");
-            
-            // 地图点名称
-            add("map_point.otherworldinn.inn", "旅社");
-            add("map_point.otherworldinn.blacksmith", "铁匠铺");
-            add("map_point.otherworldinn.town_gate", "城镇大门");
-            add("map_point.otherworldinn.locked", "未解锁");
-            add("map_point.otherworldinn.cant_teleport", "无法传送至");
-            
-            // 字幕
-            add("subtitles.otherworldinn.payment", "金币：叮铃");
-            
-            // 队伍命令
-            add("command.otherworldinn.team.already_in_team", "你已经在一个队伍中了！");
-            add("command.otherworldinn.team.created", "已创建队伍：%s");
-            add("command.otherworldinn.team.target_no_team", "目标玩家不在队伍中！");
-            add("command.otherworldinn.team.joined", "已加入队伍：%s");
-            add("command.otherworldinn.team.not_in_team", "你不在一个队伍中！");
-            add("command.otherworldinn.team.left", "已离开队伍。");
-            add("command.otherworldinn.team.not_leader", "只有队长可以执行此操作！");
-            add("command.otherworldinn.team.target_not_in_team", "目标玩家不在你的队伍中！");
-            add("command.otherworldinn.team.kick_self", "你不能踢出你自己！请使用离开命令。");
-            add("command.otherworldinn.team.kicked", "已将 %s 踢出队伍。");
-            add("command.otherworldinn.team.you_were_kicked", "你已被踢出队伍。");
-            add("command.otherworldinn.team.transferred", "队长职位已移交给 %s");
-            add("command.otherworldinn.team.renamed", "队伍已重命名为：%s");
-            add("command.otherworldinn.team.teleport_set", "队伍传送功能已设置为：%s");
-            add("command.otherworldinn.team.edit_mode_enabled", "已开启编辑模式。");
-            add("command.otherworldinn.team.edit_mode_disabled", "已关闭编辑模式。");
-            add("command.otherworldinn.team.edit_mode_fail", "无法开启编辑模式！请确保旅社未营业且无客人。");
-            add("command.otherworldinn.team.open_status_set", "旅社营业状态已设置为：%s");
-            add("command.otherworldinn.team.point_unlocked", "已解锁地图点：%s (队伍：%s)");
-            add("command.otherworldinn.team.point_locked", "已锁定地图点：%s (队伍：%s)");
-            add("command.otherworldinn.team.coins.set", "已将队伍 %s 的余额设置为 §f\uE001§r %d");
-            add("command.otherworldinn.team.coins.add", "已向队伍 %s 增加 §f\uE001§r %d (当前: §f\uE001§r %d)");
-            add("command.otherworldinn.team.coins.remove", "已从队伍 %s 扣除 §f\uE001§r %d (当前: §f\uE001§r %d)");
-            add("command.otherworldinn.team.coins.remove_fail", "扣除失败！余额不足 (当前: §f\uE001§r %d)");
-            add("command.otherworldinn.team.coins.get", "队伍 %s 当前余额: §f\uE001§r %d");
-            
-            // 管理员命令
-            add("command.otherworldinn.admin.reset_dimensions.start", "§c[管理员] 正在强制触发维度重置...");
+        // First Names
+        entry("guest.name.first.1").zh("亚瑟").en("Arthur");
+        entry("guest.name.first.2").zh("贝阿特丽丝").en("Beatrice");
+        entry("guest.name.first.3").zh("凯斯宾").en("Caspian");
+        entry("guest.name.first.4").zh("多里安").en("Dorian");
+        entry("guest.name.first.5").zh("埃莉诺").en("Eleanor");
+        entry("guest.name.first.6").zh("菲利克斯").en("Felix");
+        entry("guest.name.first.7").zh("吉迪恩").en("Gideon");
+        entry("guest.name.first.8").zh("海泽尔").en("Hazel");
+        entry("guest.name.first.9").zh("艾瑞丝").en("Iris");
+        entry("guest.name.first.10").zh("朱利安").en("Julian");
+        entry("guest.name.first.11").zh("凯尔").en("Kael");
+        entry("guest.name.first.12").zh("莉珊德拉").en("Lysandra");
+        entry("guest.name.first.13").zh("马格努斯").en("Magnus");
+        entry("guest.name.first.14").zh("诺拉").en("Nora");
+        entry("guest.name.first.15").zh("奥赖恩").en("Orion");
+        entry("guest.name.first.16").zh("帕西瓦尔").en("Percival");
+        entry("guest.name.first.17").zh("奎因").en("Quinn");
+        entry("guest.name.first.18").zh("罗伊纳").en("Rowena");
+        entry("guest.name.first.19").zh("塞拉斯").en("Silas");
+        entry("guest.name.first.20").zh("塔莉亚").en("Thalia");
+        
+        // Last Names
+        entry("guest.name.last.1").zh("阿什福德").en("Ashford");
+        entry("guest.name.last.2").zh("布莱克伍德").en("Blackwood");
+        entry("guest.name.last.3").zh("克劳利").en("Crowley");
+        entry("guest.name.last.4").zh("达文波特").en("Davenport");
+        entry("guest.name.last.5").zh("埃弗哈特").en("Everhart");
+        entry("guest.name.last.6").zh("弗罗斯特").en("Frost");
+        entry("guest.name.last.7").zh("格林").en("Grimm");
+        entry("guest.name.last.8").zh("霍桑").en("Hawthorne");
+        entry("guest.name.last.9").zh("铁木").en("Ironwood");
+        entry("guest.name.last.10").zh("金克斯").en("Jinx");
+        entry("guest.name.last.11").zh("奈特").en("Knight");
+        entry("guest.name.last.12").zh("洛夫莱斯").en("Lovelace");
+        entry("guest.name.last.13").zh("穆恩").en("Moon");
+        entry("guest.name.last.14").zh("夜影").en("Nightshade");
+        entry("guest.name.last.15").zh("橡心").en("Oakheart");
+        entry("guest.name.last.16").zh("潘德加斯特").en("Pendergast");
+        entry("guest.name.last.17").zh("雷文斯克罗夫特").en("Ravenscroft");
+        entry("guest.name.last.18").zh("斯托姆").en("Storm");
+        entry("guest.name.last.19").zh("索恩").en("Thorne");
+        entry("guest.name.last.20").zh("温特").en("Winter");
 
-            add("message.otherworldinn.reset.warning", "§c[注意] §e外部维度还有%d分钟重置，请尽快回到城镇");
-            add("message.otherworldinn.reset.start", "§c[警告] 外部维度重置中，请暂时不要离开城镇");
-            add("message.otherworldinn.reset.teleported", "§a你已被传送到城镇安全区域。");
-            add("message.otherworldinn.reset.complete", "§a外部维度重置完成，准备迎接新的冒险");
+        // 实体
+        entry(ModEntities.ORDINARY_GUEST.get())
+                .zh("普通旅客")
+                .en("Ordinary Guest");
+    }
 
-            // 保护提示
-            add("message.otherworldinn.protection.deny", "你不能修改城镇内的方块");
-            add("message.otherworldinn.protection.banned_item", "此物品在城镇维度被禁用！");
-            add("message.otherworldinn.protection.only_in_town", "此物品仅限在城镇维度使用！");
-            
-            // 物品提示
-            add("item.otherworldinn.recall_scroll.fail_in_town", "回程卷轴无法在城镇中使用！");
-            add("tooltip.otherworldinn.banned_in_town", "§c当前维度内禁用");
-            add("tooltip.otherworldinn.only_in_town", "§c仅限城镇维度使用");
-
-            // 房间登记册
-            add("message.otherworldinn.room_register.not_edit_mode", "旅社未处于编辑模式！");
-            add("message.otherworldinn.room_register.pos1_set", "位置1已设置：%s");
-            add("message.otherworldinn.room_register.create_success", "房间创建成功！");
-            add("message.otherworldinn.room_register.remove_success", "ID为%s的房间已被移除");
-            add("message.otherworldinn.room_register.invalid_room", "无效的房间结构！");
-            add("message.otherworldinn.room_register.validation.too_small", "房间空间太小！");
-            add("message.otherworldinn.room_register.validation.out_of_bounds", "房间超出旅社范围！");
-            add("message.otherworldinn.room_register.validation.hole_in_floor", "房间的地板有漏洞！");
-            add("message.otherworldinn.room_register.validation.hole_in_ceiling", "房间的天花板有漏洞！");
-            add("message.otherworldinn.room_register.validation.hole_in_wall", "房间的墙壁有漏洞！");
-            add("message.otherworldinn.room_register.validation.missing_door", "房间缺少门！");
-            add("message.otherworldinn.room_register.validation.missing_bed", "房间缺少干净的床！");
-            add("message.otherworldinn.room_register.validation.overlap", "房间与已有房间重叠！");
-            add("message.otherworldinn.room_register.remove_success_with_reason", "ID为%s的房间已被移除。原因：%s");
-            add("message.otherworldinn.room_register.manual_removal", "手动移除");
-            add("message.otherworldinn.room_register.validation.too_crowded", "房间过于拥挤！");
-            
-            add("message.otherworldinn.room_register.overlay.delete_room", "删除房间");
-            add("message.otherworldinn.room_register.overlay.add_room", "添加房间");
-            
-            // 待办事项
-            add("todo.otherworldinn.room_cleaning", "%s 号房间需要打扫");
-            add("todo.otherworldinn.guest_waiting", "%s 正在等待办理入住");
-
-            // 生物群系
-            add("biome.otherworldinn.town", "城镇");
-
-            // 家具属性
-            add("tooltip.otherworldinn.furniture.comfort", "§f\uE002§r 舒适度: %s");
-            add("tooltip.otherworldinn.furniture.light", "§f\uE003§r 光照度: %s");
-            add("tooltip.otherworldinn.furniture.humidity", "§f\uE004§r 湿度: %s");
-
-            // 地契
-            add("message.otherworldinn.land_deed.pos1_set", "位置1已设置：%s");
-            add("message.otherworldinn.land_deed.pos2_set", "位置2已设置：%s");
-            add("message.otherworldinn.land_deed.success", "旅社区域扩展成功！");
-            add("message.otherworldinn.land_deed.overlay.set_pos1", "设置第一点");
-            add("message.otherworldinn.land_deed.overlay.set_pos2", "设置第二点");
-            add("message.otherworldinn.land_deed.overlay.set_pos2_with_cost", "设置第二点 (花费: §f\uE001§r %d)");
-            add("message.otherworldinn.land_deed.pos2_set_with_cost", "成功选定区域 (预计花费: §f\uE001§r %d)");
-            add("message.otherworldinn.land_deed.pos2_set_with_cost_fail", "余额不足以扩展当前选定的范围！需要 §f\uE001§r %d，当前 §f\uE001§r %d");
-            add("message.otherworldinn.land_deed.fail_no_money", "扩展失败：余额不足！需要 §f\uE001§r %d，当前 §f\uE001§r %d");
-            add("message.otherworldinn.land_deed.overlay.confirm", "确认扩展");
-            add("message.otherworldinn.land_deed.overlay.confirm_with_cost", "确认花费 §f\uE001§r %d 扩展旅社范围");
-            add("message.otherworldinn.land_deed.fail_out_of_bounds", "无法扩展：超出最大范围！");
-            add("message.otherworldinn.land_deed.selection_cleared", "已取消选定范围。");
-            add("message.otherworldinn.land_deed.overlay.cancel", "取消选定");
-
-            // 房间钥匙
-            add("item.otherworldinn.room_key.bound", "%d号房间钥匙");
-            add("message.otherworldinn.room_key.bound", "成功绑定到房间 %d");
-            add("message.otherworldinn.room_key.unbound", "已解除绑定");
-            add("message.otherworldinn.room_key.no_room", "此处没有房间");
-            add("message.otherworldinn.room_key.overlay.bind", "绑定房间");
-            add("message.otherworldinn.room_key.overlay.unbind", "解除绑定");
-            add("tooltip.otherworldinn.room_key.room_id", "房间号: %d");
-            add("tooltip.otherworldinn.room_key.pos", "位置: %s -> %s");
-            add("tooltip.otherworldinn.room_key.beds", "床位: %d/%d");
-            add("tooltip.otherworldinn.room_key.price", "床位价格: §f\uE001§r %d");
-            
-            // 旅客入住
-            add("message.otherworldinn.room_key.checkin_success", "旅客成功入住到 %d 号房间！");
-            add("message.otherworldinn.room_key.checkin_fail_guest_busy", "该旅客已经住在其他房间了");
-            add("message.otherworldinn.room_key.checkin_fail_checked_out", "该旅客已经退房，准备离开了");
-            add("message.otherworldinn.room_key.checkin_fail_not_in_inn", "错误：旅客不在旅社范围内！");
-            add("message.otherworldinn.guest.checkout_payment", "旅客已支付房费：§f\uE001§r %d");
-
-            // Todo
-            add("message.otherworldinn.todo.new_task", "新待办事项: %s");
-            add("message.otherworldinn.room_key.checkin_fail_no_room", "房间不存在或已被拆除");
-            add("message.otherworldinn.room_key.checkin_fail_id_mismatch", "房间信息不匹配 请重新绑定钥匙");
-            add("message.otherworldinn.room_key.checkin_fail_full", "这间房似乎满了...");
-            add("message.otherworldinn.room_key.overlay.checkin", "安排入住 (消耗钥匙)");
-            
-            // 旅客姓名
-            add("guest.name.format", "%s·%s");
-            // First Names (20)
-            add("guest.name.first.1", "亚瑟");
-            add("guest.name.first.2", "贝阿特丽丝");
-            add("guest.name.first.3", "凯斯宾");
-            add("guest.name.first.4", "多里安");
-            add("guest.name.first.5", "埃莉诺");
-            add("guest.name.first.6", "菲利克斯");
-            add("guest.name.first.7", "吉迪恩");
-            add("guest.name.first.8", "海泽尔");
-            add("guest.name.first.9", "艾瑞丝");
-            add("guest.name.first.10", "朱利安");
-            add("guest.name.first.11", "凯尔");
-            add("guest.name.first.12", "莉珊德拉");
-            add("guest.name.first.13", "马格努斯");
-            add("guest.name.first.14", "诺拉");
-            add("guest.name.first.15", "奥赖恩");
-            add("guest.name.first.16", "帕西瓦尔");
-            add("guest.name.first.17", "奎因");
-            add("guest.name.first.18", "罗伊纳");
-            add("guest.name.first.19", "塞拉斯");
-            add("guest.name.first.20", "塔莉亚");
-            // Last Names (20)
-            add("guest.name.last.1", "阿什福德");
-            add("guest.name.last.2", "布莱克伍德");
-            add("guest.name.last.3", "克劳利");
-            add("guest.name.last.4", "达文波特");
-            add("guest.name.last.5", "埃弗哈特");
-            add("guest.name.last.6", "弗罗斯特");
-            add("guest.name.last.7", "格林");
-            add("guest.name.last.8", "霍桑");
-            add("guest.name.last.9", "铁木");
-            add("guest.name.last.10", "金克斯");
-            add("guest.name.last.11", "奈特");
-            add("guest.name.last.12", "洛夫莱斯");
-            add("guest.name.last.13", "穆恩");
-            add("guest.name.last.14", "夜影");
-            add("guest.name.last.15", "橡心");
-            add("guest.name.last.16", "潘德加斯特");
-            add("guest.name.last.17", "雷文斯克罗夫特");
-            add("guest.name.last.18", "斯托姆");
-            add("guest.name.last.19", "索恩");
-            add("guest.name.last.20", "温特");
-            
-            // 实体
-            add(ModEntities.ORDINARY_GUEST.get(), "普通旅客");
-
-        } else {
-            add("itemGroup.otherworldinn", "Otherworld Inn");
-            add("key.categories.otherworldinn", "Otherworld Inn");
-            add("key.otherworldinn.map_mode", "Map View");
-            
-            // 地图点名称 (Map Point Names)
-            add("map_point.otherworldinn.inn", "Otherworld Inn");
-            add("map_point.otherworldinn.blacksmith", "Blacksmith");
-            add("map_point.otherworldinn.town_gate", "Town Gate");
-            add("map_point.otherworldinn.locked", "Locked");
-            add("map_point.otherworldinn.cant_teleport", "Cannot teleport to");
-            
-            // Subtitles
-            add("subtitles.otherworldinn.payment", "Coins: Ding-ling");
-            
-            // 队伍命令 (Team Commands)
-            add("command.otherworldinn.team.already_in_team", "You are already in a team!");
-            add("command.otherworldinn.team.created", "Created team: %s");
-            add("command.otherworldinn.team.target_no_team", "Target player is not in a team!");
-            add("command.otherworldinn.team.joined", "Joined team: %s");
-            add("command.otherworldinn.team.not_in_team", "You are not in a team!");
-            add("command.otherworldinn.team.left", "Left the team.");
-            add("command.otherworldinn.team.not_leader", "Only the leader can perform this action!");
-            add("command.otherworldinn.team.target_not_in_team", "Target player is not in your team!");
-            add("command.otherworldinn.team.kick_self", "You cannot kick yourself! Use leave command.");
-            add("command.otherworldinn.team.kicked", "Kicked %s from the team.");
-            add("command.otherworldinn.team.you_were_kicked", "You were kicked from the team.");
-            add("command.otherworldinn.team.transferred", "Transferred leadership to %s");
-            add("command.otherworldinn.team.renamed", "Renamed team to: %s");
-            add("command.otherworldinn.team.teleport_set", "Team teleport capability set to: %s");
-            add("command.otherworldinn.team.edit_mode_enabled", "Edit mode enabled.");
-            add("command.otherworldinn.team.edit_mode_disabled", "Edit mode disabled.");
-            add("command.otherworldinn.team.edit_mode_fail", "Cannot enable edit mode! Ensure Inn is closed and has no guests.");
-            add("command.otherworldinn.team.open_status_set", "Inn open status set to: %s");
-            add("command.otherworldinn.team.point_unlocked", "Unlocked map point: %s (Team: %s)");
-            add("command.otherworldinn.team.point_locked", "Locked map point: %s (Team: %s)");
-            add("command.otherworldinn.team.coins.set", "Set team %s balance to §f\uE001§r %d");
-            add("command.otherworldinn.team.coins.add", "Added §f\uE001§r %d to team %s (Current: §f\uE001§r %d)");
-            add("command.otherworldinn.team.coins.remove", "Removed §f\uE001§r %d from team %s (Current: §f\uE001§r %d)");
-            add("command.otherworldinn.team.coins.remove_fail", "Failed to remove! Not enough balance (Current: §f\uE001§r %d)");
-            add("command.otherworldinn.team.coins.get", "Team %s current balance: §f\uE001§r %d");
-            
-            // Guest Names
-            add("guest.name.format", "%s %s");
-            // First Names (20)
-            add("guest.name.first.1", "Arthur");
-            add("guest.name.first.2", "Beatrice");
-            add("guest.name.first.3", "Caspian");
-            add("guest.name.first.4", "Dorian");
-            add("guest.name.first.5", "Eleanor");
-            add("guest.name.first.6", "Felix");
-            add("guest.name.first.7", "Gideon");
-            add("guest.name.first.8", "Hazel");
-            add("guest.name.first.9", "Iris");
-            add("guest.name.first.10", "Julian");
-            add("guest.name.first.11", "Kael");
-            add("guest.name.first.12", "Lysandra");
-            add("guest.name.first.13", "Magnus");
-            add("guest.name.first.14", "Nora");
-            add("guest.name.first.15", "Orion");
-            add("guest.name.first.16", "Percival");
-            add("guest.name.first.17", "Quinn");
-            add("guest.name.first.18", "Rowena");
-            add("guest.name.first.19", "Silas");
-            add("guest.name.first.20", "Thalia");
-            // Last Names (20)
-            add("guest.name.last.1", "Ashford");
-            add("guest.name.last.2", "Blackwood");
-            add("guest.name.last.3", "Crowley");
-            add("guest.name.last.4", "Davenport");
-            add("guest.name.last.5", "Everhart");
-            add("guest.name.last.6", "Frost");
-            add("guest.name.last.7", "Grimm");
-            add("guest.name.last.8", "Hawthorne");
-            add("guest.name.last.9", "Ironwood");
-            add("guest.name.last.10", "Jinx");
-            add("guest.name.last.11", "Knight");
-            add("guest.name.last.12", "Lovelace");
-            add("guest.name.last.13", "Moon");
-            add("guest.name.last.14", "Nightshade");
-            add("guest.name.last.15", "Oakheart");
-            add("guest.name.last.16", "Pendergast");
-            add("guest.name.last.17", "Ravenscroft");
-            add("guest.name.last.18", "Storm");
-            add("guest.name.last.19", "Thorne");
-            add("guest.name.last.20", "Winter");
-            
-            // Entities
-            add(ModEntities.ORDINARY_GUEST.get(), "Ordinary Guest");
-
-            // Admin Commands
-            add("command.otherworldinn.admin.reset_dimensions.start", "§c[Admin] Triggering forced dimension reset...");
-            
-            add("message.otherworldinn.reset.warning", "§c[Notice] §eWorld reset in %d seconds! All dimensions except Town will be wiped!");
-            add("message.otherworldinn.reset.start", "§c[WARNING] Resetting dimensions... Do not disconnect!");
-            add("message.otherworldinn.reset.teleported", "§aYou have been teleported to safety.");
-            add("message.otherworldinn.reset.complete", "§aDimension reset complete! New worlds await.");
-
-            // Protection Messages
-            add("message.otherworldinn.protection.deny", "You cannot modify blocks in the Town!");
-            add("message.otherworldinn.protection.banned_item", "This item is banned in the Town dimension!");
-            add("message.otherworldinn.protection.only_in_town", "This item can only be used in the Town dimension!");
-            
-            // Item Messages
-            add("item.otherworldinn.recall_scroll.fail_in_town", "Recall Scroll cannot be used in Town!");
-            add("tooltip.otherworldinn.banned_in_town", "§cBanned in this dimension");
-            add("tooltip.otherworldinn.only_in_town", "§cOnly usable in Town dimension");
-
-            // Room Register
-            add("message.otherworldinn.room_register.not_edit_mode", "Inn is not in edit mode!");
-            add("message.otherworldinn.room_register.pos1_set", "Position 1 set: %s");
-            add("message.otherworldinn.room_register.create_success", "Room created successfully!");
-            add("message.otherworldinn.room_register.remove_success", "Room with ID %s has been removed");
-            add("message.otherworldinn.room_register.invalid_room", "Invalid room structure!");
-            add("message.otherworldinn.room_register.validation.too_small", "Room is too small!");
-            add("message.otherworldinn.room_register.validation.out_of_bounds", "Room is out of inn bounds!");
-            add("message.otherworldinn.room_register.validation.hole_in_floor", "Hole in the floor!");
-            add("message.otherworldinn.room_register.validation.hole_in_ceiling", "Hole in the ceiling!");
-            add("message.otherworldinn.room_register.validation.hole_in_wall", "Hole in the walls!");
-            add("message.otherworldinn.room_register.validation.missing_door", "Missing door!");
-            add("message.otherworldinn.room_register.validation.missing_bed", "Missing clean bed!");
-            add("message.otherworldinn.room_register.validation.overlap", "Room overlaps with existing room!");
-            add("message.otherworldinn.room_register.remove_success_with_reason", "Room with ID %s has been removed. Reason: %s");
-            add("message.otherworldinn.room_register.manual_removal", "Manual Removal");
-            add("message.otherworldinn.room_register.validation.too_crowded", "Room is too crowded!");
-            
-            add("message.otherworldinn.room_register.overlay.delete_room", "Delete Room");
-            add("message.otherworldinn.room_register.overlay.add_room", "Add Room");
-            
-            // Todos
-            add("todo.otherworldinn.room_cleaning", "Room %s needs cleaning");
-            add("todo.otherworldinn.guest_waiting", "%s is waiting for check-in");
-
-            // Biomes
-            add("biome.otherworldinn.town", "Town");
-
-            // Furniture Stats
-            add("tooltip.otherworldinn.furniture.comfort", "§f\uE002§r Comfort: %s");
-            add("tooltip.otherworldinn.furniture.light", "§f\uE003§r Light: %s");
-            add("tooltip.otherworldinn.furniture.humidity", "§f\uE004§r Humidity: %s");
-
-            // Land Deed
-            add("message.otherworldinn.land_deed.pos1_set", "Position 1 set: %s");
-            add("message.otherworldinn.land_deed.pos2_set", "Position 2 set: %s");
-            add("message.otherworldinn.land_deed.success", "Inn area expanded successfully!");
-            add("message.otherworldinn.land_deed.overlay.set_pos1", "Set 1st Corner");
-            add("message.otherworldinn.land_deed.overlay.set_pos2", "Set 2nd Corner");
-            add("message.otherworldinn.land_deed.selection_cleared", "Selection cleared.");
-            add("message.otherworldinn.land_deed.overlay.cancel", "Cancel Selection");
-            add("message.otherworldinn.land_deed.overlay.set_pos2_with_cost", "Set 2nd Corner (Cost: §f\uE001§r %d)");
-            add("message.otherworldinn.land_deed.pos2_set_with_cost", "Successfully set 2nd Corner (Cost: §f\uE001§r %d)");
-            add("message.otherworldinn.land_deed.pos2_set_with_cost_fail", "Land Deed failed: Not enough balance! Need §f\uE001§r %d, have §f\uE001§r %d");
-            add("message.otherworldinn.land_deed.fail_no_money", "Expansion failed: Not enough balance! Need §f\uE001§r %d, have §f\uE001§r %d");
-            add("message.otherworldinn.land_deed.overlay.confirm", "Confirm Expansion");
-            add("message.otherworldinn.land_deed.overlay.confirm_with_cost", "Confirm Expansion (Cost: §f\uE001§r %d)");
-            add("message.otherworldinn.land_deed.fail_out_of_bounds", "Cannot expand: Exceeds maximum range! ");
-
-            // Room Key
-            add("item.otherworldinn.room_key.bound", "Room %d Key");
-            add("message.otherworldinn.room_key.bound", "Successfully bound to Room %d");
-            add("message.otherworldinn.room_key.unbound", "Unbound from room");
-            add("message.otherworldinn.room_key.no_room", "No room here");
-            add("message.otherworldinn.room_key.overlay.bind", "Bind Room");
-            add("message.otherworldinn.room_key.overlay.unbind", "Unbind Room");
-            add("tooltip.otherworldinn.room_key.room_id", "Room ID: %d");
-            add("tooltip.otherworldinn.room_key.pos", "Pos: %s -> %s");
-            add("tooltip.otherworldinn.room_key.beds", "Beds: %d/%d");
-            add("tooltip.otherworldinn.room_key.price", "Price: §f\uE001§r %d");
-
-            // Check In
-            add("message.otherworldinn.room_key.checkin_success", "Guest checked into room %d!");
-            add("message.otherworldinn.room_key.checkin_fail_guest_busy", "Guest is already in a room!");
-            add("message.otherworldinn.room_key.checkin_fail_checked_out", "Guest has already checked out!");
-            add("message.otherworldinn.room_key.checkin_fail_not_in_inn", "Error: Guest is not within any Inn area!");
-            add("message.otherworldinn.guest.checkout_payment", "Guest paid room fee: §f\uE001§r %d");
-            
-            // Todo
-            add("message.otherworldinn.todo.new_task", "New Task: %s");
-            add("message.otherworldinn.room_key.checkin_fail_no_room", "Room does not exist!");
-            add("message.otherworldinn.room_key.checkin_fail_id_mismatch", "Room mismatch! Please re-bind the key.");
-            add("message.otherworldinn.room_key.checkin_fail_full", "Room is full!");
-            add("message.otherworldinn.room_key.overlay.checkin", "Check In (Consumes Key)");
-        }
-
+    private void addGeneratedTranslations() {
+        boolean isZh = "zh_cn".equals(locale);
 
         // 生成方块语言键
         for (Map.Entry<DeferredBlock<?>, BlockDataGenInfo> entry : ModBlocks.BLOCK_INFOS.entrySet()) {
@@ -409,7 +466,7 @@ public class ModLanguageProvider extends LanguageProvider {
             if (name != null && !name.isEmpty()) {
                 add(block.get(), name);
             }
-            
+
             List<String> tooltips = isZh ? info.cnTooltips() : info.enTooltips();
             for (int i = 0; i < tooltips.size(); i++) {
                 add(block.get().getDescriptionId() + ".tooltip." + i, tooltips.get(i));
@@ -425,12 +482,41 @@ public class ModLanguageProvider extends LanguageProvider {
             if (name != null && !name.isEmpty()) {
                 add(item.get(), name);
             }
-            
+
             List<String> tooltips = isZh ? info.cnTooltips() : info.enTooltips();
             for (int i = 0; i < tooltips.size(); i++) {
                 add(item.get().getDescriptionId() + ".tooltip." + i, tooltips.get(i));
             }
         }
     }
-}
 
+    private TranslationBuilder entry(String key) {
+        return new TranslationBuilder(key);
+    }
+    
+    private TranslationBuilder entry(EntityType<?> entity) {
+        return new TranslationBuilder(entity.getDescriptionId());
+    }
+
+    private class TranslationBuilder {
+        private final String key;
+
+        public TranslationBuilder(String key) {
+            this.key = key;
+        }
+
+        public TranslationBuilder zh(String value) {
+            if ("zh_cn".equals(locale)) {
+                add(key, value);
+            }
+            return this;
+        }
+
+        public TranslationBuilder en(String value) {
+            if (!"zh_cn".equals(locale)) {
+                add(key, value);
+            }
+            return this;
+        }
+    }
+}

@@ -1,6 +1,7 @@
 package com.otherworldinn.compat;
 
 import com.otherworldinn.world.dimension.TownDimensions;
+import com.otherworldinn.world.inn.InnData.InnState;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
 import com.simibubi.create.api.contraption.BlockMovementChecks;
@@ -33,7 +34,7 @@ public class CreateCompat {
                 TeamData team = TeamManager.getInstance().getTeamAt(pos, serverLevel.getServer());
                 
                 // 如果不在任何队伍的旅社范围内，或者该旅社未开启编辑模式，则禁止移动
-                if (team == null || !team.getInnData().isEditMode()) {
+                if (team == null || team.getInnData().getState() != InnState.EDIT_MODE) {
                     return CheckResult.FAIL;
                 }
             }

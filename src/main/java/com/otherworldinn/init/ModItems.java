@@ -4,6 +4,7 @@ import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ItemDataGenInfo;
 import com.otherworldinn.foundation.ItemReg;
 import com.otherworldinn.item.BedSheetItem;
+import com.otherworldinn.item.InnKeyItem;
 import com.otherworldinn.item.LandDeedItem;
 import com.otherworldinn.item.MessyBedSheetItem;
 import com.otherworldinn.item.RecallScrollItem;
@@ -49,21 +50,26 @@ public class ModItems {
     public static final DeferredItem<RoomRegisterItem> ROOM_REGISTER = ROOM_REGISTER_REG.register();
 
     public static final ItemReg<RoomKeyItem> ROOM_KEY_REG = new ItemReg<>("room_key", RoomKeyItem::new)
+            .rarity(Rarity.COMMON)
             .stacksTo(1)
             .lang("Room Key", "房间钥匙")
             .tooltip("Right click room to bind", "右键房间绑定，左键解绑");
     public static final DeferredItem<RoomKeyItem> ROOM_KEY = ROOM_KEY_REG.register();
 
     public static final ItemReg<BedSheetItem> BED_SHEET_REG = new ItemReg<>("bed_sheet", BedSheetItem::new)
+            .rarity(Rarity.COMMON)
             .stacksTo(16)
             .durability(64)
-            .lang("Bed Sheet", "床单");
+            .lang("Bed Sheet", "床单")
+            .tooltip("Use to replace bed sheets for a messy bed", "对脏乱的床铺使用以更换床单");
     public static final DeferredItem<BedSheetItem> BED_SHEET = BED_SHEET_REG.register();
 
     public static final ItemReg<MessyBedSheetItem> MESSY_BED_SHEET_REG = new ItemReg<>("messy_bed_sheet", MessyBedSheetItem::new)
+            .rarity(Rarity.COMMON)
             .stacksTo(16)
             .durability(64)
-            .lang("Messy Bed Sheet", "脏乱的床单");
+            .lang("Messy Bed Sheet", "脏乱的床单")
+            .tooltip("Use it in water to clean", "在水中使用以清洗");
     public static final DeferredItem<MessyBedSheetItem> MESSY_BED_SHEET = MESSY_BED_SHEET_REG.register();
 
     public static final ItemReg<LandDeedItem> LAND_DEED_REG = new ItemReg<>("land_deed", LandDeedItem::new)
@@ -72,6 +78,13 @@ public class ModItems {
             .lang("Land Deed", "地契")
             .tooltip("Use on two corners to expand Inn area", "在两个角落使用以扩展旅社区域");
     public static final DeferredItem<LandDeedItem> LAND_DEED = LAND_DEED_REG.register();
+
+    public static final ItemReg<InnKeyItem> INN_KEY_REG = new ItemReg<>("inn_key", InnKeyItem::new)
+            .rarity(Rarity.RARE)
+            .stacksTo(1)
+            .lang("Inn Key", "旅社钥匙")
+            .tooltip("Right click Desk Bell to toggle Inn state", "潜行右键前台铃铛以切换旅社状态");
+    public static final DeferredItem<InnKeyItem> INN_KEY = INN_KEY_REG.register();
 
     // --- 辅助方法 ---
 

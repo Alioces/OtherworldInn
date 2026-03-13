@@ -2,6 +2,7 @@ package com.otherworldinn.world.event;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.world.dimension.TownDimensions;
+import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
 import net.minecraft.core.BlockPos;
@@ -63,7 +64,7 @@ public class TownProtectionHandler {
         }
 
         // 必须在旅社区域内，并且开启了编辑模式
-        return isInsideInnZone(team, pos) && team.getInnData().isEditMode();
+        return isInsideInnZone(team, pos) && team.getInnData().getState() != InnData.InnState.EDIT_MODE;
     }
     
     /**
@@ -127,7 +128,7 @@ public class TownProtectionHandler {
              if (serverLevel.dimension() == TownDimensions.TOWN_LEVEL) {
                  TeamData team = TeamManager.getInstance().getTeamAt(event.getPos(), serverLevel.getServer());
                  // 只有在开启了编辑模式的旅社区域内才允许破坏
-                 if (team == null || !team.getInnData().isEditMode()) {
+                 if (team == null || team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
                      event.setCanceled(true);
                  }
              }
@@ -152,7 +153,7 @@ public class TownProtectionHandler {
                 if (level instanceof ServerLevel serverLevel && level.dimension() == TownDimensions.TOWN_LEVEL) {
                     TeamData team = TeamManager.getInstance().getTeamAt(event.getPos(), serverLevel.getServer());
                     // 只有在开启了编辑模式的旅社区域内才允许放置
-                    if (team == null || !team.getInnData().isEditMode()) {
+                    if (team == null || team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
                         event.setCanceled(true);
                     }
                 }
@@ -163,7 +164,7 @@ public class TownProtectionHandler {
             if (level instanceof ServerLevel serverLevel && level.dimension() == TownDimensions.TOWN_LEVEL) {
                 TeamData team = TeamManager.getInstance().getTeamAt(event.getPos(), serverLevel.getServer());
                 // 只有在开启了编辑模式的旅社区域内才允许放置
-                if (team == null || !team.getInnData().isEditMode()) {
+                if (team == null || team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
                     event.setCanceled(true);
                 }
             }

@@ -63,7 +63,7 @@ public class MessyBedSheetItem extends Item {
                  BlockHitResult hitResult = getPlayerPOVHitResult(level, player, net.minecraft.world.level.ClipContext.Fluid.ANY);
                  if (hitResult.getType() == HitResult.Type.BLOCK) {
                      BlockPos pos = hitResult.getBlockPos();
-                     for(int i = 0; i < 5; ++i) {
+                     for(int i = 0; i < 25; ++i) {
                         level.addParticle(ParticleTypes.SPLASH, 
                             pos.getX() + 0.5 + (level.random.nextDouble() - 0.5), 
                             pos.getY() + 1.0, 
@@ -73,6 +73,10 @@ public class MessyBedSheetItem extends Item {
                             (level.random.nextDouble() - 0.5) * 0.5);
                      }
                  }
+            }
+            // 播放音效
+            if (level.getGameTime() % 10 == 0) {
+                level.playSound(player, player.blockPosition(), SoundEvents.BRUSH_GENERIC, SoundSource.PLAYERS, 1.0F, 1.0F);
             }
         }
     }

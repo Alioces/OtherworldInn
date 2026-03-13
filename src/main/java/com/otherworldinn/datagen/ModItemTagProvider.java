@@ -39,6 +39,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
         // 定义“仅城镇维度可用”标签
         tag(OtherworldInn.ONLY_IN_TOWN)
                 .add(ModItems.ROOM_REGISTER.get())
-                .add(ModItems.LAND_DEED.get());
+                .add(ModItems.LAND_DEED.get())
+                .add(ModItems.INN_KEY.get());
     }
 }

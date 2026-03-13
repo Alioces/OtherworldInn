@@ -5,6 +5,7 @@ import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.world.dimension.TownDimensions;
+import com.otherworldinn.world.inn.InnData.InnState;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
 import net.minecraft.core.BlockPos;
@@ -13,6 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -65,7 +67,7 @@ public class InnEventHandler {
         BlockPos pos = event.getPos();
         TeamData team = TeamManager.getInstance().getTeamAt(pos, level.getServer());
 
-        if (team != null && team.getInnData().isEditMode()) {
+        if (team != null && team.getInnData().getState() == InnState.EDIT_MODE) {
             synchronized (pendingChecks) {
                 pendingChecks.add(team.getTeamId());
             }
@@ -89,7 +91,7 @@ public class InnEventHandler {
 
         if (team != null) {
             // 如果是编辑模式，触发房间检查
-            if (team.getInnData().isEditMode()) {
+            if (team.getInnData().getState() == InnState.EDIT_MODE) {
                 synchronized (pendingChecks) {
                     pendingChecks.add(team.getTeamId());
                 }
@@ -117,7 +119,7 @@ public class InnEventHandler {
         BlockPos pos = event.getPos();
         TeamData team = TeamManager.getInstance().getTeamAt(pos, level.getServer());
 
-        if (team != null && team.getInnData().isEditMode()) {
+        if (team != null && team.getInnData().getState() == InnState.EDIT_MODE) {
             synchronized (pendingChecks) {
                 pendingChecks.add(team.getTeamId());
             }
@@ -249,6 +251,96 @@ public class InnEventHandler {
     }
 
     /**
+     * 处理玩家右键点击方块事件 (服务器端)
+     * <p>
+     * 1. 铃铛：手持工具切换装修模式
+     * </p>
+     */
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        Level level = event.getLevel();
+        if (level.isClientSide) return;
+
+        BlockPos pos = event.getPos();
+        Player player = event.getEntity();
+        if (!player.isShiftKeyDown()) return;
+        
+        // 检查是否点击的是 DeskBell
+        if (level.getBlockEntity(pos) instanceof com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity) {
+            ItemStack heldItem = player.getItemInHand(event.getHand());
+            
+            // 检查是否持有工具 (斧、镐、铲、锄)
+            if (isTool(heldItem)) {
+                if (level instanceof ServerLevel serverLevel && level.dimension() == TownDimensions.TOWN_LEVEL) {
+                    TeamData team = TeamManager.getInstance().getTeamAt(pos, serverLevel.getServer());
+                    
+                    if (team != null) {
+                        // 检查权限
+                        if (!team.hasMember(player.getUUID())) {
+                            player.displayClientMessage(Component.translatable("message.otherworldinn.inn_key.no_permission")
+                                    .withStyle(style -> style.withColor(ModColors.ERROR)), true);
+                            event.setCanceled(true);
+                            return;
+                        }
+
+                        InnData innData = team.getInnData();
+                        InnState currentState = innData.getState();
+                        SoundEvent sound = null;
+                        
+                        InnState newState;
+                        if (currentState == InnState.EDIT_MODE) {
+                            newState = InnState.CLOSED;
+                        } else {
+                            if (currentState == InnState.OPEN) {
+                                player.displayClientMessage(Component.translatable("message.otherworldinn.inn_key.fail_open")
+                                        .withStyle(style -> style.withColor(ModColors.ERROR)), true);
+                                return;
+                            }
+                            if (!innData.getGuestIds().isEmpty()) {
+                                player.displayClientMessage(Component.translatable("message.otherworldinn.inn_key.fail_guests")
+                                        .withStyle(style -> style.withColor(ModColors.ERROR)), true);
+                                return;
+                            }
+                            newState = InnState.EDIT_MODE;
+                        }
+                        
+                        if (innData.setState(newState)) {
+                            TeamManager.getInstance().syncTeam(team, serverLevel.getServer());
+                            
+                            // 发送反馈消息
+                            Component message;
+                            int color;
+                            switch (newState) {
+                                case EDIT_MODE:
+                                    message = Component.translatable("message.otherworldinn.desk_bell.status.edit_mode");
+                                    color = 0x1E90FF;
+                                    sound = SoundEvents.PISTON_EXTEND;
+                                    break;
+                                case CLOSED:
+                                default: // 从 EDIT_MODE 切回时默认为 CLOSED
+                                    message = Component.translatable("message.otherworldinn.desk_bell.status.closed");
+                                    color = 0xFF6A6A;
+                                    sound = SoundEvents.PISTON_CONTRACT;
+                                    break;
+                            }
+                            
+                            level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
+                            player.displayClientMessage(message.copy().withStyle(style -> style.withColor(color)), true);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean isTool(ItemStack stack) {
+        return stack.is(net.minecraft.tags.ItemTags.AXES) || 
+               stack.is(net.minecraft.tags.ItemTags.PICKAXES) || 
+               stack.is(net.minecraft.tags.ItemTags.SHOVELS) || 
+               stack.is(net.minecraft.tags.ItemTags.HOES);
+    }
+
+    /**
      * 处理左键点击方块的公共逻辑
      * <p>
      * 检查玩家副手是否持有房间登记册，且处于编辑模式下。
@@ -274,7 +366,7 @@ public class InnEventHandler {
         if (level.dimension() != TownDimensions.TOWN_LEVEL) return;
 
         TeamData team = TeamManager.getInstance().getPlayerTeam(serverPlayer);
-        if (team != null && team.getInnData().isEditMode()) {
+        if (team != null && team.getInnData().getState() == InnState.EDIT_MODE) {
             InnData innData = team.getInnData();
 
             RoomData room = innData.getRoomAt(pos);
