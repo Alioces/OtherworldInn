@@ -4,9 +4,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -25,7 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.otherworldinn.world.inventory.StoreMenu;
+
 import net.minecraft.resources.ResourceLocation;
+import java.util.function.Consumer;
+
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * 商店实体抽象父类
@@ -218,6 +220,37 @@ public abstract class StoreEntity extends PathfinderMob {
     // --- 商品管理 ---
 
     /**
+     * 添加固定商品 (通过 ResourceLocation)
+     * 
+     * @param itemId 物品 ID (例如 "minecraft:apple" 或 "create:zinc_ingot")
+     * @param price 价格
+     * @param maxStock 最大库存
+     */
+    public void addStoreItem(String itemId, int price, int maxStock) {
+        ResourceLocation rl = ResourceLocation.tryParse(itemId);
+        if (rl != null) {
+            BuiltInRegistries.ITEM.getOptional(rl)
+                .ifPresent(item -> this.addStoreItem(new ItemStack(item), price, maxStock));
+        }
+    }
+    
+    /**
+     * 添加固定商品 (通过 ResourceLocation, 带修改器)
+     * 
+     * @param itemId 物品 ID
+     * @param price 价格
+     * @param maxStock 最大库存
+     * @param modifier 修改器
+     */
+    public void addStoreItem(String itemId, int price, int maxStock, Consumer<ItemStack> modifier) {
+        ResourceLocation rl = ResourceLocation.tryParse(itemId);
+        if (rl != null) {
+            BuiltInRegistries.ITEM.getOptional(rl)
+                .ifPresent(item -> this.addStoreItem(new ItemStack(item), price, maxStock, modifier));
+        }
+    }
+
+    /**
      * 添加固定商品
      * <p>
      * 这些商品在刷新时不会被移除，只会补充库存。
@@ -240,7 +273,7 @@ public abstract class StoreEntity extends PathfinderMob {
      * @param maxStock 最大库存
      * @param modifier 对物品栈的自定义修改操作 (例如设置耐久、附魔等)
      */
-    public void addStoreItem(ItemStack item, int price, int maxStock, java.util.function.Consumer<ItemStack> modifier) {
+    public void addStoreItem(ItemStack item, int price, int maxStock, Consumer<ItemStack> modifier) {
         ItemStack copy = item.copy();
         if (modifier != null) {
             modifier.accept(copy);
