@@ -334,6 +334,15 @@ public class TeamManager {
     private TeamData clientTeamCache;
 
     /**
+     * 获取客户端缓存的队伍数据
+     *
+     * @return 客户端缓存的 TeamData，可能为 null
+     */
+    public TeamData getClientTeamCache() {
+        return clientTeamCache;
+    }
+
+    /**
      * 客户端获取当前玩家的队伍数据
      *
      * @return 客户端缓存的队伍数据

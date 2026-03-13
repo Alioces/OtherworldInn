@@ -6,6 +6,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 
+import com.otherworldinn.entity.store.BlacksmithEntity;
+import com.otherworldinn.entity.store.RandomMerchantEntity;
+
 /**
  * 模组事件总线事件处理器
  */
@@ -15,5 +18,7 @@ public class ModEventBusEvents {
     @SubscribeEvent
     public static void onAttributeCreation(EntityAttributeCreationEvent event) {
         event.put(ModEntities.ORDINARY_GUEST.get(), GuestEntity.createAttributes().build());
+        event.put(ModEntities.BLACKSMITH.get(), BlacksmithEntity.createAttributes().build());
+        event.put(ModEntities.RANDOM_MERCHANT.get(), RandomMerchantEntity.createAttributes().build());
     }
 }

@@ -8,6 +8,7 @@ import com.otherworldinn.init.ModCreativeModeTabs;
 import com.otherworldinn.init.ModDimensions;
 import com.otherworldinn.init.ModEntities;
 import com.otherworldinn.init.ModItems;
+import com.otherworldinn.init.ModMenuTypes;
 import com.otherworldinn.init.ModSounds;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -41,6 +42,7 @@ public class OtherworldInn {
         ModBlocks.BLOCKS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModEntities.ENTITY_TYPES.register(modEventBus);
+        ModMenuTypes.MENU_TYPES.register(modEventBus);
         ModCreativeModeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         ModDimensions.register(modEventBus);
         ModSounds.SOUND_EVENTS.register(modEventBus);

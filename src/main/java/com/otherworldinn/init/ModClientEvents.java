@@ -8,8 +8,13 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+
+import com.otherworldinn.client.gui.store.StoreScreen;
+import com.otherworldinn.client.renderer.BlacksmithRenderer;
 import com.otherworldinn.client.renderer.GuestRenderer;
+import com.otherworldinn.client.renderer.RandomMerchantRenderer;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 /**
  * 模组客户端事件处理器
@@ -35,6 +40,13 @@ public class ModClientEvents {
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.ORDINARY_GUEST.get(), GuestRenderer::new);
+        event.registerEntityRenderer(ModEntities.BLACKSMITH.get(), BlacksmithRenderer::new);
+        event.registerEntityRenderer(ModEntities.RANDOM_MERCHANT.get(), RandomMerchantRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterScreens(RegisterMenuScreensEvent event) {
+        event.register(ModMenuTypes.STORE_MENU.get(), StoreScreen::new);
     }
 
     @SubscribeEvent

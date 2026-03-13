@@ -452,6 +452,32 @@ public class ModLanguageProvider extends LanguageProvider {
         entry(ModEntities.ORDINARY_GUEST.get())
                 .zh("普通旅客")
                 .en("Ordinary Guest");
+        entry(ModEntities.BLACKSMITH.get())
+                .zh("铁匠")
+                .en("Blacksmith");
+        entry(ModEntities.RANDOM_MERCHANT.get())
+                .zh("旅行商人")
+                .en("Traveling Merchant");
+
+        // 商店 GUI
+        entry("gui.otherworldinn.store.confirm")
+                .zh("确定")
+                .en("Confirm");
+        entry("gui.otherworldinn.store.purchase")
+                .zh("%s§f\uE001§r购买")
+                .en("%s§f\uE001§rBuy");
+        entry("gui.otherworldinn.store.price")
+                .zh("价格: %s§f\uE001§r")
+                .en("Price: %s§f\uE001§r");
+        entry("gui.otherworldinn.store.stock")
+                .zh("库存: %s/%s")
+                .en("Stock: %s/%s");
+        entry("gui.otherworldinn.store.stock.infinite")
+                .zh("库存: 无限")
+                .en("Stock: Infinite");
+        entry("gui.otherworldinn.store.balance")
+                .zh("余额: %s §f\uE001§r")
+                .en("Balance: %s §f\uE001§r");
     }
 
     private void addGeneratedTranslations() {

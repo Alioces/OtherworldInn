@@ -1,6 +1,7 @@
 package com.otherworldinn.network;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.network.packet.C2SStorePurchasePacket;
 import com.otherworldinn.network.packet.C2STeleportOverworldPacket;
 import com.otherworldinn.network.packet.C2STeleportPacket;
 import com.otherworldinn.network.packet.S2CTeamSyncPacket;
@@ -42,6 +43,12 @@ public class ModMessages {
                 C2STeleportOverworldPacket.TYPE,
                 C2STeleportOverworldPacket.STREAM_CODEC,
                 C2STeleportOverworldPacket::handle
+        );
+
+        registrar.playToServer(
+                C2SStorePurchasePacket.TYPE,
+                C2SStorePurchasePacket.STREAM_CODEC,
+                C2SStorePurchasePacket::handle
         );
     }
 
