@@ -121,7 +121,12 @@ public class BlacksmithEntity extends StoreEntity {
         this.addStoreItem(new ItemStack(AllItems.ZINC_INGOT.get()), 8, 32);
         this.addStoreItem(new ItemStack(Items.COPPER_INGOT), 6, 32);
         this.addStoreItem(new ItemStack(Items.GOLD_INGOT), 15, 16);
-        
+
+        //好感度物品
+        this.addFavorStoreItem(2, new ItemStack(AllItems.ANDESITE_ALLOY.get()), 4, 32);
+        this.addFavorStoreItem(4, new ItemStack(AllItems.BRASS_INGOT.get()), 10, 32);
+        this.addFavorStoreItem(6, new ItemStack(AllItems.POLISHED_ROSE_QUARTZ.get()), 12, 32);
+        this.addFavorStoreItem(8, new ItemStack(AllItems.STURDY_SHEET.get()), 8, 32);
     }
 
     public static AttributeSupplier.Builder createAttributes() {

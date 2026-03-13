@@ -43,6 +43,24 @@ import net.minecraft.core.registries.BuiltInRegistries;
  * </p>
  */
 public abstract class StoreEntity extends PathfinderMob {
+    private static final int MAX_FAVOR_LEVEL = 10;
+    private static final int COINS_PER_FAVOR_LEVEL = 500;
+    private static final double MAX_LEVEL_DISCOUNT_RATE = 0.7D;
+
+    public static int getMaxFavorLevelValue() {
+        return MAX_FAVOR_LEVEL;
+    }
+
+    public static int getCoinsPerFavorLevelValue() {
+        return COINS_PER_FAVOR_LEVEL;
+    }
+
+    public static int getDiscountedPriceForFavorLevel(int basePrice, int favorLevel) {
+        if (favorLevel >= MAX_FAVOR_LEVEL) {
+            return Math.max(1, (int) Math.floor(basePrice * MAX_LEVEL_DISCOUNT_RATE));
+        }
+        return basePrice;
+    }
 
     /**
      * 商品列表 (合并了固定商品和随机商品)
@@ -61,6 +79,9 @@ public abstract class StoreEntity extends PathfinderMob {
      * 上次进货的日期 (GameTime / 24000)
      */
     private long lastRestockDay = 0;
+    private int totalSpentCoins = 0;
+    private int favorLevel = 1;
+    private final List<FavorStoreItemData> favorStoreItems = new ArrayList<>();
 
     /**
      * 待机/循环动画状态
@@ -129,6 +150,8 @@ public abstract class StoreEntity extends PathfinderMob {
             );
             serverPlayer.openMenu(menuProvider, (buf) -> {
                 buf.writeInt(this.getId()); // 传递实体 ID 以便客户端获取实体
+                buf.writeInt(this.favorLevel);
+                buf.writeInt(this.totalSpentCoins);
                 
                 // 序列化商品列表
                 buf.writeInt(this.storeItems.size());
@@ -280,9 +303,106 @@ public abstract class StoreEntity extends PathfinderMob {
         }
         this.addStoreItem(copy, price, maxStock);
     }
+
+    public int getFavorLevel() {
+        return this.favorLevel;
+    }
+
+    public int getTotalSpentCoins() {
+        return this.totalSpentCoins;
+    }
+
+    public boolean canPurchase(StoreItem item) {
+        return item.getRequiredFavorLevel() <= this.favorLevel;
+    }
+
+    public int getPurchasePrice(StoreItem item) {
+        return getDiscountedPriceForFavorLevel(item.getPrice(), this.favorLevel);
+    }
+
+    public void addSpentCoins(int spentCoins) {
+        if (spentCoins <= 0) {
+            return;
+        }
+        this.totalSpentCoins += spentCoins;
+        int newLevel = this.calculateFavorLevel(this.totalSpentCoins);
+        if (newLevel != this.favorLevel) {
+            this.favorLevel = newLevel;
+            this.unlockFavorStoreItems();
+        }
+    }
+
+    public void addFavorStoreItem(int requiredFavorLevel, ItemStack item, int price, int maxStock) {
+        this.addFavorStoreItem(requiredFavorLevel, item, price, maxStock, null);
+    }
+
+    public void addFavorStoreItem(int requiredFavorLevel, ItemStack item, int price, int maxStock, Consumer<ItemStack> modifier) {
+        if (requiredFavorLevel < 2 || requiredFavorLevel > MAX_FAVOR_LEVEL) {
+            return;
+        }
+        ItemStack copy = item.copy();
+        if (modifier != null) {
+            modifier.accept(copy);
+        }
+        this.favorStoreItems.add(new FavorStoreItemData(requiredFavorLevel, copy, price, maxStock));
+        if (this.hasFixedItem(copy, price, maxStock, requiredFavorLevel)) {
+            return;
+        }
+        int insertIndex = Math.min(this.fixedItemsCount, this.storeItems.size());
+        this.storeItems.add(insertIndex, new StoreItem(copy, price, maxStock, maxStock, requiredFavorLevel));
+        this.fixedItemsCount++;
+    }
+
+    public void addFavorStoreItem(int requiredFavorLevel, String itemId, int price, int maxStock) {
+        ResourceLocation rl = ResourceLocation.tryParse(itemId);
+        if (rl != null) {
+            BuiltInRegistries.ITEM.getOptional(rl)
+                .ifPresent(item -> this.addFavorStoreItem(requiredFavorLevel, new ItemStack(item), price, maxStock));
+        }
+    }
+
+    public void addFavorStoreItem(int requiredFavorLevel, String itemId, int price, int maxStock, Consumer<ItemStack> modifier) {
+        ResourceLocation rl = ResourceLocation.tryParse(itemId);
+        if (rl != null) {
+            BuiltInRegistries.ITEM.getOptional(rl)
+                .ifPresent(item -> this.addFavorStoreItem(requiredFavorLevel, new ItemStack(item), price, maxStock, modifier));
+        }
+    }
     
     public List<StoreItem> getStoreItems() {
         return this.storeItems;
+    }
+
+    private int calculateFavorLevel(int spentCoins) {
+        int level = 1 + (spentCoins / COINS_PER_FAVOR_LEVEL);
+        if (level < 1) {
+            return 1;
+        }
+        return Math.min(level, MAX_FAVOR_LEVEL);
+    }
+
+    private void unlockFavorStoreItems() {
+        for (FavorStoreItemData favorItem : this.favorStoreItems) {
+            if (this.hasFixedItem(favorItem.itemStack(), favorItem.price(), favorItem.maxStock(), favorItem.requiredFavorLevel())) {
+                continue;
+            }
+            int insertIndex = Math.min(this.fixedItemsCount, this.storeItems.size());
+            this.storeItems.add(insertIndex, new StoreItem(favorItem.itemStack().copy(), favorItem.price(), favorItem.maxStock(), favorItem.maxStock(), favorItem.requiredFavorLevel()));
+            this.fixedItemsCount++;
+        }
+    }
+
+    private boolean hasFixedItem(ItemStack itemStack, int price, int maxStock, int requiredFavorLevel) {
+        for (int i = 0; i < this.fixedItemsCount && i < this.storeItems.size(); i++) {
+            StoreItem existing = this.storeItems.get(i);
+            if (ItemStack.isSameItemSameComponents(existing.getItemStack(), itemStack)
+                && existing.getPrice() == price
+                && existing.getMaxStock() == maxStock
+                && existing.getRequiredFavorLevel() == requiredFavorLevel) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -392,6 +512,8 @@ public abstract class StoreEntity extends PathfinderMob {
         super.addAdditionalSaveData(compound);
         compound.putLong("LastRestockDay", this.lastRestockDay);
         compound.putInt("FixedItemsCount", this.fixedItemsCount);
+        compound.putInt("FavorSpentCoins", this.totalSpentCoins);
+        compound.putInt("FavorLevel", this.favorLevel);
         ListTag itemsTag = new ListTag();
         HolderLookup.Provider registryAccess = this.registryAccess();
         for (StoreItem storeItem : this.storeItems) {
@@ -409,6 +531,15 @@ public abstract class StoreEntity extends PathfinderMob {
         if (compound.contains("FixedItemsCount")) {
             this.fixedItemsCount = compound.getInt("FixedItemsCount");
         }
+        if (compound.contains("FavorSpentCoins")) {
+            this.totalSpentCoins = compound.getInt("FavorSpentCoins");
+        }
+        if (compound.contains("FavorLevel")) {
+            this.favorLevel = compound.getInt("FavorLevel");
+        } else {
+            this.favorLevel = this.calculateFavorLevel(this.totalSpentCoins);
+        }
+        this.favorLevel = Math.max(1, Math.min(MAX_FAVOR_LEVEL, this.favorLevel));
         if (compound.contains("StoreItems", Tag.TAG_LIST)) {
             ListTag itemsTag = compound.getList("StoreItems", Tag.TAG_COMPOUND);
             HolderLookup.Provider registryAccess = this.registryAccess();
@@ -419,6 +550,8 @@ public abstract class StoreEntity extends PathfinderMob {
                 }
             }
         }
+        this.fixedItemsCount = Math.min(this.fixedItemsCount, this.storeItems.size());
+        this.unlockFavorStoreItems();
     }
 
     /**
@@ -430,6 +563,8 @@ public abstract class StoreEntity extends PathfinderMob {
         }
     }
 
+    public record FavorStoreItemData(int requiredFavorLevel, ItemStack itemStack, int price, int maxStock) {}
+
     /**
      * 商品条目内部类
      */
@@ -438,23 +573,26 @@ public abstract class StoreEntity extends PathfinderMob {
         private int price;
         private int maxStock;
         private int currentStock;
+        private final int requiredFavorLevel;
 
         public StoreItem(ItemStack itemStack, int price) {
             this(itemStack, price, -1);
         }
 
         public StoreItem(ItemStack itemStack, int price, int maxStock) {
-            this.itemStack = itemStack;
-            this.price = price;
-            this.maxStock = maxStock;
-            this.currentStock = maxStock; // 默认满库存
+            this(itemStack, price, maxStock, maxStock, 1);
         }
 
         public StoreItem(ItemStack itemStack, int price, int maxStock, int currentStock) {
+            this(itemStack, price, maxStock, currentStock, 1);
+        }
+
+        public StoreItem(ItemStack itemStack, int price, int maxStock, int currentStock, int requiredFavorLevel) {
             this.itemStack = itemStack;
             this.price = price;
             this.maxStock = maxStock;
             this.currentStock = currentStock;
+            this.requiredFavorLevel = Math.max(1, requiredFavorLevel);
         }
 
         public ItemStack getItemStack() {
@@ -479,6 +617,10 @@ public abstract class StoreEntity extends PathfinderMob {
 
         public void setCurrentStock(int currentStock) {
             this.currentStock = currentStock;
+        }
+
+        public int getRequiredFavorLevel() {
+            return this.requiredFavorLevel;
         }
 
         /**
@@ -525,6 +667,7 @@ public abstract class StoreEntity extends PathfinderMob {
             tag.putInt("Price", price);
             tag.putInt("MaxStock", maxStock);
             tag.putInt("CurrentStock", currentStock);
+            tag.putInt("RequiredFavorLevel", requiredFavorLevel);
             return tag;
         }
 
@@ -536,7 +679,8 @@ public abstract class StoreEntity extends PathfinderMob {
             int price = tag.getInt("Price");
             int maxStock = tag.contains("MaxStock") ? tag.getInt("MaxStock") : -1;
             int currentStock = tag.contains("CurrentStock") ? tag.getInt("CurrentStock") : maxStock;
-            return new StoreItem(stack, price, maxStock, currentStock);
+            int requiredFavorLevel = tag.contains("RequiredFavorLevel") ? tag.getInt("RequiredFavorLevel") : 1;
+            return new StoreItem(stack, price, maxStock, currentStock, requiredFavorLevel);
         }
     }
 }

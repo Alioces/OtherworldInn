@@ -30,11 +30,15 @@ import com.otherworldinn.world.team.TeamManager;
  */
 public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
 
+    private static final ResourceLocation FAVOR_BAR_BG_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/experience_bar_background.png");
+    private static final ResourceLocation FAVOR_BAR_FILL_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/experience_bar_progress.png");
     private static final int GRID_COLS = 4;
     private static final int GRID_ROWS = 5;
     private static final int GOODS_DISPLAY_ROWS = 4;
     private static final int SLOT_SIZE = 18;
     private static final int SLOT_SPACING = 2;
+    private static final int FAVOR_BAR_WIDTH = 3 * SLOT_SIZE;
+    private static final int FAVOR_BAR_HEIGHT = 5;
 
     private final ResourceLocation backgroundTexture;
 
@@ -169,9 +173,9 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         
         if (existingIndex != -1) {
             StoreEntity.StoreItem cartItem = this.cart.get(existingIndex);
-            this.cart.set(existingIndex, new StoreEntity.StoreItem(cartItem.getItemStack(), cartItem.getPrice(), -1, newQuantity));
+            this.cart.set(existingIndex, new StoreEntity.StoreItem(cartItem.getItemStack(), this.getDisplayPrice(item), -1, newQuantity));
         } else {
-            this.cart.add(new StoreEntity.StoreItem(item.getItemStack(), item.getPrice(), -1, newQuantity));
+            this.cart.add(new StoreEntity.StoreItem(item.getItemStack(), this.getDisplayPrice(item), -1, newQuantity));
         }
         
         this.updateButtons();
@@ -204,6 +208,37 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         
         this.purchaseButton.setMessage(priceText);
         this.purchaseButton.active = !this.cart.isEmpty() && canAfford;
+    }
+
+    private int getCurrentFavorLevel() {
+        return this.menu.getFavorLevel();
+    }
+
+    private boolean isFavorLocked(StoreEntity.StoreItem item) {
+        return item.getRequiredFavorLevel() > this.getCurrentFavorLevel();
+    }
+
+    private int getDisplayPrice(StoreEntity.StoreItem item) {
+        return StoreEntity.getDiscountedPriceForFavorLevel(item.getPrice(), this.getCurrentFavorLevel());
+    }
+
+    private int getFavorBarX() {
+        int goodsAreaWidth = GRID_COLS * (SLOT_SIZE + SLOT_SPACING) - SLOT_SPACING;
+        return 20 + (goodsAreaWidth - FAVOR_BAR_WIDTH) / 2;
+    }
+
+    private int getFavorBarY() {
+        return this.titleLabelY + 3;
+    }
+
+    private float getFavorFillRatio() {
+        int maxLevel = StoreEntity.getMaxFavorLevelValue();
+        int coinsPerLevel = StoreEntity.getCoinsPerFavorLevelValue();
+        int maxSpent = (maxLevel - 1) * coinsPerLevel;
+        if (maxSpent <= 0) {
+            return 1.0F;
+        }
+        return net.minecraft.util.Mth.clamp(this.menu.getTotalSpentCoins() / (float) maxSpent, 0.0F, 1.0F);
     }
 
     @Override
@@ -265,6 +300,14 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         // 不渲染 "Inventory" 和 "Hotbar" 标签
         guiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
+        int favorBarX = this.getFavorBarX();
+        int favorBarY = this.getFavorBarY();
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        guiGraphics.blit(FAVOR_BAR_BG_TEXTURE, favorBarX, favorBarY, 0, 0, FAVOR_BAR_WIDTH, FAVOR_BAR_HEIGHT, 182, 5);
+        int fillWidth = Math.round(FAVOR_BAR_WIDTH * this.getFavorFillRatio());
+        if (fillWidth > 0) {
+            guiGraphics.blit(FAVOR_BAR_FILL_TEXTURE, favorBarX, favorBarY, 0, 0, fillWidth, FAVOR_BAR_HEIGHT, 182, 5);
+        }
         
         // 渲染玩家余额 (居中)
         int playerBalance = 0;
@@ -328,9 +371,10 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             
             // 绘制物品
             StoreEntity.StoreItem storeItem = items.get(i);
+            boolean isFavorLocked = this.isFavorLocked(storeItem);
             boolean isOutOfStock = storeItem.getMaxStock() != -1 && storeItem.getCurrentStock() <= 0;
             
-            if (isOutOfStock) {
+            if (isOutOfStock || isFavorLocked) {
                 // 绘制灰色遮罩
                 guiGraphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0xA0000000);
             }
@@ -362,6 +406,9 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                     color = 0xFFFF00;
                 }
             }
+            if (isFavorLocked) {
+                color = ModColors.ERROR;
+            }
             
             // 渲染带阴影的文字，类似于物品数量
             guiGraphics.pose().pushPose();
@@ -371,13 +418,11 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             
             // 选中高亮 (最后绘制以覆盖在物品上方，确保可见)
             if (items.get(i) == this.selectedItem) {
-                // renderOutline
                 color = 0xFFF8F8FF;
-                int borderSize = 1;
-                guiGraphics.fill(x - borderSize, y - borderSize, x + SLOT_SIZE + borderSize, y, color); // 上
-                guiGraphics.fill(x - borderSize, y + SLOT_SIZE, x + SLOT_SIZE + borderSize, y + SLOT_SIZE + borderSize, color); // 下
-                guiGraphics.fill(x - borderSize, y, x, y + SLOT_SIZE, color); // 左
-                guiGraphics.fill(x + SLOT_SIZE, y, x + SLOT_SIZE + borderSize, y + SLOT_SIZE, color); // 右
+                guiGraphics.fill(x, y, x + SLOT_SIZE, y + 1, color); // 上
+                guiGraphics.fill(x, y + SLOT_SIZE - 1, x + SLOT_SIZE, y + SLOT_SIZE, color); // 下
+                guiGraphics.fill(x, y, x + 1, y + SLOT_SIZE, color); // 左
+                guiGraphics.fill(x + SLOT_SIZE - 1, y, x + SLOT_SIZE, y + SLOT_SIZE, color); // 右
             }
         }
         guiGraphics.disableScissor();
@@ -453,6 +498,9 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             int y = startY + row * (SLOT_SIZE + SLOT_SPACING);
             
             if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y && mouseY < y + SLOT_SIZE) {
+                if (this.isFavorLocked(items.get(i))) {
+                    return false;
+                }
                 // 如果没有库存，不允许选择
                 if (items.get(i).getMaxStock() != -1 && items.get(i).getCurrentStock() <= 0) {
                      return false;
@@ -488,6 +536,25 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
     @Override
     protected void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         super.renderTooltip(guiGraphics, mouseX, mouseY);
+        int favorBarX = this.leftPos + this.getFavorBarX();
+        int favorBarY = this.topPos + this.getFavorBarY();
+        if (mouseX >= favorBarX && mouseX < favorBarX + FAVOR_BAR_WIDTH && mouseY >= favorBarY && mouseY < favorBarY + FAVOR_BAR_HEIGHT) {
+            int favorLevel = this.menu.getFavorLevel();
+            int coinsPerLevel = StoreEntity.getCoinsPerFavorLevelValue();
+            int maxLevel = StoreEntity.getMaxFavorLevelValue();
+            int spentInCurrentLevel = this.menu.getTotalSpentCoins() - Math.max(0, (favorLevel - 1) * coinsPerLevel);
+            int requiredForNext = favorLevel >= maxLevel ? coinsPerLevel : coinsPerLevel;
+            if (favorLevel >= maxLevel) {
+                spentInCurrentLevel = coinsPerLevel;
+            } else {
+                spentInCurrentLevel = net.minecraft.util.Mth.clamp(spentInCurrentLevel, 0, coinsPerLevel);
+            }
+            List<Component> favorTooltip = new ArrayList<>();
+            favorTooltip.add(Component.translatable("gui.otherworldinn.store.favor.level", favorLevel));
+            favorTooltip.add(Component.translatable("gui.otherworldinn.store.favor.progress", spentInCurrentLevel, requiredForNext));
+            guiGraphics.renderTooltip(this.font, favorTooltip, java.util.Optional.empty(), mouseX, mouseY);
+            return;
+        }
         
         // 渲染商品 Tooltip
         int startX = this.leftPos + 20;
@@ -511,12 +578,16 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 List<Component> tooltip = getTooltipFromItem(minecraft, item.getItemStack());
                 
                 // 使用翻译键和自定义图标
-                tooltip.add(Component.translatable("gui.otherworldinn.store.price", item.getPrice()).withStyle(net.minecraft.ChatFormatting.YELLOW));
+                tooltip.add(Component.translatable("gui.otherworldinn.store.price", this.getDisplayPrice(item)).withStyle(net.minecraft.ChatFormatting.YELLOW));
                 
                 if (item.getMaxStock() != -1) {
                      tooltip.add(Component.translatable("gui.otherworldinn.store.stock", item.getCurrentStock(), item.getMaxStock()).withStyle(net.minecraft.ChatFormatting.GRAY));
                 } else {
                      tooltip.add(Component.translatable("gui.otherworldinn.store.stock.infinite").withStyle(net.minecraft.ChatFormatting.GRAY));
+                }
+                if (this.isFavorLocked(item)) {
+                    tooltip.add(Component.translatable("gui.otherworldinn.store.favor_unlock", item.getRequiredFavorLevel())
+                            .withStyle(style -> style.withColor(ModColors.ERROR)));
                 }
                 guiGraphics.renderTooltip(this.font, tooltip, item.getItemStack().getTooltipImage(), mouseX, mouseY);
             }

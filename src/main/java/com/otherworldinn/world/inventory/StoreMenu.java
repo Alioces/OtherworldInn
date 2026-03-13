@@ -7,7 +7,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -22,9 +21,11 @@ public class StoreMenu extends AbstractContainerMenu {
 
     private final StoreEntity storeEntity;
     private final List<StoreEntity.StoreItem> storeItems;
+    private final int favorLevel;
+    private final int totalSpentCoins;
 
     public StoreMenu(int containerId, Inventory playerInventory, FriendlyByteBuf extraData) {
-        this(containerId, playerInventory, getEntity(playerInventory, extraData), readStoreItems(playerInventory, extraData));
+        this(containerId, playerInventory, getEntity(playerInventory, extraData), readFavorLevel(extraData), readTotalSpentCoins(extraData), readStoreItems(playerInventory, extraData));
     }
 
     private static StoreEntity getEntity(Inventory playerInventory, FriendlyByteBuf extraData) {
@@ -45,13 +46,23 @@ public class StoreMenu extends AbstractContainerMenu {
         return items;
     }
 
-    public StoreMenu(int containerId, Inventory playerInventory, StoreEntity storeEntity) {
-        this(containerId, playerInventory, storeEntity, storeEntity != null ? storeEntity.getStoreItems() : new ArrayList<>());
+    private static int readFavorLevel(FriendlyByteBuf extraData) {
+        return extraData.readInt();
     }
 
-    protected StoreMenu(int containerId, Inventory playerInventory, StoreEntity storeEntity, List<StoreEntity.StoreItem> storeItems) {
+    private static int readTotalSpentCoins(FriendlyByteBuf extraData) {
+        return extraData.readInt();
+    }
+
+    public StoreMenu(int containerId, Inventory playerInventory, StoreEntity storeEntity) {
+        this(containerId, playerInventory, storeEntity, storeEntity != null ? storeEntity.getFavorLevel() : 1, storeEntity != null ? storeEntity.getTotalSpentCoins() : 0, storeEntity != null ? storeEntity.getStoreItems() : new ArrayList<>());
+    }
+
+    protected StoreMenu(int containerId, Inventory playerInventory, StoreEntity storeEntity, int favorLevel, int totalSpentCoins, List<StoreEntity.StoreItem> storeItems) {
         super(ModMenuTypes.STORE_MENU.get(), containerId);
         this.storeEntity = storeEntity;
+        this.favorLevel = favorLevel;
+        this.totalSpentCoins = totalSpentCoins;
         this.storeItems = new ArrayList<>(storeItems);
     }
 
@@ -71,5 +82,13 @@ public class StoreMenu extends AbstractContainerMenu {
 
     public List<StoreEntity.StoreItem> getStoreItems() {
         return storeItems;
+    }
+
+    public int getFavorLevel() {
+        return this.favorLevel;
+    }
+
+    public int getTotalSpentCoins() {
+        return this.totalSpentCoins;
     }
 }

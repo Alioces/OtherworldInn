@@ -481,6 +481,15 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("gui.otherworldinn.store.stock.infinite")
                 .zh("库存: ∞")
                 .en("Stock: ∞");
+        entry("gui.otherworldinn.store.favor_unlock")
+                .zh("%s级好感度解锁")
+                .en("Unlocks at Favor Level %s");
+        entry("gui.otherworldinn.store.favor.level")
+                .zh("好感度: %s")
+                .en("Favor Level: %s");
+        entry("gui.otherworldinn.store.favor.progress")
+                .zh("进度: §f\uE001§r%s/%s")
+                .en("Progress: §f\uE001§r%s/%s");
     }
 
     private void addGeneratedTranslations() {
