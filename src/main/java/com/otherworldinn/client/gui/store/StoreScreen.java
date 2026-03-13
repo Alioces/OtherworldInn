@@ -76,7 +76,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         this.topPos = (this.height - this.imageHeight) / 2;
 
         // 数量输入框
-        this.quantityEditBox = new EditBox(this.font, this.leftPos + 30, this.topPos + 110, 40, 16, Component.literal("1"));
+        this.quantityEditBox = new EditBox(this.font, this.leftPos + 40, this.topPos + 110, 40, 16, Component.literal("1"));
         this.quantityEditBox.setValue("1");
         this.quantityEditBox.setFilter(s -> s.matches("\\d*"));
         this.quantityEditBox.setResponder(s -> {
@@ -96,21 +96,21 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 this.purchaseQuantity = Math.max(1, this.purchaseQuantity - change);
                 this.quantityEditBox.setValue(String.valueOf(this.purchaseQuantity));
             }
-        }).bounds(this.leftPos + 10, this.topPos + 110, 16, 16).build());
+        }).bounds(this.leftPos + 20, this.topPos + 110, 16, 16).build());
 
         // 增加按钮
         this.addRenderableWidget(Button.builder(Component.literal("+"), (btn) -> {
             int change = hasShiftDown() ? 16 : 1;
             this.purchaseQuantity += change;
             this.quantityEditBox.setValue(String.valueOf(this.purchaseQuantity));
-        }).bounds(this.leftPos + 75, this.topPos + 110, 16, 16).build());
+        }).bounds(this.leftPos + 85, this.topPos + 110, 16, 16).build());
 
         // 确定按钮
         this.confirmButton = Button.builder(Component.translatable("gui.otherworldinn.store.confirm"), (btn) -> {
             if (this.selectedItem != null) {
                 this.addToCart(this.selectedItem, this.purchaseQuantity);
             }
-        }).bounds(this.leftPos + 10, this.topPos + 130, 80, 20).build();
+        }).bounds(this.leftPos + 20, this.topPos + 130, 80, 20).build();
         this.addRenderableWidget(this.confirmButton);
 
         // 购买按钮 (右侧)
@@ -130,7 +130,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 this.updateButtons();
                 this.onClose(); // 购买成功后关闭界面，体验较好
             }
-        }).bounds(this.leftPos + 150, this.topPos + 130, 90, 20).build();
+        }).bounds(this.leftPos + 142, this.topPos + 130, 90, 20).build();
         this.addRenderableWidget(this.purchaseButton);
         
         this.updateButtons();
@@ -211,7 +211,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         // 渲染购物车列表 (右侧)
         int leftPos = (this.width - this.imageWidth) / 2;
         int topPos = (this.height - this.imageHeight) / 2;
-        int listX = leftPos + 150;
+        int listX = leftPos + 142;
         int listY = topPos + 20;
         
         // 滚动条相关参数
@@ -284,7 +284,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         guiGraphics.blit(this.backgroundTexture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
         
         // 渲染商品网格
-        int startX = this.leftPos + 10;
+        int startX = this.leftPos + 20;
         int startY = this.topPos + 20;
         
         List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
@@ -313,7 +313,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             
             // 选中高亮 (最后绘制以覆盖在物品上方，确保可见)
             if (items.get(i) == this.selectedItem) {
-                // 为了确保可见性，我们使用 fill 绘制四条边框线，而不是 renderOutline
+                // renderOutline
                 int color = 0xFFF8F8FF;
                 int borderSize = 1;
                 guiGraphics.fill(x - borderSize, y - borderSize, x + SLOT_SIZE + borderSize, y, color); // 上
@@ -326,7 +326,12 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         // 渲染选中物品名称
         if (this.selectedItem != null) {
             Component name = this.selectedItem.getItemStack().getHoverName();
-            guiGraphics.drawString(this.font, name, this.leftPos + 30, this.topPos + 100, 0xFFFFFF);
+            int nameWidth = this.font.width(name);
+            int areaWidth = GRID_COLS * (SLOT_SIZE + SLOT_SPACING) - SLOT_SPACING;
+            startX = this.leftPos + 20;
+            // 计算居中位置
+            int x = startX + (areaWidth - nameWidth) / 2;
+            guiGraphics.drawString(this.font, name, x, this.topPos + 100, 0xFFFFFF);
         }
     }
     
@@ -362,7 +367,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         }
         
         // 检查点击商品
-        int startX = this.leftPos + 10;
+        int startX = this.leftPos + 20;
         int startY = this.topPos + 20;
         List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
         
@@ -412,7 +417,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         super.renderTooltip(guiGraphics, mouseX, mouseY);
         
         // 渲染商品 Tooltip
-        int startX = this.leftPos + 10;
+        int startX = this.leftPos + 20;
         int startY = this.topPos + 20;
         List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
         

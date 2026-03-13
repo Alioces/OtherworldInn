@@ -16,7 +16,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.AttachedStemBlock;
+import net.minecraft.world.level.block.CocoaBlock;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.FarmBlock;
+import net.minecraft.world.level.block.NetherWartBlock;
+import net.minecraft.world.level.block.StemBlock;
+import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.piston.PistonStructureResolver;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -44,27 +52,59 @@ import java.util.Set;
 public class TownProtectionHandler {
 
     /**
-     * 检查是否可以在指定位置建筑（针对玩家）
+     * 检查是否可以在指定位置建筑（针对玩家），如果不可以则返回拒绝原因
+     *
+     * @return 拒绝原因的组件，如果允许则返回 null
      */
-    private static boolean canBuild(Player player, BlockPos pos, Level level) {
+    private static Component getBuildDenyReason(Player player, BlockPos pos, Level level) {
         // 仅在城镇维度生效
         if (level.dimension() != TownDimensions.TOWN_LEVEL) {
-            return true;
+            return null;
         }
 
         // 创造模式豁免
         if (player.isCreative()) {
-            return true;
+            return null;
         }
 
         TeamData team = TeamManager.getInstance().getPlayerTeam(player);
-        if (team == null) {
-            // 没有队伍，禁止一切建筑
-            return false;
+        
+        // 情况 1: 没有队伍 或 不在旅社区域内 -> 通用保护提示
+        if (team == null || !isInsideInnZone(team, pos)) {
+            return Component.translatable("message.otherworldinn.protection.deny");
         }
 
-        // 必须在旅社区域内，并且开启了编辑模式
-        return isInsideInnZone(team, pos) && team.getInnData().getState() != InnData.InnState.EDIT_MODE;
+        // 情况 2: 在旅社区域内，但未开启编辑模式 -> 装修提示
+        if (team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
+            return Component.translatable("message.otherworldinn.protection.deny_renovation");
+        }
+
+        return null; // 允许
+    }
+    
+    /**
+     * 检查是否可以在指定位置建筑（针对玩家）
+     * @deprecated Use {@link #getBuildDenyReason(Player, BlockPos, Level)} instead for better feedback
+     */
+    @Deprecated
+    private static boolean canBuild(Player player, BlockPos pos, Level level) {
+        return getBuildDenyReason(player, pos, level) == null;
+    }
+    
+    /**
+     * 检查方块是否属于农作物白名单
+     */
+    private static boolean isFarmingBlock(BlockState state) {
+        if (state == null) return false;
+        return state.getBlock() instanceof CropBlock ||
+               state.getBlock() instanceof StemBlock ||
+               state.getBlock() instanceof AttachedStemBlock ||
+               state.getBlock() instanceof NetherWartBlock ||
+               state.getBlock() instanceof CocoaBlock ||
+               state.getBlock() instanceof SweetBerryBushBlock ||
+               state.getBlock() instanceof FarmBlock ||
+               state.is(net.minecraft.tags.BlockTags.CROPS) ||
+               state.is(net.minecraft.tags.BlockTags.MAINTAINS_FARMLAND);
     }
     
     /**
@@ -105,10 +145,9 @@ public class TownProtectionHandler {
         return team.isInInnZone(pos);
     }
 
-    private static void sendDenyMessage(Player player) {
+    private static void sendDenyMessage(Player player, Component message) {
         // 使用 Status Bar
-        player.displayClientMessage(Component.translatable("message.otherworldinn.protection.deny")
-                .withStyle(style -> style.withColor(0xFF6A6A)), true);
+        player.displayClientMessage(message.copy().withStyle(style -> style.withColor(0xFF6A6A)), true);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -116,11 +155,17 @@ public class TownProtectionHandler {
         Player player = event.getPlayer();
         Level level = (Level) event.getLevel();
         
+        // 允许破坏农作物
+        if (isFarmingBlock(event.getState())) {
+            return;
+        }
+        
         // 如果是真实玩家
         if (player instanceof ServerPlayer && !(player instanceof FakePlayer)) {
-            if (!canBuild(player, event.getPos(), level)) {
+            Component denyReason = getBuildDenyReason(player, event.getPos(), level);
+            if (denyReason != null) {
                 event.setCanceled(true);
-                sendDenyMessage(player);
+                sendDenyMessage(player, denyReason);
             }
         } 
         // 如果是非玩家实体或 FakePlayer (自动化设备)
@@ -137,12 +182,18 @@ public class TownProtectionHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
+        // 允许种植农作物
+        if (isFarmingBlock(event.getState())) {
+            return;
+        }
+
         if (event.getEntity() instanceof Player player) {
             // 如果是真实玩家
             if (player instanceof ServerPlayer serverPlayer && !(player instanceof FakePlayer)) {
-                if (!canBuild(player, event.getPos(), (Level) event.getLevel())) {
+                Component denyReason = getBuildDenyReason(player, event.getPos(), (Level) event.getLevel());
+                if (denyReason != null) {
                     event.setCanceled(true);
-                    sendDenyMessage(player);
+                    sendDenyMessage(player, denyReason);
                     serverPlayer.inventoryMenu.sendAllDataToRemote();
                     return;
                 }
@@ -237,19 +288,25 @@ public class TownProtectionHandler {
 
         // 3. 检查建筑权限 (针对放置方块的行为)
         // 只有当玩家在生存/冒险模式下，且手持方块物品时才需要提前拦截
-        if (!player.isCreative() && !stack.isEmpty() && stack.getItem() instanceof BlockItem) {
+        if (!player.isCreative() && !stack.isEmpty() && stack.getItem() instanceof BlockItem blockItem) {
+                // 允许种植农作物 (例如种子)
+                if (isFarmingBlock(blockItem.getBlock().defaultBlockState())) {
+                    return;
+                }
+
                 // 计算拟放置位置
                 BlockPos placePos = pos.relative(event.getFace());
                 
                 // 检查是否允许在该位置建筑
-                if (!canBuild(player, placePos, level)) {
+                Component denyReason = getBuildDenyReason(player, placePos, level);
+                if (denyReason != null) {
                     event.setCanceled(true);
                     event.setUseItem(TriState.FALSE);
                     event.setUseBlock(TriState.FALSE);
                     event.setCancellationResult(InteractionResult.FAIL);
                     
                     if (player instanceof ServerPlayer serverPlayer) {
-                        sendDenyMessage(player);
+                        sendDenyMessage(player, denyReason);
                         // 关键：同步背包数据，防止客户端显示物品被消耗
                         serverPlayer.inventoryMenu.sendAllDataToRemote();
                     }

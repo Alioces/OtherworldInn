@@ -157,6 +157,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.protection.deny")
                 .zh("你不能修改城镇内的方块")
                 .en("You cannot modify blocks within the Town.");
+        entry("message.otherworldinn.protection.deny_renovation")
+                .zh("旅社不在装修中...")
+                .en("The Inn is not under renovation...");
         entry("message.otherworldinn.protection.banned_item")
                 .zh("此物品在城镇维度被禁用")
                 .en("This item is banned in the Town dimension.");

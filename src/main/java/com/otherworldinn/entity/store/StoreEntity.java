@@ -232,6 +232,22 @@ public abstract class StoreEntity extends PathfinderMob {
         this.fixedItemsCount = this.storeItems.size(); // 更新固定商品数量
     }
     
+    /**
+     * 添加固定商品 (带自定义设置)
+     * 
+     * @param item 物品
+     * @param price 价格
+     * @param maxStock 最大库存
+     * @param modifier 对物品栈的自定义修改操作 (例如设置耐久、附魔等)
+     */
+    public void addStoreItem(ItemStack item, int price, int maxStock, java.util.function.Consumer<ItemStack> modifier) {
+        ItemStack copy = item.copy();
+        if (modifier != null) {
+            modifier.accept(copy);
+        }
+        this.addStoreItem(copy, price, maxStock);
+    }
+    
     public List<StoreItem> getStoreItems() {
         return this.storeItems;
     }
@@ -297,7 +313,7 @@ public abstract class StoreEntity extends PathfinderMob {
             
             if (selected != null) {
                 poolCopy.remove(selected); // 避免重复
-                this.addRandomStoreItem(new ItemStack(selected.item), selected.minPrice, selected.maxPrice, selected.minStock, selected.maxStock);
+                this.addRandomStoreItem(new ItemStack(selected.item), selected.minPrice, selected.maxPrice, selected.minStock, selected.maxStock, selected.modifier);
             }
         }
     }
@@ -312,10 +328,29 @@ public abstract class StoreEntity extends PathfinderMob {
      * @param maxStock  最大库存
      */
     protected void addRandomStoreItem(ItemStack item, int minPrice, int maxPrice, int minStock, int maxStock) {
-        RandomSource random = this.getRandom();
+        this.addRandomStoreItem(item, minPrice, maxPrice, minStock, maxStock, null);
+    }
+
+    /**
+     * 添加随机商品 (带范围随机和修改器)
+     *
+     * @param item      物品
+     * @param minPrice  最小价格
+     * @param maxPrice  最大价格
+     * @param minStock  最小库存
+     * @param maxStock  最大库存
+     * @param modifier  修改器
+     */
+    protected void addRandomStoreItem(ItemStack item, int minPrice, int maxPrice, int minStock, int maxStock, java.util.function.Consumer<ItemStack> modifier) {
+        net.minecraft.util.RandomSource random = this.getRandom();
         int price = minPrice + random.nextInt(Math.max(1, maxPrice - minPrice + 1));
         int stock = minStock + random.nextInt(Math.max(1, maxStock - minStock + 1));
-        this.storeItems.add(new StoreItem(item, price, stock));
+        
+        ItemStack stack = item.copy();
+        if (modifier != null) {
+            modifier.accept(stack);
+        }
+        this.storeItems.add(new StoreItem(stack, price, stock));
     }
 
 
@@ -356,7 +391,11 @@ public abstract class StoreEntity extends PathfinderMob {
     /**
      * 随机商品池条目
      */
-    public record RandomItemData(net.minecraft.world.item.Item item, int minPrice, int maxPrice, int minStock, int maxStock, int weight) {}
+    public record RandomItemData(net.minecraft.world.item.Item item, int minPrice, int maxPrice, int minStock, int maxStock, int weight, @Nullable java.util.function.Consumer<ItemStack> modifier) {
+        public RandomItemData(net.minecraft.world.item.Item item, int minPrice, int maxPrice, int minStock, int maxStock, int weight) {
+            this(item, minPrice, maxPrice, minStock, maxStock, weight, null);
+        }
+    }
 
     /**
      * 商品条目内部类
