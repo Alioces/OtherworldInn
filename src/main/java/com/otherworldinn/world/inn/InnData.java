@@ -54,10 +54,13 @@ public class InnData {
     private int reputation = 0; // 旅社声望
 
     @Setter(AccessLevel.NONE)
-    private boolean open = false; // 默认为歇业
+    private InnState state = InnState.CLOSED; // 默认为歇业
     
-    @Setter(AccessLevel.NONE)
-    private boolean editMode = false; // 默认为非编辑模式
+    public enum InnState {
+        CLOSED,     // 歇业中
+        OPEN,       // 营业中
+        EDIT_MODE   // 装修中
+    }
     
     private final Set<UUID> guestIds = new HashSet<>();
     private final Map<Integer, RoomData> rooms = new HashMap<>();
@@ -115,12 +118,31 @@ public class InnData {
         // TODO: 实现升级逻辑
     }
 
+    /**
+     * 设置营业状态
+     * @param open 是否营业
+     */
     public void setOpen(boolean open) {
-        this.open = open;
-        // 如果开启营业，自动关闭编辑模式
         if (open) {
-            this.editMode = false;
+            this.state = InnState.OPEN;
+        } else {
+            // 如果是从 Open 切换到 Closed，或者从 EditMode 切换到 Closed
+            this.state = InnState.CLOSED;
         }
+    }
+    
+    /**
+     * 是否营业中
+     */
+    public boolean isOpen() {
+        return this.state == InnState.OPEN;
+    }
+    
+    /**
+     * 是否处于编辑模式
+     */
+    public boolean isEditMode() {
+        return this.state == InnState.EDIT_MODE;
     }
 
     /**
@@ -128,24 +150,28 @@ public class InnData {
      * @return 如果成功开启返回 true，否则返回 false (例如正在营业或有客人)
      */
     public boolean tryEnableEditMode() {
-        if (this.open) {
+        if (this.state == InnState.OPEN) {
             return false; // 营业中不能编辑
         }
         if (!this.guestIds.isEmpty()) {
             return false; // 有客人不能编辑
         }
-        this.editMode = true;
+        this.state = InnState.EDIT_MODE;
         return true;
     }
 
     public void disableEditMode() {
-        this.editMode = false;
+        if (this.state == InnState.EDIT_MODE) {
+            this.state = InnState.CLOSED;
+        }
     }
 
     public void addGuest(UUID guestId) {
         this.guestIds.add(guestId);
-        // 有客人时自动关闭编辑模式
-        this.editMode = false;
+        // 有客人时自动关闭编辑模式，如果处于 Open 状态则保持 Open，否则切换到 Closed (异常情况)
+        if (this.state == InnState.EDIT_MODE) {
+            this.state = InnState.CLOSED;
+        }
     }
 
     /**
@@ -481,7 +507,7 @@ public class InnData {
         }
 
         // 2. 检查旅社是否开业
-        if (!this.open) {
+        if (this.state != InnState.OPEN) {
             return;
         }
 
@@ -663,7 +689,7 @@ public class InnData {
                 GuestData guestData = guestEntity.getGuestData();
                 if (guestData.getState() == GuestData.GuestState.WAITING) {
                     // 检查是否超时 (5分钟 = 6000 ticks)
-                    if (currentTime - guestData.getWaitingSince() > 6000 || !this.open) {
+                    if (currentTime - guestData.getWaitingSince() > 6000 || this.state != InnState.OPEN) {
                         guestsToDepart.add(guestId);
                     }
                 } else if (guestData.getState() == GuestData.GuestState.CHECKED_IN) {
@@ -919,8 +945,7 @@ public class InnData {
         tag.putString("Name", name);
         tag.putInt("Rating", rating);
         tag.putInt("Reputation", reputation);
-        tag.putBoolean("Open", open);
-        tag.putBoolean("EditMode", editMode);
+        tag.putString("State", state.name());
 
         ListTag guestsTag = new ListTag();
         for (UUID guestId : guestIds) {
@@ -963,12 +988,27 @@ public class InnData {
         if (tag.contains("Reputation")) {
             reputation = tag.getInt("Reputation");
         }
-        if (tag.contains("Open")) {
-            open = tag.getBoolean("Open");
+        
+        if (tag.contains("State")) {
+            try {
+                state = InnState.valueOf(tag.getString("State"));
+            } catch (IllegalArgumentException e) {
+                state = InnState.CLOSED;
+            }
+        } else {
+            // 兼容旧数据
+            boolean isOpen = tag.contains("Open") && tag.getBoolean("Open");
+            boolean isEditMode = tag.contains("EditMode") && tag.getBoolean("EditMode");
+            
+            if (isOpen) {
+                state = InnState.OPEN;
+            } else if (isEditMode) {
+                state = InnState.EDIT_MODE;
+            } else {
+                state = InnState.CLOSED;
+            }
         }
-        if (tag.contains("EditMode")) {
-            editMode = tag.getBoolean("EditMode");
-        }
+
         if (tag.contains("NextGuestSpawnTime")) {
             nextGuestSpawnTime = tag.getLong("NextGuestSpawnTime");
         }

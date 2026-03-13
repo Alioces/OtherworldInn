@@ -168,12 +168,17 @@ public class RoomKeyItem extends Item {
         if (level instanceof ServerLevel serverLevel) {
             TeamData team = TeamManager.getInstance().getTeamAt(pos, serverLevel.getServer());
             if (team != null) {
+                // 获取点击位置的房间
                 RoomData room = team.getInnData().getRoomAt(pos);
                 if (room != null) {
                     // 绑定到该房间
                     bindRoom(stack, room.getId(), room.getUuid());
                     player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.bound", room.getId())
                             .withStyle(style -> style.withColor(ModColors.SUCCESS)), true);
+                    
+                    // 播放音效 (音符盒叮声)
+                    level.playSound(null, pos, SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 1.0F, 1.5F);
+                    
                     return InteractionResult.SUCCESS;
                 }
             }

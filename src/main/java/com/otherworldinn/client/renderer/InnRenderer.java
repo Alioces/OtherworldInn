@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.client.CameraHandler;
+import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
 import net.minecraft.client.Minecraft;
@@ -49,13 +50,13 @@ public class InnRenderer {
         poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
         // 渲染旅社范围
-        boolean isEditMode = team.getInnData().isEditMode();
-        renderInnZones(poseStack, regions, isEditMode);
+        InnData.InnState state = team.getInnData().getState();
+        renderInnZones(poseStack, regions, state);
 
         poseStack.popPose();
     }
 
-    private static void renderInnZones(PoseStack poseStack, List<TeamData.InnRegion> regions, boolean isEditMode) {
+    private static void renderInnZones(PoseStack poseStack, List<TeamData.InnRegion> regions, InnData.InnState state) {
         Tesselator tesselator = Tesselator.getInstance();
         
         // 渲染设置
@@ -69,13 +70,18 @@ public class InnRenderer {
         
         // 颜色设置
         float red, green, blue;
-        if (isEditMode) {
+        if (state == InnData.InnState.EDIT_MODE) {
             // 编辑模式：蓝色半透明
             red = 0.0f;
             green = 0.0f;
             blue = 1.0f;
+        } else if (state == InnData.InnState.CLOSED) {
+            // 歇业模式：淡红色 (#FF6A6A)
+            red = 1.0f;
+            green = 0.416f; // 0x6A / 255.0 = 0.4156
+            blue = 0.416f;
         } else {
-            // 普通模式：绿色半透明
+            // 营业模式：绿色半透明
             red = 0.0f;
             green = 1.0f;
             blue = 0.0f;
