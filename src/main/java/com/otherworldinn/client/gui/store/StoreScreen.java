@@ -419,9 +419,10 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             // 选中高亮 (最后绘制以覆盖在物品上方，确保可见)
             if (items.get(i) == this.selectedItem) {
                 color = 0xFFF8F8FF;
-                guiGraphics.fill(x, y, x + SLOT_SIZE, y + 1, color); // 上
+                int shadowColor = 0xDEDEDEDE;
+                guiGraphics.fill(x, y, x + SLOT_SIZE, y + 1, shadowColor); // 上
                 guiGraphics.fill(x, y + SLOT_SIZE - 1, x + SLOT_SIZE, y + SLOT_SIZE, color); // 下
-                guiGraphics.fill(x, y, x + 1, y + SLOT_SIZE, color); // 左
+                guiGraphics.fill(x, y, x + 1, y + SLOT_SIZE, shadowColor); // 左
                 guiGraphics.fill(x + SLOT_SIZE - 1, y, x + SLOT_SIZE, y + SLOT_SIZE, color); // 右
             }
         }
@@ -550,7 +551,12 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 spentInCurrentLevel = net.minecraft.util.Mth.clamp(spentInCurrentLevel, 0, coinsPerLevel);
             }
             List<Component> favorTooltip = new ArrayList<>();
-            favorTooltip.add(Component.translatable("gui.otherworldinn.store.favor.level", favorLevel));
+            Component favorLevelText = Component.translatable("gui.otherworldinn.store.favor.level", favorLevel);
+            if (favorLevel >= maxLevel) {
+                favorLevelText = favorLevelText.copy().append(Component.literal("  -30%off!")
+                        .withStyle(net.minecraft.ChatFormatting.GREEN, net.minecraft.ChatFormatting.BOLD));
+            }
+            favorTooltip.add(favorLevelText);
             favorTooltip.add(Component.translatable("gui.otherworldinn.store.favor.progress", spentInCurrentLevel, requiredForNext));
             guiGraphics.renderTooltip(this.font, favorTooltip, java.util.Optional.empty(), mouseX, mouseY);
             return;
