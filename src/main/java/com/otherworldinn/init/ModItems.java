@@ -51,7 +51,7 @@ public class ModItems {
 
     public static final ItemReg<RoomKeyItem> ROOM_KEY_REG = new ItemReg<>("room_key", RoomKeyItem::new)
             .rarity(Rarity.COMMON)
-            .stacksTo(1)
+            .stacksTo(16)
             .lang("Room Key", "房间钥匙")
             .tooltip("Right click room to bind", "右键房间绑定，左键解绑");
     public static final DeferredItem<RoomKeyItem> ROOM_KEY = ROOM_KEY_REG.register();

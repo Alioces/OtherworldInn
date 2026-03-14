@@ -40,6 +40,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
         tag(OtherworldInn.ONLY_IN_TOWN)
                 .add(ModItems.ROOM_REGISTER.get())
                 .add(ModItems.LAND_DEED.get())
-                .add(ModItems.INN_KEY.get());
+                .add(ModItems.INN_KEY.get())
+                .add(ModItems.ROOM_KEY.get());
     }
 }

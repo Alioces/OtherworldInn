@@ -2,6 +2,7 @@
   "values": [
     "otherworldinn:room_register",
     "otherworldinn:land_deed",
-    "otherworldinn:inn_key"
+    "otherworldinn:inn_key",
+    "otherworldinn:room_key"
   ]
 }

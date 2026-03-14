@@ -68,6 +68,11 @@ public class DataGenerators {
                 event.includeServer(),
                 new ModLootTableProvider(packOutput, lookupProvider)
         );
+
+        event.getGenerator().addProvider(
+                event.includeServer(),
+                new ModRecipeProvider(packOutput, lookupProvider)
+        );
     }
 }
 
