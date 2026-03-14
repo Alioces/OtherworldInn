@@ -1,5 +1,6 @@
 package com.otherworldinn.item;
 
+import com.otherworldinn.client.ClientHooks;
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.RoomData;
@@ -21,6 +22,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 /**
  * 房间登记册物品
@@ -113,6 +116,34 @@ public class RoomRegisterItem extends Item {
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
-        return InteractionResultHolder.pass(player.getItemInHand(usedHand));
+        ItemStack stack = player.getItemInHand(usedHand);
+        if (usedHand != InteractionHand.MAIN_HAND) {
+            return InteractionResultHolder.pass(stack);
+        }
+
+        if (level.isClientSide) {
+            if (FMLEnvironment.dist == Dist.CLIENT) {
+                ClientHooks.activateRoomOutline(100);
+            }
+            return InteractionResultHolder.sidedSuccess(stack, true);
+        }
+
+        if (!(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResultHolder.fail(stack);
+        }
+
+        TeamData team = TeamManager.getInstance().getPlayerTeam(serverPlayer);
+        if (team == null) {
+            return InteractionResultHolder.fail(stack);
+        }
+
+        int roomCount = team.getInnData().getRoomCount();
+        serverPlayer.displayClientMessage(
+                Component.translatable("message.otherworldinn.room_register.room_count", roomCount)
+                        .withStyle(style -> style.withColor(ModColors.INFO)),
+                true
+        );
+        level.playSound(null, serverPlayer.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 1.0F);
+        return InteractionResultHolder.success(stack);
     }
 }

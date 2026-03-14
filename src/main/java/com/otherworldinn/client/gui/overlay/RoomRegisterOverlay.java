@@ -2,9 +2,7 @@ package com.otherworldinn.client.gui.overlay;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.init.ModItems;
-import com.simibubi.create.foundation.gui.AllIcons;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -29,20 +27,33 @@ public class RoomRegisterOverlay {
         Player player = mc.player;
         if (player == null) return false;
 
-        // 检查玩家是否副手持有房间登记册
+        ItemStack mainHandItem = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offhandItem = player.getItemInHand(InteractionHand.OFF_HAND);
-        return offhandItem.is(ModItems.ROOM_REGISTER.get());
+        return mainHandItem.is(ModItems.ROOM_REGISTER.get()) || offhandItem.is(ModItems.ROOM_REGISTER.get());
     }
 
     private static void render(GuiGraphics guiGraphics, net.minecraft.client.DeltaTracker deltaTracker) {
-        // [LMB] 删除房间 [RMB] 添加房间
-        Component deleteText = Component.translatable("message.otherworldinn.room_register.overlay.delete_room");
-        Component addText = Component.translatable("message.otherworldinn.room_register.overlay.add_room");
-        
-        // 使用通用的渲染方法
-        ItemHudOverlay.renderMouseActions(guiGraphics, 
-            new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.LEFT, deleteText), // 左键：删除
-            new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, addText)      // 右键：添加
-        );
+        Minecraft mc = Minecraft.getInstance();
+        Player player = mc.player;
+        if (player == null) return;
+
+        ItemStack offhandItem = player.getItemInHand(InteractionHand.OFF_HAND);
+        if (offhandItem.is(ModItems.ROOM_REGISTER.get())) {
+            Component deleteText = Component.translatable("message.otherworldinn.room_register.overlay.delete_room");
+            Component addText = Component.translatable("message.otherworldinn.room_register.overlay.add_room");
+            ItemHudOverlay.renderMouseActions(guiGraphics,
+                    new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.LEFT, deleteText),
+                    new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, addText)
+            );
+            return;
+        }
+
+        ItemStack mainHandItem = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (mainHandItem.is(ModItems.ROOM_REGISTER.get())) {
+            Component showText = Component.translatable("message.otherworldinn.room_register.overlay.show_room");
+            ItemHudOverlay.renderMouseActions(guiGraphics,
+                    new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, showText)
+            );
+        }
     }
 }

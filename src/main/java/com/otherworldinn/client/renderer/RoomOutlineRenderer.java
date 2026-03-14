@@ -1,5 +1,12 @@
 package com.otherworldinn.client.renderer;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.item.LandDeedItem;
@@ -11,6 +18,7 @@ import com.otherworldinn.world.team.TeamManager;
 import com.simibubi.create.AllSpecialTextures;
 import net.createmod.catnip.outliner.Outliner;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -21,10 +29,13 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import org.joml.Matrix4f;
 
 import java.util.List;
 
@@ -39,6 +50,54 @@ import java.util.List;
 public class RoomOutlineRenderer {
 
     private static final Object PREVIEW_SLOT = "room_preview";
+    private static int forcedRoomOutlineTicks = 0;
+
+    public static void activateTimedRoomOutline(int ticks) {
+        if (ticks > 0) {
+            forcedRoomOutlineTicks = Math.max(forcedRoomOutlineTicks, ticks);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRenderLevelStage(RenderLevelStageEvent event) {
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+            return;
+        }
+        if (forcedRoomOutlineTicks <= 0) {
+            return;
+        }
+
+        TeamData team = TeamManager.getInstance().getClientPlayerTeam();
+        if (team == null || team.getInnData().getRooms().isEmpty()) {
+            return;
+        }
+
+        PoseStack poseStack = event.getPoseStack();
+        poseStack.pushPose();
+        Vec3 cameraPos = event.getCamera().getPosition();
+        poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+
+        Tesselator tesselator = Tesselator.getInstance();
+        Matrix4f matrix = poseStack.last().pose();
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.disableDepthTest();
+        RenderSystem.disableCull();
+        RenderSystem.lineWidth(8.0F);
+
+        BufferBuilder lineBuffer = tesselator.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        for (RoomData room : team.getInnData().getRooms().values()) {
+            drawAABBOutline(lineBuffer, matrix, room);
+        }
+        BufferUploader.drawWithShader(lineBuffer.buildOrThrow());
+
+        RenderSystem.enableDepthTest();
+        RenderSystem.enableCull();
+        RenderSystem.disableBlend();
+        poseStack.popPose();
+    }
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
@@ -51,6 +110,7 @@ public class RoomOutlineRenderer {
         boolean holdingRegistry = stack.is(ModItems.ROOM_REGISTER.get());
         boolean holdingLandDeed = stack.is(ModItems.LAND_DEED.get());
         boolean holdingRoomKey = stack.is(ModItems.ROOM_KEY.get());
+        boolean forceRenderRooms = forcedRoomOutlineTicks > 0;
         
         if (!holdingRegistry && !holdingLandDeed && !holdingRoomKey) {
             stack = player.getItemInHand(InteractionHand.OFF_HAND);
@@ -59,7 +119,7 @@ public class RoomOutlineRenderer {
             holdingRoomKey = stack.is(ModItems.ROOM_KEY.get());
         }
 
-        if (!holdingRegistry && !holdingLandDeed && !holdingRoomKey) {
+        if (!holdingRegistry && !holdingLandDeed && !holdingRoomKey && !forceRenderRooms) {
             return;
         }
         
@@ -120,6 +180,10 @@ public class RoomOutlineRenderer {
                         .withFaceTextures(AllSpecialTextures.CUTOUT_CHECKERED, AllSpecialTextures.CUTOUT_CHECKERED);
                 }
             }
+        }
+
+        if (forcedRoomOutlineTicks > 0) {
+            forcedRoomOutlineTicks--;
         }
 
         // 2. 渲染预览区域 (黄绿色/地契颜色)
@@ -210,5 +274,41 @@ public class RoomOutlineRenderer {
                         .withFaceTextures(AllSpecialTextures.CUTOUT_CHECKERED, AllSpecialTextures.CUTOUT_CHECKERED);
             }
         }
+    }
+
+    private static void drawAABBOutline(BufferBuilder buffer, Matrix4f matrix, RoomData room) {
+        float minX = room.getMinPos().getX();
+        float minY = room.getMinPos().getY();
+        float minZ = room.getMinPos().getZ();
+        float maxX = room.getMaxPos().getX() + 1.0F;
+        float maxY = room.getMaxPos().getY() + 1.0F;
+        float maxZ = room.getMaxPos().getZ() + 1.0F;
+        float r = 0.592F;
+        float g = 0.863F;
+        float b = 1.0F;
+        float a = 1.0F;
+
+        line(buffer, matrix, minX, minY, minZ, maxX, minY, minZ, r, g, b, a);
+        line(buffer, matrix, maxX, minY, minZ, maxX, minY, maxZ, r, g, b, a);
+        line(buffer, matrix, maxX, minY, maxZ, minX, minY, maxZ, r, g, b, a);
+        line(buffer, matrix, minX, minY, maxZ, minX, minY, minZ, r, g, b, a);
+
+        line(buffer, matrix, minX, maxY, minZ, maxX, maxY, minZ, r, g, b, a);
+        line(buffer, matrix, maxX, maxY, minZ, maxX, maxY, maxZ, r, g, b, a);
+        line(buffer, matrix, maxX, maxY, maxZ, minX, maxY, maxZ, r, g, b, a);
+        line(buffer, matrix, minX, maxY, maxZ, minX, maxY, minZ, r, g, b, a);
+
+        line(buffer, matrix, minX, minY, minZ, minX, maxY, minZ, r, g, b, a);
+        line(buffer, matrix, maxX, minY, minZ, maxX, maxY, minZ, r, g, b, a);
+        line(buffer, matrix, maxX, minY, maxZ, maxX, maxY, maxZ, r, g, b, a);
+        line(buffer, matrix, minX, minY, maxZ, minX, maxY, maxZ, r, g, b, a);
+    }
+
+    private static void line(BufferBuilder buffer, Matrix4f matrix,
+                             float x1, float y1, float z1,
+                             float x2, float y2, float z2,
+                             float r, float g, float b, float a) {
+        buffer.addVertex(matrix, x1, y1, z1).setColor(r, g, b, a);
+        buffer.addVertex(matrix, x2, y2, z2).setColor(r, g, b, a);
     }
 }

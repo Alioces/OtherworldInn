@@ -64,7 +64,7 @@ public class InnRenderer {
         RenderSystem.defaultBlendFunc();
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.disableCull();
+        RenderSystem.enableCull();
 
         float y = 71.01f; // 假设地面在 70
         

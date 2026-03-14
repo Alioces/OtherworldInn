@@ -191,6 +191,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.room_register.create_success")
                 .zh("房间创建成功！")
                 .en("Room created successfully!");
+        entry("message.otherworldinn.room_register.room_count")
+                .zh("当前共有%s个房间")
+                .en("There are currently %s rooms");
         entry("message.otherworldinn.room_register.remove_success")
                 .zh("%s号房间已被移除")
                 .en("Room %s has been removed");
@@ -237,6 +240,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.room_register.overlay.add_room")
                 .zh("添加房间")
                 .en("Add Room");
+        entry("message.otherworldinn.room_register.overlay.show_room")
+                .zh("显示房间")
+                .en("Show Rooms");
 
         // 待办事项
         entry("todo.otherworldinn.room_cleaning")
