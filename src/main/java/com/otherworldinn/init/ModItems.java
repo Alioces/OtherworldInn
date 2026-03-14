@@ -90,7 +90,6 @@ public class ModItems {
     public static final ItemReg<SpaceSphereItem> SPACE_SPHERE_REG = new ItemReg<>("space_sphere", SpaceSphereItem::new)
             .rarity(Rarity.EPIC)
             .stacksTo(1)
-            .noModel()
             .lang("Space Sphere", "空间球")
             .tooltip("Use to activate map teleport for your team", "使用后为队伍激活地图传送功能");
     public static final DeferredItem<SpaceSphereItem> SPACE_SPHERE = SPACE_SPHERE_REG.register();

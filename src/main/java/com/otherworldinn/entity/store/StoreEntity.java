@@ -308,6 +308,35 @@ public abstract class StoreEntity extends PathfinderMob {
         this.storeItems.add(new StoreItem(item, price, maxStock));
         this.fixedItemsCount = this.storeItems.size(); // 更新固定商品数量
     }
+
+    public void addLimitedStoreItem(String itemId, int price, int maxStock) {
+        ResourceLocation rl = ResourceLocation.tryParse(itemId);
+        if (rl != null) {
+            BuiltInRegistries.ITEM.getOptional(rl)
+                    .ifPresent(item -> this.addLimitedStoreItem(new ItemStack(item), price, maxStock));
+        }
+    }
+
+    public void addLimitedStoreItem(String itemId, int price, int maxStock, Consumer<ItemStack> modifier) {
+        ResourceLocation rl = ResourceLocation.tryParse(itemId);
+        if (rl != null) {
+            BuiltInRegistries.ITEM.getOptional(rl)
+                    .ifPresent(item -> this.addLimitedStoreItem(new ItemStack(item), price, maxStock, modifier));
+        }
+    }
+
+    public void addLimitedStoreItem(ItemStack item, int price, int maxStock) {
+        this.storeItems.add(new StoreItem(item, price, maxStock, maxStock, 1, false));
+        this.fixedItemsCount = this.storeItems.size();
+    }
+
+    public void addLimitedStoreItem(ItemStack item, int price, int maxStock, Consumer<ItemStack> modifier) {
+        ItemStack copy = item.copy();
+        if (modifier != null) {
+            modifier.accept(copy);
+        }
+        this.addLimitedStoreItem(copy, price, maxStock);
+    }
     
     /**
      * 添加固定商品 (带自定义设置)
@@ -419,6 +448,7 @@ public abstract class StoreEntity extends PathfinderMob {
             if (ItemStack.isSameItemSameComponents(existing.getItemStack(), itemStack)
                 && existing.getPrice() == price
                 && existing.getMaxStock() == maxStock
+                && existing.isRestockable()
                 && existing.getRequiredFavorLevel() == requiredFavorLevel) {
                 return true;
             }
@@ -595,25 +625,31 @@ public abstract class StoreEntity extends PathfinderMob {
         private int maxStock;
         private int currentStock;
         private final int requiredFavorLevel;
+        private final boolean restockable;
 
         public StoreItem(ItemStack itemStack, int price) {
             this(itemStack, price, -1);
         }
 
         public StoreItem(ItemStack itemStack, int price, int maxStock) {
-            this(itemStack, price, maxStock, maxStock, 1);
+            this(itemStack, price, maxStock, maxStock, 1, true);
         }
 
         public StoreItem(ItemStack itemStack, int price, int maxStock, int currentStock) {
-            this(itemStack, price, maxStock, currentStock, 1);
+            this(itemStack, price, maxStock, currentStock, 1, true);
         }
 
         public StoreItem(ItemStack itemStack, int price, int maxStock, int currentStock, int requiredFavorLevel) {
+            this(itemStack, price, maxStock, currentStock, requiredFavorLevel, true);
+        }
+
+        public StoreItem(ItemStack itemStack, int price, int maxStock, int currentStock, int requiredFavorLevel, boolean restockable) {
             this.itemStack = itemStack;
             this.price = price;
             this.maxStock = maxStock;
             this.currentStock = currentStock;
             this.requiredFavorLevel = Math.max(1, requiredFavorLevel);
+            this.restockable = restockable;
         }
 
         public ItemStack getItemStack() {
@@ -642,6 +678,10 @@ public abstract class StoreEntity extends PathfinderMob {
 
         public int getRequiredFavorLevel() {
             return this.requiredFavorLevel;
+        }
+
+        public boolean isRestockable() {
+            return this.restockable;
         }
 
         /**
@@ -675,7 +715,7 @@ public abstract class StoreEntity extends PathfinderMob {
          * 补货
          */
         public void restock() {
-            if (!isInfinite()) {
+            if (this.restockable && !isInfinite()) {
                 this.currentStock = this.maxStock;
             }
         }
@@ -689,6 +729,7 @@ public abstract class StoreEntity extends PathfinderMob {
             tag.putInt("MaxStock", maxStock);
             tag.putInt("CurrentStock", currentStock);
             tag.putInt("RequiredFavorLevel", requiredFavorLevel);
+            tag.putBoolean("Restockable", restockable);
             return tag;
         }
 
@@ -701,7 +742,8 @@ public abstract class StoreEntity extends PathfinderMob {
             int maxStock = tag.contains("MaxStock") ? tag.getInt("MaxStock") : -1;
             int currentStock = tag.contains("CurrentStock") ? tag.getInt("CurrentStock") : maxStock;
             int requiredFavorLevel = tag.contains("RequiredFavorLevel") ? tag.getInt("RequiredFavorLevel") : 1;
-            return new StoreItem(stack, price, maxStock, currentStock, requiredFavorLevel);
+            boolean restockable = !tag.contains("Restockable") || tag.getBoolean("Restockable");
+            return new StoreItem(stack, price, maxStock, currentStock, requiredFavorLevel, restockable);
         }
     }
 }
