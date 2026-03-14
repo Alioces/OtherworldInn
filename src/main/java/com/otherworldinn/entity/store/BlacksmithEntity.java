@@ -6,10 +6,11 @@ import com.simibubi.create.AllItems;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -17,6 +18,8 @@ import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+
 import net.minecraft.util.RandomSource;
 
 /**
@@ -33,6 +36,10 @@ public class BlacksmithEntity extends StoreEntity {
 
     public BlacksmithEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
+        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_INGOT));
+        this.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.IRON_SWORD));
+        this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+        this.setDropChance(EquipmentSlot.OFFHAND, 0.0F);
         // 初始化商品列表
         if (!level.isClientSide) {
              this.initDefaultStoreItems();
@@ -46,7 +53,7 @@ public class BlacksmithEntity extends StoreEntity {
 
     private void initToolPool() {
         // 定义一个通用的随机耐久和附魔修改器
-        java.util.function.Consumer<ItemStack> randomToolModifier = (stack) -> {
+        Consumer<ItemStack> randomToolModifier = (stack) -> {
             RandomSource random = this.getRandom();
             // 随机耐久损耗 (10% - 50%)
             int maxDamage = stack.getMaxDamage();
@@ -66,16 +73,44 @@ public class BlacksmithEntity extends StoreEntity {
             }
         };
 
-        // 添加铁制工具到池子
+        Consumer<ItemStack> randomArmorModifier = (stack) -> {
+            RandomSource random = this.getRandom();
+            int maxDamage = stack.getMaxDamage();
+            int damage = (int) (maxDamage * (0.05f + random.nextFloat() * 0.4f));
+            stack.setDamageValue(damage);
+
+            this.registryAccess().lookup(Registries.ENCHANTMENT).ifPresent(registry -> {
+                if (random.nextFloat() < 0.7f) {
+                    var primary = switch (random.nextInt(3)) {
+                        case 0 -> Enchantments.PROTECTION;
+                        case 1 -> Enchantments.PROJECTILE_PROTECTION;
+                        default -> Enchantments.BLAST_PROTECTION;
+                    };
+                    registry.get(primary).ifPresent(enchantment -> stack.enchant(enchantment, 1 + random.nextInt(2)));
+                }
+                if (random.nextFloat() < 0.25f) {
+                    registry.get(Enchantments.UNBREAKING).ifPresent(enchantment -> stack.enchant(enchantment, 1));
+                }
+            });
+        };
+
         TOOL_POOL.add(new RandomItemData(Items.IRON_PICKAXE, 25, 35, 1, 1, 10, randomToolModifier));
         TOOL_POOL.add(new RandomItemData(Items.IRON_AXE, 20, 30, 1, 1, 10, randomToolModifier));
         TOOL_POOL.add(new RandomItemData(Items.IRON_SHOVEL, 10, 20, 1, 1, 10, randomToolModifier));
         TOOL_POOL.add(new RandomItemData(Items.IRON_SWORD, 15, 25, 1, 1, 10, randomToolModifier));
         TOOL_POOL.add(new RandomItemData(Items.IRON_HOE, 10, 20, 1, 1, 5, randomToolModifier));
-        
-        // 偶尔出现金工具
+
         TOOL_POOL.add(new RandomItemData(Items.GOLDEN_PICKAXE, 20, 30, 1, 1, 5, randomToolModifier));
         TOOL_POOL.add(new RandomItemData(Items.GOLDEN_SWORD, 20, 30, 1, 1, 5, randomToolModifier));
+
+        TOOL_POOL.add(new RandomItemData(Items.IRON_HELMET, 28, 40, 1, 1, 8, randomArmorModifier));
+        TOOL_POOL.add(new RandomItemData(Items.IRON_CHESTPLATE, 40, 58, 1, 1, 6, randomArmorModifier));
+        TOOL_POOL.add(new RandomItemData(Items.IRON_LEGGINGS, 36, 52, 1, 1, 6, randomArmorModifier));
+        TOOL_POOL.add(new RandomItemData(Items.IRON_BOOTS, 24, 36, 1, 1, 8, randomArmorModifier));
+        TOOL_POOL.add(new RandomItemData(Items.CHAINMAIL_HELMET, 18, 28, 1, 1, 8, randomArmorModifier));
+        TOOL_POOL.add(new RandomItemData(Items.CHAINMAIL_CHESTPLATE, 30, 44, 1, 1, 6, randomArmorModifier));
+        TOOL_POOL.add(new RandomItemData(Items.CHAINMAIL_LEGGINGS, 26, 38, 1, 1, 6, randomArmorModifier));
+        TOOL_POOL.add(new RandomItemData(Items.CHAINMAIL_BOOTS, 16, 24, 1, 1, 8, randomArmorModifier));
     }
 
     @Override
@@ -93,7 +128,7 @@ public class BlacksmithEntity extends StoreEntity {
         if (TOOL_POOL.isEmpty()) {
             initToolPool();
         }
-        // 随机抽取 2-4 件工具
+        // 随机抽取商品
         this.generateRandomItems(TOOL_POOL, 2, 4);
     }
 
@@ -129,15 +164,13 @@ public class BlacksmithEntity extends StoreEntity {
         this.addFavorStoreItem(8, new ItemStack(AllItems.STURDY_SHEET.get()), 8, 32);
     }
 
-    public static AttributeSupplier.Builder createAttributes() {
-        return PathfinderMob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 16.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.0D) // 不动
-                .add(Attributes.KNOCKBACK_RESISTANCE, 25565.0D); // 抗击退
-    }
-
     @Override
     public ResourceLocation getStoreBackground() {
         return ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "textures/gui/store/blacksmith.png");
+    }
+
+    @Override
+    protected SoundEvent getOpenStoreSound() {
+        return SoundEvents.SMITHING_TABLE_USE;
     }
 }

@@ -26,5 +26,12 @@ public class ModRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_gold_ingot", has(Items.GOLD_INGOT))
                 .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
                 .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.INN_KEY.get(), 1)
+                .pattern("G ")
+                .pattern(" G")
+                .define('G', Items.GOLD_INGOT)
+                .unlockedBy("has_gold_ingot", has(Items.GOLD_INGOT))
+                .save(recipeOutput);
     }
 }

@@ -373,6 +373,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.desk_bell.status.edit_mode")
                 .zh("旅社装修中")
                 .en("The Inn is under RENOVATION");
+        entry("message.otherworldinn.store.overlay.open")
+                .zh("打开商店")
+                .en("Open Store");
 
         // 旅社钥匙
         entry("message.otherworldinn.inn_key.no_permission")
@@ -396,6 +399,15 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.inn_key.status")
                 .zh("当前状态: %s")
                 .en("Current State: %s");
+        entry("message.otherworldinn.space_sphere.no_team")
+                .zh("你当前不在任何队伍中")
+                .en("You are not in any team");
+        entry("message.otherworldinn.space_sphere.already_unlocked")
+                .zh("当前队伍的地图传送功能已解锁")
+                .en("Your team's map teleport is already unlocked");
+        entry("message.otherworldinn.space_sphere.teleport_unlocked")
+                .zh("地图传送功能已激活")
+                .en("Map teleport has been activated");
 
         // 床单
         entry("message.otherworldinn.bed_sheet.overlay.replace")
@@ -461,9 +473,6 @@ public class ModLanguageProvider extends LanguageProvider {
         entry(ModEntities.BLACKSMITH.get())
                 .zh("铁匠")
                 .en("Blacksmith");
-        entry(ModEntities.RANDOM_MERCHANT.get())
-                .zh("旅行商人")
-                .en("Traveling Merchant");
 
         // 商店 GUI
         entry("gui.otherworldinn.store.confirm")

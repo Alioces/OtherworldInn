@@ -10,8 +10,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
@@ -32,6 +34,9 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
 
     private static final ResourceLocation FAVOR_BAR_BG_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/experience_bar_background.png");
     private static final ResourceLocation FAVOR_BAR_FILL_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/experience_bar_progress.png");
+    private static final ResourceLocation HEART_EMPTY_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/heart/container.png");
+    private static final ResourceLocation HEART_RED_FULL_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/heart/full.png");
+    private static final ResourceLocation HEART_YELLOW_FULL_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/heart/absorbing_full.png");
     private static final int GRID_COLS = 4;
     private static final int GRID_ROWS = 5;
     private static final int GOODS_DISPLAY_ROWS = 4;
@@ -39,6 +44,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
     private static final int SLOT_SPACING = 2;
     private static final int FAVOR_BAR_WIDTH = 3 * SLOT_SIZE;
     private static final int FAVOR_BAR_HEIGHT = 5;
+    private static final int HEART_ICON_SIZE = 14;
 
     private final ResourceLocation backgroundTexture;
 
@@ -52,12 +58,14 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
     private Button confirmButton;
     private Button purchaseButton;
     private final List<StoreEntity.StoreItem> cart = new ArrayList<>();
+    @Nullable
+    private LivingEntity previewStoreEntity;
     
     // 购物车滚动相关
     private float scrollOffs = 0.0F;
     private boolean isScrolling = false;
     private static final int CART_ITEM_HEIGHT = 20;
-    private static final int CART_DISPLAY_ROWS = 4; // 显示行数
+    private static final int CART_DISPLAY_ROWS = 5; // 显示行数
     private static final int SCROLL_BAR_WIDTH = 4; // 滚动条宽度
     
     // 商品列表滚动相关
@@ -138,7 +146,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 this.updateButtons();
                 this.onClose(); // 购买成功后关闭界面，体验较好
             }
-        }).bounds(this.leftPos + 142, this.topPos + 130, 90, 20).build();
+        }).bounds(this.getRightPanelStartX() + (this.getPanelTotalWidth() - 80) / 2 - 2, this.topPos + 130, 80, 20).build();
         this.addRenderableWidget(this.purchaseButton);
         
         this.updateButtons();
@@ -227,8 +235,48 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         return 20 + (goodsAreaWidth - FAVOR_BAR_WIDTH) / 2;
     }
 
+    private int getGoodsAreaWidth() {
+        return GRID_COLS * (SLOT_SIZE + SLOT_SPACING) - SLOT_SPACING;
+    }
+
+    private int getGoodsAreaHeight() {
+        return GOODS_DISPLAY_ROWS * CART_ITEM_HEIGHT;
+    }
+
+    private int getPanelStartY() {
+        return this.topPos + 20;
+    }
+
+    private int getLeftPanelStartX() {
+        return this.leftPos + 20;
+    }
+
+    private int getPanelTotalWidth() {
+        return getGoodsAreaWidth() + 2 + SCROLL_BAR_WIDTH;
+    }
+
+    private int getRightPanelStartX() {
+        return this.leftPos + this.imageWidth - 20 - getPanelTotalWidth() + 2;
+    }
+
+    private int getCartAreaHeight() {
+        return CART_DISPLAY_ROWS * CART_ITEM_HEIGHT;
+    }
+
     private int getFavorBarY() {
         return this.titleLabelY + 3;
+    }
+
+    private int getStoreEntityRenderSize() {
+        return Math.round(44 * 0.6F);
+    }
+
+    private int getStoreEntityRenderCenterX() {
+        return this.imageWidth / 2;
+    }
+
+    private int getStoreEntityRenderBottomY() {
+        return 20 + this.getCartAreaHeight() + 10;
     }
 
     private float getFavorFillRatio() {
@@ -241,22 +289,61 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         return net.minecraft.util.Mth.clamp(this.menu.getTotalSpentCoins() / (float) maxSpent, 0.0F, 1.0F);
     }
 
+    @Nullable
+    private LivingEntity getDisplayStoreEntity() {
+        if (this.menu.getStoreEntity() instanceof LivingEntity livingEntity) {
+            return livingEntity;
+        }
+        if (this.previewStoreEntity != null) {
+            return this.previewStoreEntity;
+        }
+        if (this.minecraft == null || this.minecraft.level == null) {
+            return null;
+        }
+        if (this.menu.getStoreEntityType() != null) {
+            net.minecraft.world.entity.Entity entity = this.menu.getStoreEntityType().create(this.minecraft.level);
+            if (entity instanceof LivingEntity livingEntity) {
+                this.previewStoreEntity = livingEntity;
+                return this.previewStoreEntity;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
+        LivingEntity displayStoreEntity = this.getDisplayStoreEntity();
+        if (displayStoreEntity != null) {
+            int centerX = this.leftPos + this.getStoreEntityRenderCenterX();
+            int bottomY = this.topPos + this.getStoreEntityRenderBottomY();
+            int size = this.getStoreEntityRenderSize();
+            float lookX = this.width / 2.0F - 12.0F;
+            float lookY = this.height / 2.0F + 12.0F;
+            InventoryScreen.renderEntityInInventoryFollowsMouse(guiGraphics, 0, 0, this.width, this.height, size, 0.0625F, lookX, lookY, displayStoreEntity);
+            int heartX = centerX - HEART_ICON_SIZE / 2;
+            int heartY = bottomY - 14;
+            guiGraphics.blit(HEART_EMPTY_TEXTURE, heartX, heartY, 0, 0, HEART_ICON_SIZE, HEART_ICON_SIZE, HEART_ICON_SIZE, HEART_ICON_SIZE);
+            ResourceLocation fillTexture = this.getCurrentFavorLevel() >= StoreEntity.getMaxFavorLevelValue() ? HEART_YELLOW_FULL_TEXTURE : HEART_RED_FULL_TEXTURE;
+            int fillHeight = Math.round(HEART_ICON_SIZE * this.getFavorFillRatio());
+            if (fillHeight > 0) {
+                guiGraphics.enableScissor(heartX, heartY + HEART_ICON_SIZE - fillHeight, heartX + HEART_ICON_SIZE, heartY + HEART_ICON_SIZE);
+                guiGraphics.blit(fillTexture, heartX, heartY, 0, 0, HEART_ICON_SIZE, HEART_ICON_SIZE, HEART_ICON_SIZE, HEART_ICON_SIZE);
+                guiGraphics.disableScissor();
+            }
+        }
         this.renderTooltip(guiGraphics, mouseX, mouseY);
         
         // 渲染购物车列表 (右侧)
-        int leftPos = (this.width - this.imageWidth) / 2;
-        int topPos = (this.height - this.imageHeight) / 2;
-        int listX = leftPos + 142;
-        int listY = topPos + 20;
+        int listX = this.getRightPanelStartX();
+        int listY = this.getPanelStartY();
+        int listWidth = this.getGoodsAreaWidth();
         
         // 滚动条相关参数
-        int scrollBarX = listX + 90;
+        int scrollBarX = listX + listWidth + 2;
         int scrollBarY = listY;
-        int scrollBarHeight = CART_DISPLAY_ROWS * CART_ITEM_HEIGHT;
+        int scrollBarHeight = this.getCartAreaHeight();
         boolean canScroll = this.cart.size() > CART_DISPLAY_ROWS;
         
         // 渲染滚动条背景
@@ -281,16 +368,18 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         }
         
         // 启用剪裁以限制列表显示区域
-        guiGraphics.enableScissor(listX, listY, listX + 100, listY + scrollBarHeight);
+        guiGraphics.enableScissor(listX, listY, listX + listWidth, listY + scrollBarHeight);
         
-        for (int i = startIndex; i < this.cart.size() && i < startIndex + CART_DISPLAY_ROWS + 1; i++) {
+        for (int i = startIndex; i < this.cart.size() && i < startIndex + CART_DISPLAY_ROWS; i++) {
             StoreEntity.StoreItem item = this.cart.get(i);
             int y = listY + (i - startIndex) * CART_ITEM_HEIGHT;
             
+            guiGraphics.fill(listX, y, listX + listWidth, y + SLOT_SIZE, 0x33000000);
             guiGraphics.renderItem(item.getItemStack(), listX, y);
             guiGraphics.renderItemDecorations(this.font, item.getItemStack(), listX, y);
             guiGraphics.drawString(this.font, Component.literal("×" + item.getCurrentStock()), listX + 20, y + 5, 0xFFFFFF);
-            guiGraphics.drawString(this.font, Component.literal("§f\uE001§r" + item.getPrice() * item.getCurrentStock()), listX + 50, y + 5, 0xFFFF00);
+            Component priceText = Component.literal("§f\uE001§r" + item.getPrice() * item.getCurrentStock());
+            guiGraphics.drawString(this.font, priceText, listX + listWidth - this.font.width(priceText) - 1, y + 5, 0xFFFF00);
         }
         
         guiGraphics.disableScissor();
@@ -298,17 +387,6 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        // 不渲染 "Inventory" 和 "Hotbar" 标签
-        guiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
-        int favorBarX = this.getFavorBarX();
-        int favorBarY = this.getFavorBarY();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        guiGraphics.blit(FAVOR_BAR_BG_TEXTURE, favorBarX, favorBarY, 0, 0, FAVOR_BAR_WIDTH, FAVOR_BAR_HEIGHT, 182, 5);
-        int fillWidth = Math.round(FAVOR_BAR_WIDTH * this.getFavorFillRatio());
-        if (fillWidth > 0) {
-            guiGraphics.blit(FAVOR_BAR_FILL_TEXTURE, favorBarX, favorBarY, 0, 0, fillWidth, FAVOR_BAR_HEIGHT, 182, 5);
-        }
-        
         // 渲染玩家余额 (居中)
         int playerBalance = 0;
         if (this.minecraft != null && this.minecraft.level != null) {
@@ -320,7 +398,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         
         Component balanceText = Component.literal( "§f\uE001§r" + playerBalance);
         int balanceWidth = this.font.width(balanceText);
-        guiGraphics.drawString(this.font, balanceText, (this.imageWidth - balanceWidth) / 2, 6, 4210752, false);
+        guiGraphics.drawString(this.font, balanceText, (this.imageWidth - balanceWidth) / 2 - 1, 20, 0xFFFFFF, true);
     }
 
     @Override
@@ -328,13 +406,13 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         
         // 渲染背景
-        guiGraphics.blit(this.backgroundTexture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
-        
+        guiGraphics.blit(this.backgroundTexture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+
         // 渲染商品网格
-        int startX = this.leftPos + 20;
-        int startY = this.topPos + 20;
-        int goodsAreaWidth = GRID_COLS * (SLOT_SIZE + SLOT_SPACING) - SLOT_SPACING;
-        int goodsAreaHeight = GOODS_DISPLAY_ROWS * CART_ITEM_HEIGHT;
+        int startX = this.getLeftPanelStartX();
+        int startY = this.getPanelStartY();
+        int goodsAreaWidth = this.getGoodsAreaWidth();
+        int goodsAreaHeight = this.getGoodsAreaHeight();
         int goodsScrollBarX = startX + goodsAreaWidth + 2;
         int goodsScrollBarY = startY;
         
@@ -367,7 +445,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             int y = startY + row * (SLOT_SIZE + SLOT_SPACING);
             
             // 绘制槽位背景
-            guiGraphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0xFF404040);
+            guiGraphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0x33000000);
             
             // 绘制物品
             StoreEntity.StoreItem storeItem = items.get(i);
@@ -433,19 +511,19 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             Component name = this.selectedItem.getItemStack().getHoverName();
             int nameWidth = this.font.width(name);
             int areaWidth = GRID_COLS * (SLOT_SIZE + SLOT_SPACING) - SLOT_SPACING;
-            startX = this.leftPos + 20;
+            startX = this.getLeftPanelStartX();
             // 计算居中位置
             int x = startX + (areaWidth - nameWidth) / 2;
             guiGraphics.drawString(this.font, name, x, this.topPos + 100, 0xFFFFFF);
         }
     }
-    
+
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        int goodsStartX = this.leftPos + 20;
-        int goodsStartY = this.topPos + 20;
-        int goodsWidth = GRID_COLS * (SLOT_SIZE + SLOT_SPACING) - SLOT_SPACING + SCROLL_BAR_WIDTH + 2;
-        int goodsHeight = GOODS_DISPLAY_ROWS * CART_ITEM_HEIGHT;
+        int goodsStartX = this.getLeftPanelStartX();
+        int goodsStartY = this.getPanelStartY();
+        int goodsWidth = this.getPanelTotalWidth();
+        int goodsHeight = this.getGoodsAreaHeight();
         List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
         int totalGoodsRows = (int) Math.ceil(items.size() / (float) GRID_COLS);
         boolean canScrollGoods = totalGoodsRows > GOODS_DISPLAY_ROWS;
@@ -457,10 +535,10 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             return true;
         }
 
-        int cartStartX = this.leftPos + 142;
-        int cartStartY = this.topPos + 20;
-        int cartWidth = 90 + SCROLL_BAR_WIDTH;
-        int cartHeight = CART_DISPLAY_ROWS * CART_ITEM_HEIGHT;
+        int cartStartX = this.getRightPanelStartX();
+        int cartStartY = this.getPanelStartY();
+        int cartWidth = this.getPanelTotalWidth();
+        int cartHeight = this.getCartAreaHeight();
         
         if (mouseX >= cartStartX && mouseX < cartStartX + cartWidth && mouseY >= cartStartY && mouseY < cartStartY + cartHeight && this.cart.size() > CART_DISPLAY_ROWS) {
             float scrollStep = 1.0F / (float)(this.cart.size() - CART_DISPLAY_ROWS);
@@ -482,8 +560,8 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         // 检查点击商品
-        int startX = this.leftPos + 20;
-        int startY = this.topPos + 20;
+        int startX = this.getLeftPanelStartX();
+        int startY = this.getPanelStartY();
         List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
         int totalRows = (int) Math.ceil(items.size() / (float) GRID_COLS);
         int goodsStartRow = totalRows > GOODS_DISPLAY_ROWS ? (int) (this.goodsScrollOffs * (totalRows - GOODS_DISPLAY_ROWS)) : 0;
@@ -507,12 +585,15 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                      return false;
                 }
 
-                if (this.selectedItem != items.get(i)) {
+                boolean clickedSelectedItem = this.selectedItem == items.get(i);
+                if (!clickedSelectedItem) {
                     this.selectedItem = items.get(i);
                     // 重置购买数量为 1
                     this.purchaseQuantity = 1;
                     this.quantityEditBox.setValue("1");
                     this.updateButtons();
+                } else if (!hasShiftDown()) {
+                    this.addToCart(this.selectedItem, this.purchaseQuantity);
                 }
                 
                 // Shift + 点击：快速添加 64 个 (或剩余库存)
@@ -537,9 +618,14 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
     @Override
     protected void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         super.renderTooltip(guiGraphics, mouseX, mouseY);
-        int favorBarX = this.leftPos + this.getFavorBarX();
-        int favorBarY = this.topPos + this.getFavorBarY();
-        if (mouseX >= favorBarX && mouseX < favorBarX + FAVOR_BAR_WIDTH && mouseY >= favorBarY && mouseY < favorBarY + FAVOR_BAR_HEIGHT) {
+        int modelCenterX = this.leftPos + this.getStoreEntityRenderCenterX();
+        int modelBottomY = this.topPos + this.getStoreEntityRenderBottomY();
+        int modelSize = this.getStoreEntityRenderSize();
+        int modelMinX = modelCenterX - modelSize / 2;
+        int modelMaxX = modelCenterX + modelSize / 2;
+        int modelMinY = modelBottomY - modelSize - 10;
+        int modelMaxY = modelBottomY + 10;
+        if (mouseX >= modelMinX && mouseX < modelMaxX && mouseY >= modelMinY && mouseY < modelMaxY) {
             int favorLevel = this.menu.getFavorLevel();
             int coinsPerLevel = StoreEntity.getCoinsPerFavorLevelValue();
             int maxLevel = StoreEntity.getMaxFavorLevelValue();

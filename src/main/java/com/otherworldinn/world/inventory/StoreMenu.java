@@ -2,8 +2,11 @@ package com.otherworldinn.world.inventory;
 
 import com.otherworldinn.entity.store.StoreEntity;
 import com.otherworldinn.init.ModMenuTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -19,21 +22,25 @@ import net.minecraft.core.HolderLookup;
  */
 public class StoreMenu extends AbstractContainerMenu {
 
+    private final Player player;
+    private final int storeEntityId;
+    private final EntityType<?> storeEntityType;
     private final StoreEntity storeEntity;
     private final List<StoreEntity.StoreItem> storeItems;
     private final int favorLevel;
     private final int totalSpentCoins;
 
     public StoreMenu(int containerId, Inventory playerInventory, FriendlyByteBuf extraData) {
-        this(containerId, playerInventory, getEntity(playerInventory, extraData), readFavorLevel(extraData), readTotalSpentCoins(extraData), readStoreItems(playerInventory, extraData));
+        this(containerId, playerInventory, readStoreEntityId(extraData), readStoreEntityType(extraData), readFavorLevel(extraData), readTotalSpentCoins(extraData), readStoreItems(playerInventory, extraData));
     }
 
-    private static StoreEntity getEntity(Inventory playerInventory, FriendlyByteBuf extraData) {
-        Entity entity = playerInventory.player.level().getEntity(extraData.readInt());
-        if (entity instanceof StoreEntity storeEntity) {
-            return storeEntity;
-        }
-        return null;
+    private static int readStoreEntityId(FriendlyByteBuf extraData) {
+        return extraData.readInt();
+    }
+
+    private static EntityType<?> readStoreEntityType(FriendlyByteBuf extraData) {
+        ResourceLocation typeId = extraData.readResourceLocation();
+        return BuiltInRegistries.ENTITY_TYPE.getOptional(typeId).orElse(null);
     }
 
     private static List<StoreEntity.StoreItem> readStoreItems(Inventory playerInventory, FriendlyByteBuf extraData) {
@@ -55,12 +62,16 @@ public class StoreMenu extends AbstractContainerMenu {
     }
 
     public StoreMenu(int containerId, Inventory playerInventory, StoreEntity storeEntity) {
-        this(containerId, playerInventory, storeEntity, storeEntity != null ? storeEntity.getFavorLevel() : 1, storeEntity != null ? storeEntity.getTotalSpentCoins() : 0, storeEntity != null ? storeEntity.getStoreItems() : new ArrayList<>());
+        this(containerId, playerInventory, storeEntity != null ? storeEntity.getId() : -1, storeEntity != null ? storeEntity.getType() : null, storeEntity != null ? storeEntity.getFavorLevel() : 1, storeEntity != null ? storeEntity.getTotalSpentCoins() : 0, storeEntity != null ? storeEntity.getStoreItems() : new ArrayList<>());
     }
 
-    protected StoreMenu(int containerId, Inventory playerInventory, StoreEntity storeEntity, int favorLevel, int totalSpentCoins, List<StoreEntity.StoreItem> storeItems) {
+    protected StoreMenu(int containerId, Inventory playerInventory, int storeEntityId, EntityType<?> storeEntityType, int favorLevel, int totalSpentCoins, List<StoreEntity.StoreItem> storeItems) {
         super(ModMenuTypes.STORE_MENU.get(), containerId);
-        this.storeEntity = storeEntity;
+        this.player = playerInventory.player;
+        this.storeEntityId = storeEntityId;
+        this.storeEntityType = storeEntityType;
+        Entity entity = storeEntityId >= 0 ? playerInventory.player.level().getEntity(storeEntityId) : null;
+        this.storeEntity = entity instanceof StoreEntity store ? store : null;
         this.favorLevel = favorLevel;
         this.totalSpentCoins = totalSpentCoins;
         this.storeItems = new ArrayList<>(storeItems);
@@ -73,11 +84,27 @@ public class StoreMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
+        StoreEntity storeEntity = this.getStoreEntity();
         return storeEntity != null && storeEntity.isAlive() && storeEntity.distanceTo(player) < 8.0f;
     }
 
     public StoreEntity getStoreEntity() {
-        return storeEntity;
+        if (this.storeEntity != null && this.storeEntity.isAlive()) {
+            return this.storeEntity;
+        }
+        if (this.storeEntityId < 0) {
+            return null;
+        }
+        Entity entity = this.player.level().getEntity(this.storeEntityId);
+        return entity instanceof StoreEntity store ? store : null;
+    }
+
+    public EntityType<?> getStoreEntityType() {
+        if (this.storeEntityType != null) {
+            return this.storeEntityType;
+        }
+        StoreEntity storeEntity = this.getStoreEntity();
+        return storeEntity != null ? storeEntity.getType() : null;
     }
 
     public List<StoreEntity.StoreItem> getStoreItems() {

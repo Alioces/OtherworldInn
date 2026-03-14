@@ -1,6 +1,8 @@
 package com.otherworldinn.entity;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.client.util.TextureUtils;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
@@ -37,8 +39,7 @@ public class OrdinaryGuestEntity extends GuestEntity {
         if (!texturesLoaded && this.level().isClientSide) {
             try {
                 // 使用反射或直接调用客户端工具类加载纹理
-                // 为了避免服务端类加载错误，这里假设 TextureUtils 是安全的或使用全限定名
-                List<ResourceLocation> found = com.otherworldinn.client.util.TextureUtils.findTexturesInFolder(OtherworldInn.MODID, "textures/entity/guest/ordinary_guest");
+                List<ResourceLocation> found = TextureUtils.findTexturesInFolder(OtherworldInn.MODID, "textures/entity/guest/ordinary_guest");
                 if (!found.isEmpty()) {
                     TEXTURES.clear();
                     TEXTURES.addAll(found);
@@ -65,9 +66,8 @@ public class OrdinaryGuestEntity extends GuestEntity {
     @Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData spawnData) {
         spawnData = super.finalizeSpawn(level, difficulty, reason, spawnData);
-        // 随机设置一个较大的变体索引，客户端通过取模来映射到具体纹理
-        // 这样服务端不需要知道具体的纹理数量
         this.setSkinVariant(this.getRandom().nextInt(10000));
+        this.setBudget(12);
         return spawnData;
     }
 }

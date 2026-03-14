@@ -5,6 +5,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -14,6 +16,8 @@ import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -60,6 +64,13 @@ public abstract class StoreEntity extends PathfinderMob {
             return Math.max(1, (int) Math.floor(basePrice * MAX_LEVEL_DISCOUNT_RATE));
         }
         return basePrice;
+    }
+
+    public static AttributeSupplier.Builder createAttributes() {
+        return PathfinderMob.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 16.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.0D) // 不动
+                .add(Attributes.KNOCKBACK_RESISTANCE, 25565.0D); // 抗击退
     }
 
     /**
@@ -124,6 +135,10 @@ public abstract class StoreEntity extends PathfinderMob {
         // 只有主手交互生效，防止触发两次
         if (hand == InteractionHand.MAIN_HAND) {
             if (!this.level().isClientSide) {
+                SoundEvent openSound = this.getOpenStoreSound();
+                if (openSound != null) {
+                    this.level().playSound(null, this.blockPosition(), openSound, this.getSoundSource(), 1.0F, 1.0F);
+                }
                 // 打开商店界面 (服务端逻辑)
                 this.openStoreScreen(player);
             }
@@ -150,6 +165,7 @@ public abstract class StoreEntity extends PathfinderMob {
             );
             serverPlayer.openMenu(menuProvider, (buf) -> {
                 buf.writeInt(this.getId()); // 传递实体 ID 以便客户端获取实体
+                buf.writeResourceLocation(BuiltInRegistries.ENTITY_TYPE.getKey(this.getType()));
                 buf.writeInt(this.favorLevel);
                 buf.writeInt(this.totalSpentCoins);
                 
@@ -173,6 +189,11 @@ public abstract class StoreEntity extends PathfinderMob {
      */
     public ResourceLocation getStoreBackground() {
         return ResourceLocation.fromNamespaceAndPath("otherworldinn", "textures/gui/store.png");
+    }
+
+    @Nullable
+    protected SoundEvent getOpenStoreSound() {
+        return SoundEvents.UI_BUTTON_CLICK.value();
     }
 
     // --- 免疫与物理逻辑 ---

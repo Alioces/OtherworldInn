@@ -8,7 +8,9 @@
     "MixinBedBlock",
     "MixinDeskBellRenderer",
     "MixinDeskBellBlockEntity",
-    "MixinFanProcessing"
+    "MixinFanProcessing",
+    "MixinDepotRenderer",
+    "MixinEjectorRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

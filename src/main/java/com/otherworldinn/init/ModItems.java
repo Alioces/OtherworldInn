@@ -10,6 +10,7 @@ import com.otherworldinn.item.MessyBedSheetItem;
 import com.otherworldinn.item.RecallScrollItem;
 import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.item.RoomRegisterItem;
+import com.otherworldinn.item.SpaceSphereItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -85,6 +86,14 @@ public class ModItems {
             .lang("Inn Key", "旅社钥匙")
             .tooltip("Right click Desk Bell to toggle Inn state", "潜行右键前台铃铛以切换旅社状态");
     public static final DeferredItem<InnKeyItem> INN_KEY = INN_KEY_REG.register();
+
+    public static final ItemReg<SpaceSphereItem> SPACE_SPHERE_REG = new ItemReg<>("space_sphere", SpaceSphereItem::new)
+            .rarity(Rarity.EPIC)
+            .stacksTo(1)
+            .noModel()
+            .lang("Space Sphere", "空间球")
+            .tooltip("Use to activate map teleport for your team", "使用后为队伍激活地图传送功能");
+    public static final DeferredItem<SpaceSphereItem> SPACE_SPHERE = SPACE_SPHERE_REG.register();
 
     // --- 辅助方法 ---
 

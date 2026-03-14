@@ -1,6 +1,5 @@
 package com.otherworldinn.world.inn;
 
-import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.entity.GuestEntity;
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.foundation.ModBlockProperties;
@@ -26,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.pathfinder.Path;
 
 import java.util.*;
 
@@ -448,20 +448,8 @@ public class InnData {
             // 让实体寻路到房间中心
             Entity entity = level.getEntity(guestId);
             if (entity instanceof GuestEntity guestEntity) {
-                // 计算房间中心点
-                BlockPos min = room.getMinPos();
-                BlockPos max = room.getMaxPos();
-                double centerX = (min.getX() + max.getX()) / 2.0;
-                double bottomY = min.getY();
-                double centerZ = (min.getZ() + max.getZ()) / 2.0;
-                BlockPos centerPos = BlockPos.containing(centerX, bottomY, centerZ);
-                
-                // 确保目标位置不是固体方块 (如果是地板层，往上移一格)
-                if (level.getBlockState(centerPos).isSolid()) {
-                    centerPos = centerPos.above();
-                }
-                
-                guestEntity.setNavigationTarget(centerPos);
+                BlockPos targetPos = findBestRoomNavigationTarget(level, guestEntity, room);
+                guestEntity.setNavigationTarget(targetPos);
                 
                 // 移除剪贴板 TODO
                 String guestName = entity.getCustomName() != null ? entity.getCustomName().getString() : "Guest";
@@ -481,6 +469,51 @@ public class InnData {
         }
         
         return false;
+    }
+
+    private BlockPos findBestRoomNavigationTarget(ServerLevel level, GuestEntity guestEntity, RoomData room) {
+        BlockPos min = room.getMinPos();
+        BlockPos max = room.getMaxPos();
+        int centerX = (min.getX() + max.getX()) / 2;
+        int centerY = min.getY() + 1;
+        int centerZ = (min.getZ() + max.getZ()) / 2;
+        BlockPos fallback = new BlockPos(centerX, centerY, centerZ);
+
+        BlockPos best = null;
+        double bestDist = Double.MAX_VALUE;
+        for (int x = min.getX(); x <= max.getX(); x++) {
+            for (int z = min.getZ(); z <= max.getZ(); z++) {
+                for (int y = min.getY(); y <= Math.min(max.getY(), min.getY() + 2); y++) {
+                    BlockPos pos = new BlockPos(x, y, z);
+                    if (!isWalkableRoomTarget(level, pos)) {
+                        continue;
+                    }
+                    Path path = guestEntity.getNavigation().createPath(pos, 0);
+                    if (path == null || !path.canReach()) {
+                        continue;
+                    }
+                    double dist = guestEntity.distanceToSqr(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        best = pos;
+                    }
+                }
+            }
+        }
+        if (best != null) {
+            return best;
+        }
+        if (!isWalkableRoomTarget(level, fallback)) {
+            return fallback.above();
+        }
+        return fallback;
+    }
+
+    private boolean isWalkableRoomTarget(ServerLevel level, BlockPos pos) {
+        BlockState feet = level.getBlockState(pos);
+        BlockState head = level.getBlockState(pos.above());
+        BlockState ground = level.getBlockState(pos.below());
+        return !feet.isSolid() && !head.isSolid() && ground.isSolid();
     }
 
     // --- 旅客生成 ---

@@ -10,9 +10,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 import com.otherworldinn.client.gui.store.StoreScreen;
+import com.otherworldinn.client.renderer.BlacksmithModel;
 import com.otherworldinn.client.renderer.BlacksmithRenderer;
 import com.otherworldinn.client.renderer.GuestRenderer;
-import com.otherworldinn.client.renderer.RandomMerchantRenderer;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
@@ -41,7 +41,11 @@ public class ModClientEvents {
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.ORDINARY_GUEST.get(), GuestRenderer::new);
         event.registerEntityRenderer(ModEntities.BLACKSMITH.get(), BlacksmithRenderer::new);
-        event.registerEntityRenderer(ModEntities.RANDOM_MERCHANT.get(), RandomMerchantRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(BlacksmithModel.LAYER_LOCATION, BlacksmithModel::createBodyLayer);
     }
 
     @SubscribeEvent

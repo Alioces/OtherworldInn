@@ -261,8 +261,7 @@ public class TeamCommands {
                 InnData.InnState newState = InnData.InnState.valueOf(stateStr.toUpperCase());
                 if (team.getInnData().setState(newState)) {
                     context.getSource().sendSuccess(() -> Component.translatable("command.otherworldinn.team.state_set", newState.name()), true);
-                    // 同步数据
-                    manager.syncTeamTeleport(team, player);
+                    manager.syncTeam(team, player.getServer());
                     return 1;
                 } else {
                     context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.state_set_fail"));

@@ -23,6 +23,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.properties.BedPart;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
@@ -51,6 +54,7 @@ public class InnEventHandler {
 
     // 记录本 tick 需要检查的队伍 ID
     private static final Set<UUID> pendingChecks = new HashSet<>();
+    private static final String MESSY_BED_ITEM_KEY = "MessyBed";
 
     /**
      * 监听方块更新事件 (NeighborNotifyEvent)
@@ -84,6 +88,7 @@ public class InnEventHandler {
     @SubscribeEvent
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
+        applyMessyBedOnPlace(event);
         if (level.dimension() != TownDimensions.TOWN_LEVEL) return;
 
         BlockPos pos = event.getPos();
@@ -114,6 +119,9 @@ public class InnEventHandler {
     @SubscribeEvent
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
+        if (preserveMessyBedDrop(event, level)) {
+            return;
+        }
         if (level.dimension() != TownDimensions.TOWN_LEVEL) return;
 
         BlockPos pos = event.getPos();
@@ -124,6 +132,88 @@ public class InnEventHandler {
                 pendingChecks.add(team.getTeamId());
             }
         }
+    }
+
+    private static boolean preserveMessyBedDrop(BlockEvent.BreakEvent event, ServerLevel level) {
+        BlockPos pos = event.getPos();
+        BlockState state = level.getBlockState(pos);
+        if (!isMessyBedState(state)) {
+            return false;
+        }
+        if (event.getPlayer() != null && event.getPlayer().isCreative()) {
+            return false;
+        }
+        event.setCanceled(true);
+        BlockPos headPos = state.getValue(BedBlock.PART) == BedPart.HEAD ? pos : pos.relative(state.getValue(BedBlock.FACING));
+        BlockPos footPos = state.getValue(BedBlock.PART) == BedPart.FOOT ? pos : pos.relative(state.getValue(BedBlock.FACING).getOpposite());
+        BlockState headState = level.getBlockState(headPos);
+        BlockState footState = level.getBlockState(footPos);
+        if (isMessyBedState(headState)) {
+            level.setBlock(headPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        }
+        if (isMessyBedState(footState)) {
+            level.setBlock(footPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        }
+        ItemStack drop = createMessyBedStack(state);
+        Block.popResource(level, headPos, drop);
+        TeamData team = TeamManager.getInstance().getTeamAt(pos, level.getServer());
+        if (team != null && team.getInnData().getState() == InnState.EDIT_MODE) {
+            synchronized (pendingChecks) {
+                pendingChecks.add(team.getTeamId());
+            }
+        }
+        return true;
+    }
+
+    private static void applyMessyBedOnPlace(BlockEvent.EntityPlaceEvent event) {
+        BlockState state = event.getState();
+        if (!(state.getBlock() instanceof BedBlock) || !state.hasProperty(com.otherworldinn.foundation.ModBlockProperties.MESSY)) {
+            return;
+        }
+        if (!(event.getEntity() instanceof Player player)) {
+            return;
+        }
+        ItemStack main = player.getMainHandItem();
+        ItemStack off = player.getOffhandItem();
+        ItemStack source = isMessyBedItem(main) ? main : (isMessyBedItem(off) ? off : ItemStack.EMPTY);
+        if (source.isEmpty()) {
+            return;
+        }
+        if (!(event.getLevel() instanceof Level level)) {
+            return;
+        }
+        BlockPos pos = event.getPos();
+        BlockPos otherPos = state.getValue(BedBlock.PART) == BedPart.HEAD ? pos.relative(state.getValue(BedBlock.FACING).getOpposite()) : pos.relative(state.getValue(BedBlock.FACING));
+        BlockState current = level.getBlockState(pos);
+        BlockState other = level.getBlockState(otherPos);
+        if (current.hasProperty(com.otherworldinn.foundation.ModBlockProperties.MESSY)) {
+            level.setBlock(pos, current.setValue(com.otherworldinn.foundation.ModBlockProperties.MESSY, true), Block.UPDATE_ALL);
+        }
+        if (other.getBlock() instanceof BedBlock && other.hasProperty(com.otherworldinn.foundation.ModBlockProperties.MESSY)) {
+            level.setBlock(otherPos, other.setValue(com.otherworldinn.foundation.ModBlockProperties.MESSY, true), Block.UPDATE_ALL);
+        }
+    }
+
+    private static boolean isMessyBedState(BlockState state) {
+        return state.getBlock() instanceof BedBlock
+                && state.hasProperty(com.otherworldinn.foundation.ModBlockProperties.MESSY)
+                && state.getValue(com.otherworldinn.foundation.ModBlockProperties.MESSY);
+    }
+
+    private static ItemStack createMessyBedStack(BlockState state) {
+        ItemStack stack = new ItemStack(state.getBlock().asItem());
+        CompoundTag tag = new CompoundTag();
+        tag.putBoolean(MESSY_BED_ITEM_KEY, true);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        return stack;
+    }
+
+    private static boolean isMessyBedItem(ItemStack stack) {
+        if (stack.isEmpty() || !(Block.byItem(stack.getItem()) instanceof BedBlock)) {
+            return false;
+        }
+        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        return data.copyTag().getBoolean(MESSY_BED_ITEM_KEY);
     }
 
     /**

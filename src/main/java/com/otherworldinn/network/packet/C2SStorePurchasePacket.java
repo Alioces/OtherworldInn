@@ -2,6 +2,7 @@ package com.otherworldinn.network.packet;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.entity.store.StoreEntity;
+import com.otherworldinn.world.inventory.StoreMenu;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -15,12 +16,16 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 商店购买数据包 (Client -> Server)
  */
 public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items) implements CustomPacketPayload {
+    private static final int MAX_REQUEST_ITEMS = 54;
+    private static final double MAX_PURCHASE_DISTANCE_SQR = 64.0D;
 
     public record PurchaseItem(ItemStack stack, int quantity) {
         public static final StreamCodec<RegistryFriendlyByteBuf, PurchaseItem> STREAM_CODEC = StreamCodec.composite(
@@ -52,6 +57,18 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items) imp
             if (context.player() instanceof ServerPlayer player) {
                 Entity entity = player.level().getEntity(packet.entityId);
                 if (entity instanceof StoreEntity storeEntity) {
+                    if (!(player.containerMenu instanceof StoreMenu storeMenu)) {
+                        return;
+                    }
+                    if (storeMenu.getStoreEntity() != storeEntity) {
+                        return;
+                    }
+                    if (player.distanceToSqr(storeEntity) > MAX_PURCHASE_DISTANCE_SQR) {
+                        return;
+                    }
+                    if (packet.items == null || packet.items.isEmpty() || packet.items.size() > MAX_REQUEST_ITEMS) {
+                        return;
+                    }
                     TeamManager manager = TeamManager.getInstance();
                     TeamData team = manager.getPlayerTeam(player);
                     
@@ -63,9 +80,16 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items) imp
                     List<ItemStack> toGive = new ArrayList<>();
                     List<StoreEntity.StoreItem> toDeductStock = new ArrayList<>();
                     List<Integer> deductQuantities = new ArrayList<>();
+                    Map<StoreEntity.StoreItem, Integer> requestedByStock = new IdentityHashMap<>();
                     
                     // 验证并计算总价
                     for (PurchaseItem request : packet.items) {
+                        if (request == null || request.stack == null || request.stack.isEmpty()) {
+                            return;
+                        }
+                        if (request.quantity <= 0 || request.quantity > request.stack.getMaxStackSize()) {
+                            return;
+                        }
                         // 在商店库存中查找匹配项
                         boolean found = false;
                         for (StoreEntity.StoreItem stockItem : storeEntity.getStoreItems()) {
@@ -73,13 +97,21 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items) imp
                                 if (!storeEntity.canPurchase(stockItem)) {
                                     return;
                                 }
+                                int aggregatedQuantity = requestedByStock.getOrDefault(stockItem, 0) + request.quantity;
+                                if (aggregatedQuantity <= 0) {
+                                    return;
+                                }
                                 // 检查库存
-                                if (stockItem.getMaxStock() != -1 && stockItem.getCurrentStock() < request.quantity) {
+                                if (stockItem.getMaxStock() != -1 && stockItem.getCurrentStock() < aggregatedQuantity) {
                                     // 库存不足，交易失败 (或者只买部分？这里简单处理为失败)
                                     return;
                                 }
+                                requestedByStock.put(stockItem, aggregatedQuantity);
                                 
                                 totalPrice += storeEntity.getPurchasePrice(stockItem) * request.quantity;
+                                if (totalPrice <= 0) {
+                                    return;
+                                }
                                 ItemStack stack = stockItem.getItemStack().copy();
                                 stack.setCount(request.quantity);
                                 toGive.add(stack);
@@ -97,6 +129,9 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items) imp
                     }
                     
                     // 检查余额
+                    if (totalPrice <= 0) {
+                        return;
+                    }
                     if (team.getCoins() >= totalPrice) {
                         // 扣钱
                         team.removeCoins(totalPrice, player.getServer());

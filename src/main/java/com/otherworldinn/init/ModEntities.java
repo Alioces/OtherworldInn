@@ -10,7 +10,6 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import java.util.function.Supplier;
 
 import com.otherworldinn.entity.store.BlacksmithEntity;
-import com.otherworldinn.entity.store.RandomMerchantEntity;
 
 /**
  * 实体注册中心
@@ -34,11 +33,4 @@ public class ModEntities {
                     .setShouldReceiveVelocityUpdates(true)
                     .build("blacksmith"));
 
-    public static final Supplier<EntityType<RandomMerchantEntity>> RANDOM_MERCHANT = ENTITY_TYPES.register("random_merchant",
-            () -> EntityType.Builder.of(RandomMerchantEntity::new, MobCategory.MISC)
-                    .sized(0.6F, 1.95F)
-                    .clientTrackingRange(80)
-                    .updateInterval(2)
-                    .setShouldReceiveVelocityUpdates(true)
-                    .build("random_merchant"));
 }

@@ -26,6 +26,7 @@ public class ModCreativeModeTabs {
                 output.accept(ModItems.LAND_DEED.get());
                 output.accept(ModItems.INN_KEY.get());
                 output.accept(ModItems.ROOM_KEY.get());
+                output.accept(ModItems.SPACE_SPHERE.get());
                 output.accept(ModBlocks.OVERWORLD_PORTAL.get());
             }).build());
 }
