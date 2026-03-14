@@ -1,18 +1,15 @@
 package com.otherworldinn.world.economy;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.core.registries.BuiltInRegistries;
-
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * 物品售价管理器
- * <p>
- * 用于管理玩家向旅社出售物品的价格。
- * 使用静态 Map 存储
- * </p>
+ *
+ * <p>用于管理玩家向旅社出售物品的价格。 使用静态 Map 存储
  */
 public class ItemSellPriceManager {
 
@@ -28,7 +25,7 @@ public class ItemSellPriceManager {
         addPrice("minecraft:melon_slice", 1);
         addPrice("minecraft:pumpkin", 4);
         addPrice("minecraft:apple", 3);
-        
+
         // 畜牧产品
         addPrice("minecraft:beef", 3);
         addPrice("minecraft:porkchop", 3);
@@ -37,7 +34,7 @@ public class ItemSellPriceManager {
         addPrice("minecraft:leather", 4);
         addPrice("minecraft:white_wool", 2);
         addPrice("minecraft:egg", 1);
-        
+
         // 杂项
         addPrice("minecraft:rotten_flesh", 1);
         addPrice("minecraft:bone", 1);

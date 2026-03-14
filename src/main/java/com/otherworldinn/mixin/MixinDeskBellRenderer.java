@@ -13,8 +13,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(DeskBellRenderer.class)
 public class MixinDeskBellRenderer {
 
-    @Inject(method = "renderSafe", at = @At("TAIL"),  remap = false)
-    private void injectRenderSafe(DeskBellBlockEntity blockEntity, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay, CallbackInfo ci) {
+    @Inject(method = "renderSafe", at = @At("TAIL"), remap = false)
+    private void injectRenderSafe(
+            DeskBellBlockEntity blockEntity,
+            float partialTicks,
+            PoseStack ms,
+            MultiBufferSource buffer,
+            int light,
+            int overlay,
+            CallbackInfo ci) {
         DeskBellIconRenderer.render(blockEntity, partialTicks, ms, buffer, light, overlay);
     }
 }

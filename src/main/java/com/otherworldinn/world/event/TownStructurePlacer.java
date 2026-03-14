@@ -3,6 +3,7 @@ package com.otherworldinn.world.event;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.world.data.TownSavedData;
 import com.otherworldinn.world.dimension.TownDimensions;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -17,19 +18,19 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.level.LevelEvent;
 
-import java.util.Optional;
-
 @EventBusSubscriber(modid = OtherworldInn.MODID)
 public class TownStructurePlacer {
 
-    private static final ResourceLocation TOWN_STRUCTURE = ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "town_main");
+    private static final ResourceLocation TOWN_STRUCTURE =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "town_main");
     private static final BlockPos ORIGIN = new BlockPos(0, 70, 0);
 
     @SubscribeEvent
     public static void onLevelLoad(LevelEvent.Load event) {
-        if (event.getLevel() instanceof ServerLevel level && level.dimension() == TownDimensions.TOWN_LEVEL) {
+        if (event.getLevel() instanceof ServerLevel level
+                && level.dimension() == TownDimensions.TOWN_LEVEL) {
             TownSavedData data = TownSavedData.get(level);
-            
+
             // 如果城镇尚未生成，则生成它
             if (!data.isGenerated()) {
                 generateTown(level);
@@ -39,23 +40,26 @@ public class TownStructurePlacer {
     }
 
     private static void generateTown(ServerLevel level) {
-        OtherworldInn.LOGGER.info("Generating town structure in dimension: {}", level.dimension().location());
-        
+        OtherworldInn.LOGGER.info(
+                "Generating town structure in dimension: {}", level.dimension().location());
+
         StructureTemplateManager manager = level.getStructureManager();
         Optional<StructureTemplate> templateOptional = manager.get(TOWN_STRUCTURE);
 
         if (templateOptional.isPresent()) {
             StructureTemplate template = templateOptional.get();
-            StructurePlaceSettings settings = new StructurePlaceSettings()
-                    .setRotation(Rotation.NONE)
-                    .setMirror(Mirror.NONE)
-                    .setIgnoreEntities(false);
-            
+            StructurePlaceSettings settings =
+                    new StructurePlaceSettings()
+                            .setRotation(Rotation.NONE)
+                            .setMirror(Mirror.NONE)
+                            .setIgnoreEntities(false);
+
             // 直接放置整个结构
             template.placeInWorld(level, ORIGIN, BlockPos.ZERO, settings, level.getRandom(), 2);
             OtherworldInn.LOGGER.info("Town structure placed successfully.");
         } else {
-            OtherworldInn.LOGGER.warn("Town structure not found: {}. Generating fallback platform.", TOWN_STRUCTURE);
+            OtherworldInn.LOGGER.warn(
+                    "Town structure not found: {}. Generating fallback platform.", TOWN_STRUCTURE);
             generateFallbackPlatform(level);
         }
     }
@@ -69,7 +73,7 @@ public class TownStructurePlacer {
             for (int z = -8; z <= 8; z++) {
                 pos.set(x, 70, z);
                 level.setBlock(pos, stone, 3);
-        
+
                 // 在四个角放置萤石
                 if ((x == -8 || x == 8) && (z == -8 || z == 8)) {
                     pos.set(x, 71, z);

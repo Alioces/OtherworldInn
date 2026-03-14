@@ -3,7 +3,6 @@ package com.otherworldinn.mixin;
 import com.otherworldinn.client.renderer.DeskBellIconRenderer;
 import com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;

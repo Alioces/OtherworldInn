@@ -17,7 +17,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
-@EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(
+        modid = OtherworldInn.MODID,
+        value = Dist.CLIENT,
+        bus = EventBusSubscriber.Bus.MOD)
 public class InnKeyOverlay {
 
     @SubscribeEvent
@@ -34,35 +37,39 @@ public class InnKeyOverlay {
         // 检查玩家是否持有旅社钥匙
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-        
+
         if (mainHand.is(ModItems.INN_KEY.get()) || offHand.is(ModItems.INN_KEY.get())) {
             return true;
         }
-        
+
         // 检查玩家是否手持工具 (仅主手)
         return isTool(mainHand);
     }
 
     private static boolean isTool(ItemStack stack) {
-        return stack.is(net.minecraft.tags.ItemTags.AXES) || 
-               stack.is(net.minecraft.tags.ItemTags.PICKAXES) || 
-               stack.is(net.minecraft.tags.ItemTags.SHOVELS) || 
-               stack.is(net.minecraft.tags.ItemTags.HOES);
+        return stack.is(net.minecraft.tags.ItemTags.AXES)
+                || stack.is(net.minecraft.tags.ItemTags.PICKAXES)
+                || stack.is(net.minecraft.tags.ItemTags.SHOVELS)
+                || stack.is(net.minecraft.tags.ItemTags.HOES);
     }
 
-    private static void render(GuiGraphics guiGraphics, net.minecraft.client.DeltaTracker deltaTracker) {
+    private static void render(
+            GuiGraphics guiGraphics, net.minecraft.client.DeltaTracker deltaTracker) {
         Minecraft mc = Minecraft.getInstance();
         HitResult hitResult = mc.hitResult;
-        
+
         // 仅当准星对准 DeskBell 时显示
         if (hitResult instanceof BlockHitResult blockHitResult) {
             BlockEntity be = mc.level.getBlockEntity(blockHitResult.getBlockPos());
             if (be instanceof DeskBellBlockEntity) {
-                Component toggleText = Component.translatable("message.otherworldinn.inn_key.overlay.toggle_state");
-                
-                ItemHudOverlay.renderMouseActions(guiGraphics, 
-                    new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, toggleText)
-                );
+                Component toggleText =
+                        Component.translatable(
+                                "message.otherworldinn.inn_key.overlay.toggle_state");
+
+                ItemHudOverlay.renderMouseActions(
+                        guiGraphics,
+                        new ItemHudOverlay.MouseAction(
+                                ItemHudOverlay.MouseButton.RIGHT, toggleText));
             }
         }
     }

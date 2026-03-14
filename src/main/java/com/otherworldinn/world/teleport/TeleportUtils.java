@@ -12,34 +12,39 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
  * 传送工具类
- * <p>
- * 提供与玩家传送相关的通用方法。
- * </p>
+ *
+ * <p>提供与玩家传送相关的通用方法。
  */
 public class TeleportUtils {
 
     /**
      * 将玩家传送到资源主世界出生点。
-     * <p>
-     * 会在维度出生点附近寻找安全的高度位置。
-     * </p>
+     *
+     * <p>会在维度出生点附近寻找安全的高度位置。
      *
      * @param player 需要传送的玩家
      */
     public static void teleportToOverworldSpawn(ServerPlayer player) {
         // 优先尝试传送到资源主世界
-        ServerLevel targetLevel = player.getServer().getLevel(TownDimensions.RESOURCE_OVERWORLD_LEVEL);
-        
+        ServerLevel targetLevel =
+                player.getServer().getLevel(TownDimensions.RESOURCE_OVERWORLD_LEVEL);
+
         // 如果资源主世界不存在（例如未正确注册），则回退到原版主世界
         if (targetLevel == null) {
             targetLevel = player.getServer().getLevel(Level.OVERWORLD);
         }
-        
+
         if (targetLevel == null) return;
 
         BlockPos spawnPos = targetLevel.getSharedSpawnPos();
         BlockPos safePos = findSafeSpawnPos(targetLevel, spawnPos);
-        player.teleportTo(targetLevel, safePos.getX() + 0.5, safePos.getY(), safePos.getZ() + 0.5, player.getYRot(), player.getXRot());
+        player.teleportTo(
+                targetLevel,
+                safePos.getX() + 0.5,
+                safePos.getY(),
+                safePos.getZ() + 0.5,
+                player.getYRot(),
+                player.getXRot());
     }
 
     public static BlockPos findSafeSpawnPos(ServerLevel level, BlockPos basePos) {

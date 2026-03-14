@@ -12,7 +12,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
-@EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(
+        modid = OtherworldInn.MODID,
+        value = Dist.CLIENT,
+        bus = EventBusSubscriber.Bus.MOD)
 public class StoreEntityOverlay {
 
     @SubscribeEvent
@@ -33,9 +36,12 @@ public class StoreEntityOverlay {
         return entityHitResult.getEntity() instanceof StoreEntity;
     }
 
-    private static void render(GuiGraphics guiGraphics, net.minecraft.client.DeltaTracker deltaTracker) {
-        ItemHudOverlay.renderMouseActions(guiGraphics,
-            new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, Component.translatable("message.otherworldinn.store.overlay.open"))
-        );
+    private static void render(
+            GuiGraphics guiGraphics, net.minecraft.client.DeltaTracker deltaTracker) {
+        ItemHudOverlay.renderMouseActions(
+                guiGraphics,
+                new ItemHudOverlay.MouseAction(
+                        ItemHudOverlay.MouseButton.RIGHT,
+                        Component.translatable("message.otherworldinn.store.overlay.open")));
     }
 }

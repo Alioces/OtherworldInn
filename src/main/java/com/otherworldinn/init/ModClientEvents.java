@@ -1,40 +1,42 @@
 package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
-import com.otherworldinn.item.BedSheetItem;
+import com.otherworldinn.client.gui.store.StoreScreen;
+import com.otherworldinn.client.renderer.BlacksmithModel;
+import com.otherworldinn.client.renderer.BlacksmithRenderer;
+import com.otherworldinn.client.renderer.GuestRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-
-import com.otherworldinn.client.gui.store.StoreScreen;
-import com.otherworldinn.client.renderer.BlacksmithModel;
-import com.otherworldinn.client.renderer.BlacksmithRenderer;
-import com.otherworldinn.client.renderer.GuestRenderer;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 /**
  * 模组客户端事件处理器
- * <p>
- * 处理仅限客户端的事件，例如按键绑定注册。
- * </p>
+ *
+ * <p>处理仅限客户端的事件，例如按键绑定注册。
  */
-@EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(
+        modid = OtherworldInn.MODID,
+        value = Dist.CLIENT,
+        bus = EventBusSubscriber.Bus.MOD)
 public class ModClientEvents {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            ItemProperties.register(ModItems.ROOM_REGISTER.get(), 
-                    ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "offhand"), 
-                    (stack, level, entity, seed) -> {
-                        if (entity == null) return 0.0F;
-                        return entity.getOffhandItem() == stack ? 1.0F : 0.0F;
-                    });
-        });
+        event.enqueueWork(
+                () -> {
+                    ItemProperties.register(
+                            ModItems.ROOM_REGISTER.get(),
+                            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "offhand"),
+                            (stack, level, entity, seed) -> {
+                                if (entity == null) return 0.0F;
+                                return entity.getOffhandItem() == stack ? 1.0F : 0.0F;
+                            });
+                });
     }
 
     @SubscribeEvent
@@ -44,8 +46,10 @@ public class ModClientEvents {
     }
 
     @SubscribeEvent
-    public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition(BlacksmithModel.LAYER_LOCATION, BlacksmithModel::createBodyLayer);
+    public static void onRegisterLayerDefinitions(
+            EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(
+                BlacksmithModel.LAYER_LOCATION, BlacksmithModel::createBodyLayer);
     }
 
     @SubscribeEvent
@@ -54,7 +58,8 @@ public class ModClientEvents {
     }
 
     @SubscribeEvent
-    public static void onRegisterKeyMappings(net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent event) {
+    public static void onRegisterKeyMappings(
+            net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent event) {
         event.register(ModKeyBindings.TOGGLE_MAP_MODE);
     }
 }

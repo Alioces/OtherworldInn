@@ -8,21 +8,20 @@ import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
 import com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity;
 import com.simibubi.create.foundation.gui.AllIcons;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class DeskBellIconRenderer {
     private static final Logger LOGGER = LogManager.getLogger();
-    
+
     // 记录每个 DeskBell 的渲染状态，用于同步动画
     // 动画开始的时间 (GameTime)
     private static final Map<BlockPos, Long> ANIMATION_START_TICKS = new HashMap<>();
@@ -33,12 +32,18 @@ public class DeskBellIconRenderer {
     }
 
     // 由 MixinDeskBellRenderer 调用
-    public static void render(DeskBellBlockEntity blockEntity, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int light, int overlay) {
+    public static void render(
+            DeskBellBlockEntity blockEntity,
+            float partialTicks,
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            int light,
+            int overlay) {
         Level level = blockEntity.getLevel();
         if (level == null || !level.isClientSide) return;
-        
+
         BlockPos pos = blockEntity.getBlockPos();
-        
+
         // 检查动画状态
         long gameTime = level.getGameTime();
         long startTime = ANIMATION_START_TICKS.getOrDefault(pos, -100L);
@@ -49,7 +54,7 @@ public class DeskBellIconRenderer {
 
         TeamData team = TeamManager.getInstance().getClientPlayerTeam();
         if (team == null) return;
-        
+
         // 检查是否在旅社区域内
         List<TeamData.InnRegion> regions = team.getInnRegions();
         boolean inside = false;
@@ -63,11 +68,11 @@ public class DeskBellIconRenderer {
 
         // 获取旅社状态
         InnData.InnState state = team.getInnData().getState();
-        
+
         // 确定图标和颜色
         AllIcons icon;
         int color;
-        
+
         switch (state) {
             case OPEN:
                 icon = AllIcons.I_WHITELIST;
@@ -84,29 +89,36 @@ public class DeskBellIconRenderer {
             default:
                 return;
         }
-        
+
         // 渲染图标
         renderIcon(poseStack, bufferSource, pos, icon, color, level, partialTicks);
     }
-    
-    private static void renderIcon(PoseStack poseStack, MultiBufferSource bufferSource, BlockPos pos, AllIcons icon, int color, Level level, float partialTicks) {
+
+    private static void renderIcon(
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            BlockPos pos,
+            AllIcons icon,
+            int color,
+            Level level,
+            float partialTicks) {
         poseStack.pushPose();
-        
+
         long gameTime = level.getGameTime();
         long startTime = ANIMATION_START_TICKS.getOrDefault(pos, gameTime);
-        
+
         // 动画计算: 总周期 1.0s (20 ticks)
         float cycleTicks = 20.0f;
         // 计算当前动画经过的时间 (从 startTime 开始)
         float timePassed = (gameTime - startTime) + partialTicks;
         float t = Mth.clamp(timePassed / cycleTicks, 0.0f, 1.0f);
-        
+
         float alpha;
         float yOffset;
-        
+
         // 0.0 - 0.2: 淡入上滑
         float t1 = 0.2f;
-        
+
         if (t < t1) {
             float progress = t / t1;
             float ease = 1 - (float) Math.pow(1 - progress, 3);
@@ -119,12 +131,12 @@ public class DeskBellIconRenderer {
 
         // 移动到方块上方 1.2 格中心 (带偏移)
         poseStack.translate(0.5, 1.2 + yOffset, 0.5);
-        
+
         // 面向玩家旋转 (仅水平旋转)
         Minecraft mc = Minecraft.getInstance();
         float yaw = mc.gameRenderer.getMainCamera().getYRot();
         poseStack.mulPose(Axis.YP.rotationDegrees(-yaw));
-        
+
         // 缩放
         float scale = 0.5f;
         poseStack.scale(scale, scale, scale);
@@ -135,21 +147,21 @@ public class DeskBellIconRenderer {
         // 居中
         poseStack.translate(-0.5, -0.5, 0);
 
-        //渲染
+        // 渲染
         int r = (color >> 16) & 0xFF;
         int g = (color >> 8) & 0xFF;
         int b = color & 0xFF;
-        int a = (int)(alpha * 255);
+        int a = (int) (alpha * 255);
         int finalColor = (a << 24) | (r << 16) | (g << 8) | b;
-        
+
         // 开启混合模式
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        
+
         icon.render(poseStack, bufferSource, finalColor);
-        
+
         RenderSystem.disableBlend();
-        
+
         poseStack.popPose();
     }
 }

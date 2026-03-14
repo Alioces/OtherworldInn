@@ -10,12 +10,11 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 /**
  * 维度注册中心
- * <p>
- * 负责注册自定义维度的 ChunkGenerator。
- * </p>
+ *
+ * <p>负责注册自定义维度的 ChunkGenerator。
  */
 public class ModDimensions {
-    public static final DeferredRegister<MapCodec<? extends ChunkGenerator>> CHUNK_GENERATORS = 
+    public static final DeferredRegister<MapCodec<? extends ChunkGenerator>> CHUNK_GENERATORS =
             DeferredRegister.create(Registries.CHUNK_GENERATOR, OtherworldInn.MODID);
 
     public static void register(IEventBus eventBus) {

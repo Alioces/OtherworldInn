@@ -1,26 +1,22 @@
 package com.otherworldinn.world.team;
 
+import com.otherworldinn.network.ModMessages;
+import com.otherworldinn.network.packet.S2CTeamSyncPacket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import com.otherworldinn.network.ModMessages;
-import com.otherworldinn.network.packet.S2CTeamSyncPacket;
 
 /**
  * 队伍管理器
- * <p>
- * 管理所有活跃的队伍数据。
- * 在服务端，这是全局单例。
- * 在客户端，这应该同步当前玩家的队伍数据。
- * </p>
+ *
+ * <p>管理所有活跃的队伍数据。 在服务端，这是全局单例。 在客户端，这应该同步当前玩家的队伍数据。
  */
 public class TeamManager {
 
@@ -36,9 +32,8 @@ public class TeamManager {
 
     /**
      * 获取玩家所在的队伍
-     * <p>
-     * 如果玩家没有队伍，返回 null。
-     * 客户端逻辑会返回本地缓存的队伍数据。
+     *
+     * <p>如果玩家没有队伍，返回 null。 客户端逻辑会返回本地缓存的队伍数据。
      *
      * @param player 目标玩家
      * @return 队伍数据或 null
@@ -56,19 +51,18 @@ public class TeamManager {
             return getClientPlayerTeam();
         }
     }
-    
+
     /**
      * 处理玩家加入世界
-     * <p>
-     * 无论单人多人，如果这是该服务器的第一个玩家，则自动建队。
-     * 后续加入的玩家将自动加入已存在的第一个队伍（临时逻辑）。
+     *
+     * <p>无论单人多人，如果这是该服务器的第一个玩家，则自动建队。 后续加入的玩家将自动加入已存在的第一个队伍（临时逻辑）。
      *
      * @param player 加入的玩家
      * @param server 服务器实例
      */
     public void onPlayerJoin(Player player, MinecraftServer server) {
         UUID playerId = player.getUUID();
-        
+
         // 尝试获取现有队伍
         TeamData existingTeam = getPlayerTeam(player);
         if (existingTeam != null) {
@@ -78,12 +72,12 @@ public class TeamManager {
             }
             return;
         }
-        
+
         TeamSavedData data = getData(server);
         if (data.getPlayerToTeam().containsKey(playerId)) return;
-        
+
         TeamData joinedTeam = null;
-        
+
         // 只要是第一个玩家，就自动创建队伍
         if (server.getPlayerList().getPlayerCount() <= 1 && data.getTeams().isEmpty()) {
             joinedTeam = createTeam(player, "Team-" + player.getName().getString());
@@ -94,42 +88,42 @@ public class TeamManager {
                 joinedTeam = data.getTeams().get(firstTeamId);
             }
         }
-        
+
         // 如果成功加入或创建队伍，同步数据
         if (joinedTeam != null && player instanceof ServerPlayer serverPlayer) {
             syncTeamTeleport(joinedTeam, serverPlayer);
         }
     }
-    
+
     /**
      * 创建队伍
      *
      * @param player 创建者（队长）
-     * @param name   队伍名称
+     * @param name 队伍名称
      * @return 创建的队伍数据
      */
     public TeamData createTeam(Player player, String name) {
         UUID playerId = player.getUUID();
         // 离开旧队伍
         leaveTeam(player);
-        
+
         UUID teamId = UUID.randomUUID();
         TeamData team = new TeamData(teamId);
         team.setName(name);
         team.addMember(playerId);
         team.setLeaderId(playerId);
-        
+
         // 初始解锁
         team.unlockMapPoint(ResourceLocation.parse("otherworldinn:inn"));
-        
+
         if (player instanceof ServerPlayer serverPlayer) {
             TeamSavedData data = getData(serverPlayer.getServer());
             data.addTeam(team);
         }
-        
+
         return team;
     }
-    
+
     /**
      * 加入队伍
      *
@@ -139,17 +133,17 @@ public class TeamManager {
      */
     public boolean joinTeam(Player player, UUID teamId) {
         if (!(player instanceof ServerPlayer serverPlayer)) return false;
-        
+
         TeamSavedData data = getData(serverPlayer.getServer());
         TeamData team = data.getTeams().get(teamId);
         if (team == null) return false;
-        
+
         leaveTeam(player);
-        
+
         data.addMember(teamId, player.getUUID());
         return true;
     }
-    
+
     /**
      * 离开当前队伍
      *
@@ -157,14 +151,14 @@ public class TeamManager {
      */
     public void leaveTeam(Player player) {
         if (!(player instanceof ServerPlayer serverPlayer)) return;
-        
+
         TeamSavedData data = getData(serverPlayer.getServer());
         UUID playerId = player.getUUID();
-        
+
         UUID oldTeamId = data.getPlayerToTeam().get(playerId);
         if (oldTeamId != null) {
             data.removeMember(oldTeamId, playerId);
-            
+
             TeamData oldTeam = data.getTeams().get(oldTeamId);
             if (oldTeam != null && oldTeam.getMembers().isEmpty()) {
                 data.removeTeam(oldTeamId);
@@ -175,9 +169,9 @@ public class TeamManager {
     /**
      * 更新队伍传送状态并同步给所有成员
      *
-     * @param team     队伍
+     * @param team 队伍
      * @param unlocked 是否解锁
-     * @param server   服务器实例
+     * @param server 服务器实例
      */
     public void setTeamTeleportUnlocked(TeamData team, boolean unlocked, MinecraftServer server) {
         team.setTeleportUnlocked(unlocked);
@@ -187,7 +181,7 @@ public class TeamManager {
     /**
      * 同步队伍数据给所有成员
      *
-     * @param team   队伍
+     * @param team 队伍
      * @param server 服务器实例
      */
     public void syncTeam(TeamData team, MinecraftServer server) {
@@ -203,11 +197,11 @@ public class TeamManager {
             }
         }
     }
-    
+
     /**
      * 同步队伍传送状态给特定玩家
      *
-     * @param team   队伍
+     * @param team 队伍
      * @param player 目标玩家
      */
     public void syncTeamTeleport(TeamData team, ServerPlayer player) {
@@ -236,10 +230,8 @@ public class TeamManager {
                 team.isTeleportUnlocked(),
                 team.getCoins(),
                 team.getInnData().save(new CompoundTag()),
-                regionTags
-        );
+                regionTags);
     }
-
 
     /**
      * 根据 ID 获取队伍
@@ -253,12 +245,12 @@ public class TeamManager {
         TeamSavedData data = getData(server);
         return data.getTeams().get(teamId);
     }
-    
+
     /**
      * 获取包含指定坐标的队伍数据
-     * <p>
-     * 检查该坐标是否位于某个队伍的旅社区域内。
-     * 
+     *
+     * <p>检查该坐标是否位于某个队伍的旅社区域内。
+     *
      * @param pos 检查的坐标
      * @param server 服务器实例
      * @return 包含该坐标的队伍，如果没有则返回 null
@@ -272,13 +264,12 @@ public class TeamManager {
         }
         return null;
     }
-    
+
     /**
      * 获取最近的队伍
-     * <p>
-     * 查找距离指定坐标最近的队伍旅社（基于其第一个旅社区域的中心点）。
-     * </p>
-     * 
+     *
+     * <p>查找距离指定坐标最近的队伍旅社（基于其第一个旅社区域的中心点）。
+     *
      * @param pos 参考坐标
      * @param server 服务器实例
      * @return 最近的队伍数据或 null
@@ -290,30 +281,32 @@ public class TeamManager {
 
         for (TeamData team : data.getTeams().values()) {
             if (team.getInnRegions().isEmpty()) continue;
-            
+
             // 使用第一个区域的中心作为参考点
             TeamData.InnRegion region = team.getInnRegions().get(0);
             double centerX = (region.minX() + region.maxX()) / 2.0;
             double centerZ = (region.minZ() + region.maxZ()) / 2.0;
-            
-            double distSq = (pos.getX() - centerX) * (pos.getX() - centerX) + (pos.getZ() - centerZ) * (pos.getZ() - centerZ);
-            
+
+            double distSq =
+                    (pos.getX() - centerX) * (pos.getX() - centerX)
+                            + (pos.getZ() - centerZ) * (pos.getZ() - centerZ);
+
             if (distSq < minDistanceSq) {
                 minDistanceSq = distSq;
                 nearestTeam = team;
             }
         }
-        
+
         return nearestTeam;
     }
 
     // --- 辅助修改方法 ---
-    
+
     public void renameTeam(TeamData team, String newName, MinecraftServer server) {
         team.setName(newName);
         syncTeam(team, server);
     }
-    
+
     public void transferLeader(TeamData team, UUID newLeader, MinecraftServer server) {
         team.setLeaderId(newLeader);
         syncTeam(team, server);
@@ -330,7 +323,7 @@ public class TeamManager {
     }
 
     // --- 客户端同步逻辑 ---
-    
+
     private TeamData clientTeamCache;
 
     /**
@@ -357,22 +350,29 @@ public class TeamManager {
         }
         return clientTeamCache;
     }
-    
-    /**
-     * 更新客户端缓存 (由网络包调用)
-     */
-    public void updateClientTeamData(UUID teamId, String name, UUID leaderId, Set<UUID> members, Set<ResourceLocation> unlockedPoints, boolean teleportUnlocked, int coins, CompoundTag innDataTag, List<CompoundTag> innRegions) {
+
+    /** 更新客户端缓存 (由网络包调用) */
+    public void updateClientTeamData(
+            UUID teamId,
+            String name,
+            UUID leaderId,
+            Set<UUID> members,
+            Set<ResourceLocation> unlockedPoints,
+            boolean teleportUnlocked,
+            int coins,
+            CompoundTag innDataTag,
+            List<CompoundTag> innRegions) {
         if (clientTeamCache == null || !clientTeamCache.getTeamId().equals(teamId)) {
             clientTeamCache = new TeamData(teamId);
         }
-        
+
         clientTeamCache.setName(name);
         clientTeamCache.setMembers(members);
         clientTeamCache.setLeaderId(leaderId);
         clientTeamCache.setUnlockedMapPoints(unlockedPoints);
         clientTeamCache.setTeleportUnlocked(teleportUnlocked);
         clientTeamCache.setCoins(coins);
-        
+
         // 更新旅社数据
         if (innDataTag != null) {
             clientTeamCache.getInnData().load(innDataTag);

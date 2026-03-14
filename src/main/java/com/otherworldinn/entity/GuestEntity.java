@@ -1,20 +1,36 @@
 package com.otherworldinn.entity;
 
+import com.otherworldinn.util.GuestNameManager;
 import com.otherworldinn.world.economy.ItemSellPriceManager;
 import com.otherworldinn.world.inn.GuestData;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
 import com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import javax.annotation.Nullable;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -26,43 +42,25 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-
-import javax.annotation.Nullable;
-import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.SpawnGroupData;
-import com.otherworldinn.util.GuestNameManager;
-
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.network.chat.Component;
-
 /**
  * 旅客实体
- * <p>
- * 抽象父类实体，存储旅客数据。
- * </p>
+ *
+ * <p>抽象父类实体，存储旅客数据。
  */
 public abstract class GuestEntity extends PathfinderMob {
 
-    private static final EntityDataAccessor<Integer> SKIN_VARIANT = SynchedEntityData.defineId(GuestEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> GUEST_STATE = SynchedEntityData.defineId(GuestEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> SKIN_VARIANT =
+            SynchedEntityData.defineId(GuestEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> GUEST_STATE =
+            SynchedEntityData.defineId(GuestEntity.class, EntityDataSerializers.INT);
     // 搜索“餐台”的范围：以旅客为中心 32 格
     private static final int DINING_SEARCH_RADIUS = 32;
     // 平均一天触发 3 次：24000 / 3 = 8000 tick
@@ -72,26 +70,21 @@ public abstract class GuestEntity extends PathfinderMob {
     private static final int MIN_DAILY_DINING_ATTEMPTS = 3;
     private static final int NAVIGATION_STUCK_TIMEOUT_TICKS = 200;
     private static final double NAVIGATION_PROGRESS_THRESHOLD_SQR = 0.0625D;
-    private static final ResourceLocation CREATE_DEPOT_ID = ResourceLocation.fromNamespaceAndPath("create", "depot");
-    private static final ResourceLocation CREATE_WEIGHTED_EJECTOR_ID = ResourceLocation.fromNamespaceAndPath("create", "weighted_ejector");
+    private static final ResourceLocation CREATE_DEPOT_ID =
+            ResourceLocation.fromNamespaceAndPath("create", "depot");
+    private static final ResourceLocation CREATE_WEIGHTED_EJECTOR_ID =
+            ResourceLocation.fromNamespaceAndPath("create", "weighted_ejector");
 
-    /**
-     * 旅客数据
-     */
-    @Getter
-    private GuestData guestData;
-    
-    /**
-     * 导航目标
-     */
+    /** 旅客数据 */
+    @Getter private GuestData guestData;
+
+    /** 导航目标 */
     private BlockPos navigationTarget;
 
-    /**
-     * 生成延迟计数器
-     */
+    /** 生成延迟计数器 */
     private int spawnDelay = 0;
-    @Getter
-    private int budget;
+
+    @Getter private int budget;
     private int navigationStuckTicks = 0;
     private double lastNavigationDistanceSqr = Double.MAX_VALUE;
     private long diningPlanDay = Long.MIN_VALUE;
@@ -102,6 +95,7 @@ public abstract class GuestEntity extends PathfinderMob {
     private int dailyPurchaseAttemptCount = 0;
     // 下一次尝试“用餐购买”的时间戳（游戏刻）
     private long nextDiningAttemptTime = 0L;
+
     @Nullable
     // 当前已经锁定、正在前往的餐台坐标
     private BlockPos pendingDiningTarget;
@@ -119,14 +113,18 @@ public abstract class GuestEntity extends PathfinderMob {
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData spawnData) {
+    public SpawnGroupData finalizeSpawn(
+            ServerLevelAccessor level,
+            DifficultyInstance difficulty,
+            MobSpawnType reason,
+            @Nullable SpawnGroupData spawnData) {
         spawnData = super.finalizeSpawn(level, difficulty, reason, spawnData);
-        
+
         // 如果没有自定义名称，则设置一个随机名称
         if (!this.hasCustomName()) {
             this.setCustomName(GuestNameManager.getRandomName(this.getRandom()));
         }
-        
+
         return spawnData;
     }
 
@@ -158,18 +156,19 @@ public abstract class GuestEntity extends PathfinderMob {
         @Override
         public void tick() {
             if (GuestEntity.this.navigationTarget != null) {
-                double distSqr = GuestEntity.this.distanceToSqr(
-                    GuestEntity.this.navigationTarget.getX() + 0.5, 
-                    GuestEntity.this.navigationTarget.getY(), 
-                    GuestEntity.this.navigationTarget.getZ() + 0.5
-                );
-                
+                double distSqr =
+                        GuestEntity.this.distanceToSqr(
+                                GuestEntity.this.navigationTarget.getX() + 0.5,
+                                GuestEntity.this.navigationTarget.getY(),
+                                GuestEntity.this.navigationTarget.getZ() + 0.5);
+
                 // 如果距离小于 2 格 (平方 < 4)，认为到达
                 if (distSqr < 4.0D) {
                     GuestEntity.this.clearNavigationTarget();
                     return;
                 }
-                if (GuestEntity.this.lastNavigationDistanceSqr - distSqr > NAVIGATION_PROGRESS_THRESHOLD_SQR) {
+                if (GuestEntity.this.lastNavigationDistanceSqr - distSqr
+                        > NAVIGATION_PROGRESS_THRESHOLD_SQR) {
                     GuestEntity.this.navigationStuckTicks = 0;
                 } else {
                     GuestEntity.this.navigationStuckTicks++;
@@ -190,24 +189,24 @@ public abstract class GuestEntity extends PathfinderMob {
                 }
             }
         }
-        
+
         private void moveToTarget() {
             if (GuestEntity.this.navigationTarget != null) {
-                GuestEntity.this.getNavigation().moveTo(
-                    GuestEntity.this.navigationTarget.getX() + 0.5, 
-                    GuestEntity.this.navigationTarget.getY(), 
-                    GuestEntity.this.navigationTarget.getZ() + 0.5, 
-                    1.0D
-                );
+                GuestEntity.this
+                        .getNavigation()
+                        .moveTo(
+                                GuestEntity.this.navigationTarget.getX() + 0.5,
+                                GuestEntity.this.navigationTarget.getY(),
+                                GuestEntity.this.navigationTarget.getZ() + 0.5,
+                                1.0D);
             }
         }
     }
 
     /**
      * 获取旅客皮肤纹理
-     * <p>
-     * 子类必须实现此方法以提供特定的纹理。
-     * </p>
+     *
+     * <p>子类必须实现此方法以提供特定的纹理。
      *
      * @return 纹理资源位置
      */
@@ -215,10 +214,8 @@ public abstract class GuestEntity extends PathfinderMob {
 
     /**
      * 获取模型类型
-     * <p>
-     * 返回 "default" (Steve) 或 "slim" (Alex)。
-     * 默认为 "default"。
-     * </p>
+     *
+     * <p>返回 "default" (Steve) 或 "slim" (Alex)。 默认为 "default"。
      *
      * @return 模型类型字符串
      */
@@ -239,10 +236,8 @@ public abstract class GuestEntity extends PathfinderMob {
 
     /**
      * 获取旅客停留时长（ticks）
-     * <p>
-     * 默认为 1 Minecraft 天 (24000 ticks)。
-     * 子类可覆盖此方法以设定特定的停留时间。
-     * </p>
+     *
+     * <p>默认为 1 Minecraft 天 (24000 ticks)。 子类可覆盖此方法以设定特定的停留时间。
      *
      * @return 停留时长 (ticks)
      */
@@ -252,10 +247,8 @@ public abstract class GuestEntity extends PathfinderMob {
 
     /**
      * 初始化旅客偏好
-     * <p>
-     * 子类可覆盖此方法以设定特定的房间偏好。
-     * 默认所有属性偏好均为 0-100 (无限制)。
-     * </p>
+     *
+     * <p>子类可覆盖此方法以设定特定的房间偏好。 默认所有属性偏好均为 0-100 (无限制)。
      */
     protected void initGuestPreferences() {
         this.guestData.setComfortPreference(0, 100);
@@ -265,11 +258,8 @@ public abstract class GuestEntity extends PathfinderMob {
 
     /**
      * 初始化奖励物品
-     * <p>
-     * 子类可覆盖此方法以添加特定的奖励物品。
-     * 默认无奖励。
-     * 示例：this.guestData.addRewardItem(Items.EMERALD, 1, 3);
-     * </p>
+     *
+     * <p>子类可覆盖此方法以添加特定的奖励物品。 默认无奖励。 示例：this.guestData.addRewardItem(Items.EMERALD, 1, 3);
      */
     protected void initRewardItems() {
         // 默认无奖励，由子类实现
@@ -319,30 +309,44 @@ public abstract class GuestEntity extends PathfinderMob {
             // 只有处于空闲状态且没有导航目标时才寻找旅社
             if (GuestEntity.this.guestData.getState() != GuestData.GuestState.IDLE) return false;
             if (GuestEntity.this.navigationTarget != null) return false;
-            
+
             // 如果已经在旅社范围内，则不需要寻找
             if (isInInnRange()) return false;
 
             // 查找最近的队伍旅社
-            if (targetInnPos == null && GuestEntity.this.level() instanceof ServerLevel serverLevel) {
+            if (targetInnPos == null
+                    && GuestEntity.this.level() instanceof ServerLevel serverLevel) {
                 findNearestInn(serverLevel);
             }
             return targetInnPos != null;
         }
 
         private void findNearestInn(ServerLevel serverLevel) {
-            TeamData team = TeamManager.getInstance().getNearestInn(GuestEntity.this.blockPosition(), serverLevel.getServer());
+            TeamData team =
+                    TeamManager.getInstance()
+                            .getNearestInn(
+                                    GuestEntity.this.blockPosition(), serverLevel.getServer());
             if (team != null && !team.getInnRegions().isEmpty()) {
                 // 取第一个区域的中心作为目标
                 TeamData.InnRegion region = team.getInnRegions().get(0);
-                targetInnPos = new BlockPos((region.minX() + region.maxX()) / 2, 64, (region.minZ() + region.maxZ()) / 2);
+                targetInnPos =
+                        new BlockPos(
+                                (region.minX() + region.maxX()) / 2,
+                                64,
+                                (region.minZ() + region.maxZ()) / 2);
             }
         }
 
         @Override
         public void start() {
             if (targetInnPos != null) {
-                GuestEntity.this.getNavigation().moveTo(targetInnPos.getX(), targetInnPos.getY(), targetInnPos.getZ(), 1.0D);
+                GuestEntity.this
+                        .getNavigation()
+                        .moveTo(
+                                targetInnPos.getX(),
+                                targetInnPos.getY(),
+                                targetInnPos.getZ(),
+                                1.0D);
                 this.recalculatePathDelay = 0;
             }
         }
@@ -350,7 +354,8 @@ public abstract class GuestEntity extends PathfinderMob {
         @Override
         public boolean canContinueToUse() {
             // 如果已经在范围内，或者状态不再是 IDLE，停止
-            if (isInInnRange() || GuestEntity.this.guestData.getState() != GuestData.GuestState.IDLE) {
+            if (isInInnRange()
+                    || GuestEntity.this.guestData.getState() != GuestData.GuestState.IDLE) {
                 return false;
             }
             return targetInnPos != null;
@@ -379,14 +384,23 @@ public abstract class GuestEntity extends PathfinderMob {
                             findNearestInn(serverLevel);
                         }
                     }
-                    GuestEntity.this.getNavigation().moveTo(targetInnPos.getX(), targetInnPos.getY(), targetInnPos.getZ(), 1.0D);
+                    GuestEntity.this
+                            .getNavigation()
+                            .moveTo(
+                                    targetInnPos.getX(),
+                                    targetInnPos.getY(),
+                                    targetInnPos.getZ(),
+                                    1.0D);
                 }
             }
         }
-        
+
         private boolean isInInnRange() {
             if (GuestEntity.this.level() instanceof ServerLevel serverLevel) {
-                TeamData team = TeamManager.getInstance().getTeamAt(GuestEntity.this.blockPosition(), serverLevel.getServer());
+                TeamData team =
+                        TeamManager.getInstance()
+                                .getTeamAt(
+                                        GuestEntity.this.blockPosition(), serverLevel.getServer());
                 return team != null;
             }
             return false;
@@ -404,7 +418,9 @@ public abstract class GuestEntity extends PathfinderMob {
         super.die(damageSource);
         if (!this.level().isClientSide && this.level() instanceof ServerLevel serverLevel) {
             // 获取当前位置的队伍/旅社
-            TeamData team = TeamManager.getInstance().getTeamAt(this.blockPosition(), serverLevel.getServer());
+            TeamData team =
+                    TeamManager.getInstance()
+                            .getTeamAt(this.blockPosition(), serverLevel.getServer());
             if (team != null) {
                 InnData innData = team.getInnData();
                 // 强制退房，标记为非正常退房（不支付房费）
@@ -514,7 +530,10 @@ public abstract class GuestEntity extends PathfinderMob {
         int maxCountByBudget = this.budget / unitPrice;
         int maxCountByDailyTarget = Math.max(1, (remainingToday + unitPrice - 1) / unitPrice);
         int desiredCount = Math.max(1, desiredSpend / unitPrice);
-        int buyCount = Math.min(slotStack.getCount(), Math.min(Math.min(maxCountByBudget, maxCountByDailyTarget), desiredCount));
+        int buyCount =
+                Math.min(
+                        slotStack.getCount(),
+                        Math.min(Math.min(maxCountByBudget, maxCountByDailyTarget), desiredCount));
         if (buyCount <= 0) {
             return false;
         }
@@ -552,12 +571,19 @@ public abstract class GuestEntity extends PathfinderMob {
             this.navigationTarget = null;
             this.getNavigation().stop();
             long nextDayStart = (this.diningPlanDay + 1L) * 24000L;
-            this.nextDiningAttemptTime = Math.max(this.nextDiningAttemptTime, nextDayStart + this.getRandom().nextInt(200));
+            this.nextDiningAttemptTime =
+                    Math.max(
+                            this.nextDiningAttemptTime,
+                            nextDayStart + this.getRandom().nextInt(200));
             return;
         }
 
         if (this.pendingDiningTarget != null) {
-            double distSqr = this.distanceToSqr(this.pendingDiningTarget.getX() + 0.5, this.pendingDiningTarget.getY(), this.pendingDiningTarget.getZ() + 0.5);
+            double distSqr =
+                    this.distanceToSqr(
+                            this.pendingDiningTarget.getX() + 0.5,
+                            this.pendingDiningTarget.getY(),
+                            this.pendingDiningTarget.getZ() + 0.5);
             if (distSqr <= 4.0D) {
                 // 到达餐台后立即尝试购买一次（成功或失败都进入下一轮冷却）
                 this.dailyPurchaseAttemptCount += 1;
@@ -567,7 +593,8 @@ public abstract class GuestEntity extends PathfinderMob {
                 scheduleNextDiningAttempt(level);
             } else if (this.navigationTarget == null) {
                 this.pendingDiningTarget = null;
-                this.nextDiningAttemptTime = level.getGameTime() + this.getBudgetBasedRetryInterval();
+                this.nextDiningAttemptTime =
+                        level.getGameTime() + this.getBudgetBasedRetryInterval();
             }
             return;
         }
@@ -601,20 +628,23 @@ public abstract class GuestEntity extends PathfinderMob {
         if (!this.level().isClientSide) {
             spawnDelay++;
             this.guestData.tick();
-            
+
             // 检测是否进入旅社范围并触发登记
-            if (this.tickCount % 20 == 0 && this.guestData.getState() == GuestData.GuestState.IDLE) {
+            if (this.tickCount % 20 == 0
+                    && this.guestData.getState() == GuestData.GuestState.IDLE) {
                 if (this.level() instanceof ServerLevel serverLevel) {
-                    TeamData team = TeamManager.getInstance().getTeamAt(this.blockPosition(), serverLevel.getServer());
+                    TeamData team =
+                            TeamManager.getInstance()
+                                    .getTeamAt(this.blockPosition(), serverLevel.getServer());
                     if (team != null) {
-                         // 旅客在旅社范围内，触发进入旅社逻辑
-                         team.getInnData().addGuest(this, team, serverLevel);
-                         BlockPos bellPos = this.findNearestDeskBellInInn(serverLevel, team);
-                         if (bellPos != null) {
-                             this.setNavigationTarget(bellPos);
-                         } else {
-                             this.getNavigation().stop();
-                         }
+                        // 旅客在旅社范围内，触发进入旅社逻辑
+                        team.getInnData().addGuest(this, team, serverLevel);
+                        BlockPos bellPos = this.findNearestDeskBellInInn(serverLevel, team);
+                        if (bellPos != null) {
+                            this.setNavigationTarget(bellPos);
+                        } else {
+                            this.getNavigation().stop();
+                        }
                     }
                 }
             }
@@ -628,7 +658,7 @@ public abstract class GuestEntity extends PathfinderMob {
             if (this.entityData.get(GUEST_STATE) != currentStateOrdinal) {
                 this.entityData.set(GUEST_STATE, currentStateOrdinal);
             }
-            
+
             // 发光逻辑：等待入住时发光
             if (this.guestData.getState() == GuestData.GuestState.WAITING) {
                 if (!this.hasGlowingTag()) {
@@ -642,13 +672,15 @@ public abstract class GuestEntity extends PathfinderMob {
         } else {
             // 客户端：从 SynchedEntityData 更新 GuestData 状态
             int syncedStateOrdinal = this.entityData.get(GUEST_STATE);
-            if (syncedStateOrdinal >= 0 && syncedStateOrdinal < GuestData.GuestState.values().length) {
-                GuestData.GuestState syncedState = GuestData.GuestState.values()[syncedStateOrdinal];
+            if (syncedStateOrdinal >= 0
+                    && syncedStateOrdinal < GuestData.GuestState.values().length) {
+                GuestData.GuestState syncedState =
+                        GuestData.GuestState.values()[syncedStateOrdinal];
                 if (this.guestData.getState() != syncedState) {
                     this.guestData.setState(syncedState);
                 }
             }
-            
+
             // 客户端发光逻辑 (虽然 glowing tag 会自动同步，但这里双重保险或用于其他客户端效果)
             // 注意：setGlowingTag 主要由服务端控制，客户端设置可能只在本地生效
         }
@@ -664,23 +696,34 @@ public abstract class GuestEntity extends PathfinderMob {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (stack.isEmpty() && player.isShiftKeyDown() && !this.level().isClientSide && player.isCreative()) {
+        if (stack.isEmpty()
+                && player.isShiftKeyDown()
+                && !this.level().isClientSide
+                && player.isCreative()) {
             // 调试信息
             player.sendSystemMessage(Component.literal("--- Guest Debug Info ---"));
             player.sendSystemMessage(Component.literal("UUID: " + this.getUUID()));
             player.sendSystemMessage(Component.literal("State: " + this.guestData.getState()));
-            player.sendSystemMessage(Component.literal("Synced State: " + this.entityData.get(GUEST_STATE)));
+            player.sendSystemMessage(
+                    Component.literal("Synced State: " + this.entityData.get(GUEST_STATE)));
             player.sendSystemMessage(Component.literal("Room ID: " + this.guestData.getRoomId()));
-            
-            TeamData team = TeamManager.getInstance().getTeamAt(this.blockPosition(), this.level().getServer());
+
+            TeamData team =
+                    TeamManager.getInstance()
+                            .getTeamAt(this.blockPosition(), this.level().getServer());
             player.sendSystemMessage(Component.literal("In Inn Range: " + (team != null)));
             if (team != null) {
                 player.sendSystemMessage(Component.literal("Team ID: " + team.getTeamId()));
             }
-            
-            player.sendSystemMessage(Component.literal("Navigation Target: " + (this.navigationTarget != null ? this.navigationTarget.toShortString() : "null")));
+
+            player.sendSystemMessage(
+                    Component.literal(
+                            "Navigation Target: "
+                                    + (this.navigationTarget != null
+                                            ? this.navigationTarget.toShortString()
+                                            : "null")));
             player.sendSystemMessage(Component.literal("Spawn Delay: " + this.spawnDelay));
-            
+
             return InteractionResult.SUCCESS;
         }
         return super.mobInteract(player, hand);
@@ -697,7 +740,7 @@ public abstract class GuestEntity extends PathfinderMob {
     protected void setBudget(int budget) {
         this.budget = Mth.clamp(budget, DINING_BUDGET_MIN, DINING_BUDGET_MAX);
     }
-    
+
     @Override
     public void addAdditionalSaveData(CompoundTag compound) {
         super.addAdditionalSaveData(compound);
@@ -722,11 +765,15 @@ public abstract class GuestEntity extends PathfinderMob {
             this.setSkinVariant(compound.getInt("SkinVariant"));
         }
         if (compound.contains("Budget")) {
-            this.budget = Mth.clamp(compound.getInt("Budget"), DINING_BUDGET_MIN, DINING_BUDGET_MAX);
+            this.budget =
+                    Mth.clamp(compound.getInt("Budget"), DINING_BUDGET_MIN, DINING_BUDGET_MAX);
         } else {
             this.budget = this.generateInitialBudget();
         }
-        this.diningPlanDay = compound.contains("DiningPlanDay") ? compound.getLong("DiningPlanDay") : Long.MIN_VALUE;
+        this.diningPlanDay =
+                compound.contains("DiningPlanDay")
+                        ? compound.getLong("DiningPlanDay")
+                        : Long.MIN_VALUE;
         this.dailySpendTarget = Math.max(0, compound.getInt("DailySpendTarget"));
         this.dailySpentCoins = Math.max(0, compound.getInt("DailySpentCoins"));
         this.dailyPurchaseTarget = Math.max(0, compound.getInt("DailyPurchaseTarget"));
@@ -742,7 +789,8 @@ public abstract class GuestEntity extends PathfinderMob {
     }
 
     private int generateInitialBudget() {
-        return DINING_BUDGET_MIN + this.getRandom().nextInt(DINING_BUDGET_MAX - DINING_BUDGET_MIN + 1);
+        return DINING_BUDGET_MIN
+                + this.getRandom().nextInt(DINING_BUDGET_MAX - DINING_BUDGET_MIN + 1);
     }
 
     private int getBudgetBasedDiningInterval() {
@@ -762,11 +810,17 @@ public abstract class GuestEntity extends PathfinderMob {
     }
 
     private boolean shouldAttemptDiningPurchaseNow() {
-        if (this.dailyPurchaseAttemptCount < MIN_DAILY_DINING_ATTEMPTS && !this.hasReachedDailyDiningTargets()) {
+        if (this.dailyPurchaseAttemptCount < MIN_DAILY_DINING_ATTEMPTS
+                && !this.hasReachedDailyDiningTargets()) {
             return true;
         }
-        float normalized = (this.budget - DINING_BUDGET_MIN) / (float) (DINING_BUDGET_MAX - DINING_BUDGET_MIN);
-        float spendProgress = this.dailySpendTarget <= 0 ? 0.0f : Mth.clamp(this.dailySpentCoins / (float) this.dailySpendTarget, 0.0f, 1.0f);
+        float normalized =
+                (this.budget - DINING_BUDGET_MIN) / (float) (DINING_BUDGET_MAX - DINING_BUDGET_MIN);
+        float spendProgress =
+                this.dailySpendTarget <= 0
+                        ? 0.0f
+                        : Mth.clamp(
+                                this.dailySpentCoins / (float) this.dailySpendTarget, 0.0f, 1.0f);
         float remainingIntent = 1.0f - spendProgress;
         float desire = (0.3f + normalized * 0.7f) * (0.35f + remainingIntent * 0.65f);
         return this.getRandom().nextFloat() < desire;
@@ -786,9 +840,13 @@ public abstract class GuestEntity extends PathfinderMob {
         spendRatio = Mth.clamp(spendRatio, 0.25f, 1.0f);
         this.dailySpendTarget = Math.max(1, Math.round(this.budget * spendRatio));
 
-        float normalized = (this.budget - DINING_BUDGET_MIN) / (float) (DINING_BUDGET_MAX - DINING_BUDGET_MIN);
+        float normalized =
+                (this.budget - DINING_BUDGET_MIN) / (float) (DINING_BUDGET_MAX - DINING_BUDGET_MIN);
         float meanCount = 1.2f + normalized * 3.2f;
-        int sampledCount = Math.max(1, Math.round((float) (meanCount + this.getRandom().nextGaussian() * 0.9f)));
+        int sampledCount =
+                Math.max(
+                        1,
+                        Math.round((float) (meanCount + this.getRandom().nextGaussian() * 0.9f)));
         this.dailyPurchaseTarget = Math.max(1, Math.min(this.dailySpendTarget, sampledCount));
     }
 
@@ -796,11 +854,13 @@ public abstract class GuestEntity extends PathfinderMob {
         if (this.dailyPurchaseAttemptCount < MIN_DAILY_DINING_ATTEMPTS) {
             return false;
         }
-        return this.dailySpentCoins >= this.dailySpendTarget || this.dailyPurchaseCount >= this.dailyPurchaseTarget;
+        return this.dailySpentCoins >= this.dailySpendTarget
+                || this.dailyPurchaseCount >= this.dailyPurchaseTarget;
     }
 
     private int getInitialDiningAttemptDelay() {
-        float normalized = (this.budget - DINING_BUDGET_MIN) / (float) (DINING_BUDGET_MAX - DINING_BUDGET_MIN);
+        float normalized =
+                (this.budget - DINING_BUDGET_MIN) / (float) (DINING_BUDGET_MAX - DINING_BUDGET_MIN);
         int base = Mth.floor(Mth.lerp(1.0f - normalized, 200.0f, 900.0f));
         return base + this.getRandom().nextInt(161);
     }
@@ -814,11 +874,13 @@ public abstract class GuestEntity extends PathfinderMob {
         if (near != null) {
             return near;
         }
-        return this.findNearestDeskBellInInn(level, team, level.getMinBuildHeight(), level.getMaxBuildHeight() - 1);
+        return this.findNearestDeskBellInInn(
+                level, team, level.getMinBuildHeight(), level.getMaxBuildHeight() - 1);
     }
 
     @Nullable
-    private BlockPos findNearestDeskBellInInn(ServerLevel level, TeamData team, int minY, int maxY) {
+    private BlockPos findNearestDeskBellInInn(
+            ServerLevel level, TeamData team, int minY, int maxY) {
         BlockPos origin = this.blockPosition();
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
         BlockPos bestPos = null;

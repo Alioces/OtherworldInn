@@ -1,12 +1,11 @@
 package com.otherworldinn.item;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.client.ClientHooks;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.map.MapPoint;
 import com.otherworldinn.world.map.TownDataProvider;
-import com.otherworldinn.client.ClientHooks;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.loading.FMLEnvironment;
+import java.util.Optional;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -23,15 +22,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.Optional;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 /**
  * 回程卷轴物品
- * <p>
- * 在非城镇维度长按使用，可将玩家传送回旅社（城镇维度）。
- * 使用时会播放末影人传送音效，触发传送粒子，并显示不死图腾动画。
- * </p>
+ *
+ * <p>在非城镇维度长按使用，可将玩家传送回旅社（城镇维度）。 使用时会播放末影人传送音效，触发传送粒子，并显示不死图腾动画。
  */
 public class RecallScrollItem extends Item {
 
@@ -40,12 +37,15 @@ public class RecallScrollItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
+    public InteractionResultHolder<ItemStack> use(
+            Level level, Player player, InteractionHand usedHand) {
         ItemStack itemstack = player.getItemInHand(usedHand);
         // 如果在城镇维度，不允许使用
         if (level.dimension() == TownDimensions.TOWN_LEVEL) {
             if (!level.isClientSide) {
-                player.displayClientMessage(Component.translatable("item.otherworldinn.recall_scroll.fail_in_town"), true);
+                player.displayClientMessage(
+                        Component.translatable("item.otherworldinn.recall_scroll.fail_in_town"),
+                        true);
             }
             return InteractionResultHolder.fail(itemstack);
         }
@@ -72,40 +72,69 @@ public class RecallScrollItem extends Item {
             ServerLevel townLevel = player.getServer().getLevel(TownDimensions.TOWN_LEVEL);
             if (townLevel != null) {
                 // 获取旅社坐标
-                Optional<MapPoint> innPoint = TownDataProvider.getPoint(ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn"));
+                Optional<MapPoint> innPoint =
+                        TownDataProvider.getPoint(
+                                ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn"));
                 if (innPoint.isPresent()) {
                     Vec3 target = innPoint.get().worldPosition();
-                    
+
                     // 触发不死图腾动画 (仅在客户端执行)
                     // 使用 FMLEnvironment.dist 确保仅在客户端执行
                     if (FMLEnvironment.dist == Dist.CLIENT) {
                         ClientHooks.displayRecallScrollActivation(stack);
                     }
-                    
+
                     // 播放传送前的音效 (在当前维度)
-                    level.playSound(null, player.getX(), player.getY(), player.getZ(), 
-                            SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
+                    level.playSound(
+                            null,
+                            player.getX(),
+                            player.getY(),
+                            player.getZ(),
+                            SoundEvents.ENDERMAN_TELEPORT,
+                            SoundSource.PLAYERS,
+                            1.0F,
+                            1.0F);
 
                     // 传送玩家
-                    player.teleportTo(townLevel, target.x, target.y, target.z, player.getYRot(), player.getXRot());
-                    
+                    player.teleportTo(
+                            townLevel,
+                            target.x,
+                            target.y,
+                            target.z,
+                            player.getYRot(),
+                            player.getXRot());
+
                     // 播放传送后的音效 (在目标维度)
-                    townLevel.playSound(null, target.x, target.y, target.z, 
-                            SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
-                    
+                    townLevel.playSound(
+                            null,
+                            target.x,
+                            target.y,
+                            target.z,
+                            SoundEvents.ENDERMAN_TELEPORT,
+                            SoundSource.PLAYERS,
+                            1.0F,
+                            1.0F);
+
                     // 生成传送粒子效果 (在目标维度)
-                    townLevel.sendParticles(ParticleTypes.PORTAL, 
-                            target.x, target.y + 1.0, target.z, 
-                            32, 0.5, 1.0, 0.5, 0.1);
+                    townLevel.sendParticles(
+                            ParticleTypes.PORTAL,
+                            target.x,
+                            target.y + 1.0,
+                            target.z,
+                            32,
+                            0.5,
+                            1.0,
+                            0.5,
+                            0.1);
                 }
             }
         }
-        
+
         // 消耗物品
         if (livingEntity instanceof Player player && !player.getAbilities().instabuild) {
             stack.shrink(1);
         }
-        
+
         return stack;
     }
 }

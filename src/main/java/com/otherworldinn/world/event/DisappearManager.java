@@ -1,6 +1,10 @@
 package com.otherworldinn.world.event;
 
 import com.otherworldinn.OtherworldInn;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -10,16 +14,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.UUID;
-
 /**
  * 实体消失管理器
- * <p>
- * 处理实体的延迟移除任务。
- * </p>
+ *
+ * <p>处理实体的延迟移除任务。
  */
 @EventBusSubscriber(modid = OtherworldInn.MODID)
 public class DisappearManager {
@@ -32,13 +30,17 @@ public class DisappearManager {
     /**
      * 安排实体消失任务
      *
-     * @param entity     目标实体
+     * @param entity 目标实体
      * @param delayTicks 延迟 tick 数
      */
     public static void schedule(Entity entity, int delayTicks) {
         if (entity == null || entity.level().isClientSide) return;
         // 使用临时列表避免并发修改异常
-        pendingTasks.add(new DisappearTask(entity.getUUID(), entity.level().dimension(), entity.level().getGameTime() + delayTicks));
+        pendingTasks.add(
+                new DisappearTask(
+                        entity.getUUID(),
+                        entity.level().dimension(),
+                        entity.level().getGameTime() + delayTicks));
     }
 
     @SubscribeEvent
@@ -54,7 +56,7 @@ public class DisappearManager {
         Iterator<DisappearTask> iterator = tasks.iterator();
         while (iterator.hasNext()) {
             DisappearTask task = iterator.next();
-            
+
             // 获取对应的 ServerLevel
             ServerLevel level = event.getServer().getLevel(task.levelKey);
             if (level == null) {
@@ -69,10 +71,17 @@ public class DisappearManager {
                 if (entity != null) {
                     // 生成死亡粒子效果 (POOF)
                     // count=20, speed=0.1
-                    level.sendParticles(ParticleTypes.POOF, 
-                            entity.getX(), entity.getY() + entity.getBbHeight() / 2.0, entity.getZ(), 
-                            20, 0.5, 0.5, 0.5, 0.1);
-                    
+                    level.sendParticles(
+                            ParticleTypes.POOF,
+                            entity.getX(),
+                            entity.getY() + entity.getBbHeight() / 2.0,
+                            entity.getZ(),
+                            20,
+                            0.5,
+                            0.5,
+                            0.5,
+                            0.1);
+
                     // 移除实体 (使用 discard 而不是 kill，避免触发死亡掉落等逻辑)
                     entity.discard();
                 }

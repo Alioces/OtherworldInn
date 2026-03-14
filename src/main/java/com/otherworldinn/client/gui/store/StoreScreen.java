@@ -2,10 +2,15 @@ package com.otherworldinn.client.gui.store;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.otherworldinn.entity.store.StoreEntity;
-import com.otherworldinn.world.inventory.StoreMenu;
-
-import net.minecraft.client.Minecraft;
 import com.otherworldinn.foundation.ModColors;
+import com.otherworldinn.network.ModMessages;
+import com.otherworldinn.network.packet.C2SStorePurchasePacket;
+import com.otherworldinn.world.inventory.StoreMenu;
+import com.otherworldinn.world.team.TeamData;
+import com.otherworldinn.world.team.TeamManager;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -16,27 +21,26 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.otherworldinn.network.ModMessages;
-import com.otherworldinn.network.packet.C2SStorePurchasePacket;
-import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
-
-/**
- * 商店屏幕
- */
+/** 商店屏幕 */
 public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
 
-    private static final ResourceLocation FAVOR_BAR_BG_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/experience_bar_background.png");
-    private static final ResourceLocation FAVOR_BAR_FILL_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/experience_bar_progress.png");
-    private static final ResourceLocation HEART_EMPTY_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/heart/container.png");
-    private static final ResourceLocation HEART_RED_FULL_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/heart/full.png");
-    private static final ResourceLocation HEART_YELLOW_FULL_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/heart/absorbing_full.png");
+    private static final ResourceLocation FAVOR_BAR_BG_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(
+                    "minecraft", "textures/gui/sprites/hud/experience_bar_background.png");
+    private static final ResourceLocation FAVOR_BAR_FILL_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(
+                    "minecraft", "textures/gui/sprites/hud/experience_bar_progress.png");
+    private static final ResourceLocation HEART_EMPTY_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(
+                    "minecraft", "textures/gui/sprites/hud/heart/container.png");
+    private static final ResourceLocation HEART_RED_FULL_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(
+                    "minecraft", "textures/gui/sprites/hud/heart/full.png");
+    private static final ResourceLocation HEART_YELLOW_FULL_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(
+                    "minecraft", "textures/gui/sprites/hud/heart/absorbing_full.png");
     private static final int GRID_COLS = 4;
     private static final int GRID_ROWS = 5;
     private static final int GOODS_DISPLAY_ROWS = 4;
@@ -49,8 +53,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
     private final ResourceLocation backgroundTexture;
 
     // 选中状态
-    @Nullable
-    private StoreEntity.StoreItem selectedItem = null;
+    @Nullable private StoreEntity.StoreItem selectedItem = null;
     private int purchaseQuantity = 1;
 
     // 控件
@@ -58,16 +61,15 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
     private Button confirmButton;
     private Button purchaseButton;
     private final List<StoreEntity.StoreItem> cart = new ArrayList<>();
-    @Nullable
-    private LivingEntity previewStoreEntity;
-    
+    @Nullable private LivingEntity previewStoreEntity;
+
     // 购物车滚动相关
     private float scrollOffs = 0.0F;
     private boolean isScrolling = false;
     private static final int CART_ITEM_HEIGHT = 20;
     private static final int CART_DISPLAY_ROWS = 5; // 显示行数
     private static final int SCROLL_BAR_WIDTH = 4; // 滚动条宽度
-    
+
     // 商品列表滚动相关
     private float goodsScrollOffs = 0.0F;
 
@@ -75,13 +77,15 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         super(menu, playerInventory, title);
         this.imageWidth = 256; // 宽屏界面
         this.imageHeight = 166;
-        
+
         // 获取背景纹理
         if (menu.getStoreEntity() != null) {
             this.backgroundTexture = menu.getStoreEntity().getStoreBackground();
         } else {
             // 默认背景 (Fallback)
-            this.backgroundTexture = ResourceLocation.fromNamespaceAndPath("otherworldinn", "textures/gui/store.png");
+            this.backgroundTexture =
+                    ResourceLocation.fromNamespaceAndPath(
+                            "otherworldinn", "textures/gui/store.png");
         }
     }
 
@@ -92,63 +96,108 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         this.topPos = (this.height - this.imageHeight) / 2;
 
         // 数量输入框
-        this.quantityEditBox = new EditBox(this.font, this.leftPos + 40, this.topPos + 110, 40, 16, Component.literal("1"));
+        this.quantityEditBox =
+                new EditBox(
+                        this.font,
+                        this.leftPos + 40,
+                        this.topPos + 110,
+                        40,
+                        16,
+                        Component.literal("1"));
         this.quantityEditBox.setValue("1");
         this.quantityEditBox.setFilter(s -> s.matches("\\d*"));
-        this.quantityEditBox.setResponder(s -> {
-            try {
-                int val = Integer.parseInt(s);
-                this.purchaseQuantity = Math.max(1, val);
-            } catch (NumberFormatException e) {
-                // ignore
-            }
-        });
+        this.quantityEditBox.setResponder(
+                s -> {
+                    try {
+                        int val = Integer.parseInt(s);
+                        this.purchaseQuantity = Math.max(1, val);
+                    } catch (NumberFormatException e) {
+                        // ignore
+                    }
+                });
         this.addRenderableWidget(this.quantityEditBox);
 
         // 减少按钮
-        this.addRenderableWidget(Button.builder(Component.literal("-"), (btn) -> {
-            int change = hasShiftDown() ? 16 : 1;
-            if (this.purchaseQuantity > 1) {
-                this.purchaseQuantity = Math.max(1, this.purchaseQuantity - change);
-                this.quantityEditBox.setValue(String.valueOf(this.purchaseQuantity));
-            }
-        }).bounds(this.leftPos + 20, this.topPos + 110, 16, 16).build());
+        this.addRenderableWidget(
+                Button.builder(
+                                Component.literal("-"),
+                                (btn) -> {
+                                    int change = hasShiftDown() ? 16 : 1;
+                                    if (this.purchaseQuantity > 1) {
+                                        this.purchaseQuantity =
+                                                Math.max(1, this.purchaseQuantity - change);
+                                        this.quantityEditBox.setValue(
+                                                String.valueOf(this.purchaseQuantity));
+                                    }
+                                })
+                        .bounds(this.leftPos + 20, this.topPos + 110, 16, 16)
+                        .build());
 
         // 增加按钮
-        this.addRenderableWidget(Button.builder(Component.literal("+"), (btn) -> {
-            int change = hasShiftDown() ? 16 : 1;
-            this.purchaseQuantity += change;
-            this.quantityEditBox.setValue(String.valueOf(this.purchaseQuantity));
-        }).bounds(this.leftPos + 85, this.topPos + 110, 16, 16).build());
+        this.addRenderableWidget(
+                Button.builder(
+                                Component.literal("+"),
+                                (btn) -> {
+                                    int change = hasShiftDown() ? 16 : 1;
+                                    this.purchaseQuantity += change;
+                                    this.quantityEditBox.setValue(
+                                            String.valueOf(this.purchaseQuantity));
+                                })
+                        .bounds(this.leftPos + 85, this.topPos + 110, 16, 16)
+                        .build());
 
         // 确定按钮
-        this.confirmButton = Button.builder(Component.translatable("gui.otherworldinn.store.confirm"), (btn) -> {
-            if (this.selectedItem != null) {
-                this.addToCart(this.selectedItem, this.purchaseQuantity);
-            }
-        }).bounds(this.leftPos + 20, this.topPos + 130, 80, 20).build();
+        this.confirmButton =
+                Button.builder(
+                                Component.translatable("gui.otherworldinn.store.confirm"),
+                                (btn) -> {
+                                    if (this.selectedItem != null) {
+                                        this.addToCart(this.selectedItem, this.purchaseQuantity);
+                                    }
+                                })
+                        .bounds(this.leftPos + 20, this.topPos + 130, 80, 20)
+                        .build();
         this.addRenderableWidget(this.confirmButton);
 
         // 购买按钮 (右侧)
-        this.purchaseButton = Button.builder(Component.empty(), (btn) -> {
-            if (this.menu.getStoreEntity() != null && !this.cart.isEmpty()) {
-                // 构建购买列表
-                List<C2SStorePurchasePacket.PurchaseItem> purchaseItems = new ArrayList<>();
-                for (StoreEntity.StoreItem cartItem : this.cart) {
-                    purchaseItems.add(new C2SStorePurchasePacket.PurchaseItem(cartItem.getItemStack(), cartItem.getCurrentStock()));
-                }
-                
-                // 发送数据包
-                ModMessages.sendToServer(new C2SStorePurchasePacket(this.menu.getStoreEntity().getId(), purchaseItems));
-                
-                // 清空购物车并关闭界面 (或者只清空)
-                this.cart.clear();
-                this.updateButtons();
-                this.onClose(); // 购买成功后关闭界面，体验较好
-            }
-        }).bounds(this.getRightPanelStartX() + (this.getPanelTotalWidth() - 80) / 2 - 2, this.topPos + 130, 80, 20).build();
+        this.purchaseButton =
+                Button.builder(
+                                Component.empty(),
+                                (btn) -> {
+                                    if (this.menu.getStoreEntity() != null
+                                            && !this.cart.isEmpty()) {
+                                        // 构建购买列表
+                                        List<C2SStorePurchasePacket.PurchaseItem> purchaseItems =
+                                                new ArrayList<>();
+                                        for (StoreEntity.StoreItem cartItem : this.cart) {
+                                            purchaseItems.add(
+                                                    new C2SStorePurchasePacket.PurchaseItem(
+                                                            cartItem.getItemStack(),
+                                                            cartItem.getCurrentStock()));
+                                        }
+
+                                        // 发送数据包
+                                        ModMessages.sendToServer(
+                                                new C2SStorePurchasePacket(
+                                                        this.menu.getStoreEntity().getId(),
+                                                        purchaseItems));
+
+                                        // 清空购物车并关闭界面 (或者只清空)
+                                        this.cart.clear();
+                                        this.updateButtons();
+                                        this.onClose(); // 购买成功后关闭界面，体验较好
+                                    }
+                                })
+                        .bounds(
+                                this.getRightPanelStartX()
+                                        + (this.getPanelTotalWidth() - 80) / 2
+                                        - 2,
+                                this.topPos + 130,
+                                80,
+                                20)
+                        .build();
         this.addRenderableWidget(this.purchaseButton);
-        
+
         this.updateButtons();
     }
 
@@ -156,7 +205,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         // 计算当前购物车中已有的该商品数量
         int existingQuantity = 0;
         int existingIndex = -1;
-        
+
         for (int i = 0; i < this.cart.size(); i++) {
             StoreEntity.StoreItem cartItem = this.cart.get(i);
             if (ItemStack.isSameItemSameComponents(cartItem.getItemStack(), item.getItemStack())) {
@@ -165,27 +214,32 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 break;
             }
         }
-        
+
         int newQuantity = existingQuantity + quantity;
-        
+
         // 检查库存限制 (如果 maxStock 不是 -1)
         if (item.getMaxStock() != -1 && newQuantity > item.getCurrentStock()) {
-             // 如果超过库存，则只添加到剩余库存量
-             newQuantity = item.getCurrentStock();
-             
-             // 如果购物车里已经满了库存，不再添加
-             if (existingQuantity >= item.getCurrentStock()) {
-                 return; // 已达上限
-             }
+            // 如果超过库存，则只添加到剩余库存量
+            newQuantity = item.getCurrentStock();
+
+            // 如果购物车里已经满了库存，不再添加
+            if (existingQuantity >= item.getCurrentStock()) {
+                return; // 已达上限
+            }
         }
-        
+
         if (existingIndex != -1) {
             StoreEntity.StoreItem cartItem = this.cart.get(existingIndex);
-            this.cart.set(existingIndex, new StoreEntity.StoreItem(cartItem.getItemStack(), this.getDisplayPrice(item), -1, newQuantity));
+            this.cart.set(
+                    existingIndex,
+                    new StoreEntity.StoreItem(
+                            cartItem.getItemStack(), this.getDisplayPrice(item), -1, newQuantity));
         } else {
-            this.cart.add(new StoreEntity.StoreItem(item.getItemStack(), this.getDisplayPrice(item), -1, newQuantity));
+            this.cart.add(
+                    new StoreEntity.StoreItem(
+                            item.getItemStack(), this.getDisplayPrice(item), -1, newQuantity));
         }
-        
+
         this.updateButtons();
     }
 
@@ -193,12 +247,12 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         boolean hasSelection = this.selectedItem != null;
         this.confirmButton.active = hasSelection;
         this.quantityEditBox.setEditable(hasSelection);
-        
+
         int totalPrice = 0;
         for (StoreEntity.StoreItem item : this.cart) {
             totalPrice += item.getPrice() * item.getCurrentStock(); // 这里 currentStock 借用来存购买数量
         }
-        
+
         int playerBalance = 0;
         if (this.minecraft != null && this.minecraft.level != null) {
             TeamData teamData = TeamManager.getInstance().getClientTeamCache();
@@ -206,14 +260,15 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 playerBalance = teamData.getCoins();
             }
         }
-        
+
         boolean canAfford = playerBalance >= totalPrice;
-        
-        Component priceText = Component.translatable("gui.otherworldinn.store.purchase", totalPrice);
+
+        Component priceText =
+                Component.translatable("gui.otherworldinn.store.purchase", totalPrice);
         if (!canAfford) {
             priceText = priceText.copy().withStyle(style -> style.withColor(ModColors.ERROR));
         }
-        
+
         this.purchaseButton.setMessage(priceText);
         this.purchaseButton.active = !this.cart.isEmpty() && canAfford;
     }
@@ -227,7 +282,8 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
     }
 
     private int getDisplayPrice(StoreEntity.StoreItem item) {
-        return StoreEntity.getDiscountedPriceForFavorLevel(item.getPrice(), this.getCurrentFavorLevel());
+        return StoreEntity.getDiscountedPriceForFavorLevel(
+                item.getPrice(), this.getCurrentFavorLevel());
     }
 
     private int getFavorBarX() {
@@ -286,7 +342,8 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         if (maxSpent <= 0) {
             return 1.0F;
         }
-        return net.minecraft.util.Mth.clamp(this.menu.getTotalSpentCoins() / (float) maxSpent, 0.0F, 1.0F);
+        return net.minecraft.util.Mth.clamp(
+                this.menu.getTotalSpentCoins() / (float) maxSpent, 0.0F, 1.0F);
     }
 
     @Nullable
@@ -301,7 +358,8 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             return null;
         }
         if (this.menu.getStoreEntityType() != null) {
-            net.minecraft.world.entity.Entity entity = this.menu.getStoreEntityType().create(this.minecraft.level);
+            net.minecraft.world.entity.Entity entity =
+                    this.menu.getStoreEntityType().create(this.minecraft.level);
             if (entity instanceof LivingEntity livingEntity) {
                 this.previewStoreEntity = livingEntity;
                 return this.previewStoreEntity;
@@ -321,44 +379,103 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             int size = this.getStoreEntityRenderSize();
             float lookX = this.width / 2.0F - 12.0F;
             float lookY = this.height / 2.0F + 12.0F;
-            InventoryScreen.renderEntityInInventoryFollowsMouse(guiGraphics, 0, 0, this.width, this.height, size, 0.0625F, lookX, lookY, displayStoreEntity);
+            InventoryScreen.renderEntityInInventoryFollowsMouse(
+                    guiGraphics,
+                    0,
+                    0,
+                    this.width,
+                    this.height,
+                    size,
+                    0.0625F,
+                    lookX,
+                    lookY,
+                    displayStoreEntity);
             int heartX = centerX - HEART_ICON_SIZE / 2;
             int heartY = bottomY - 14;
-            guiGraphics.blit(HEART_EMPTY_TEXTURE, heartX, heartY, 0, 0, HEART_ICON_SIZE, HEART_ICON_SIZE, HEART_ICON_SIZE, HEART_ICON_SIZE);
-            ResourceLocation fillTexture = this.getCurrentFavorLevel() >= StoreEntity.getMaxFavorLevelValue() ? HEART_YELLOW_FULL_TEXTURE : HEART_RED_FULL_TEXTURE;
+            guiGraphics.blit(
+                    HEART_EMPTY_TEXTURE,
+                    heartX,
+                    heartY,
+                    0,
+                    0,
+                    HEART_ICON_SIZE,
+                    HEART_ICON_SIZE,
+                    HEART_ICON_SIZE,
+                    HEART_ICON_SIZE);
+            ResourceLocation fillTexture =
+                    this.getCurrentFavorLevel() >= StoreEntity.getMaxFavorLevelValue()
+                            ? HEART_YELLOW_FULL_TEXTURE
+                            : HEART_RED_FULL_TEXTURE;
             int fillHeight = Math.round(HEART_ICON_SIZE * this.getFavorFillRatio());
             if (fillHeight > 0) {
-                guiGraphics.enableScissor(heartX, heartY + HEART_ICON_SIZE - fillHeight, heartX + HEART_ICON_SIZE, heartY + HEART_ICON_SIZE);
-                guiGraphics.blit(fillTexture, heartX, heartY, 0, 0, HEART_ICON_SIZE, HEART_ICON_SIZE, HEART_ICON_SIZE, HEART_ICON_SIZE);
+                guiGraphics.enableScissor(
+                        heartX,
+                        heartY + HEART_ICON_SIZE - fillHeight,
+                        heartX + HEART_ICON_SIZE,
+                        heartY + HEART_ICON_SIZE);
+                guiGraphics.blit(
+                        fillTexture,
+                        heartX,
+                        heartY,
+                        0,
+                        0,
+                        HEART_ICON_SIZE,
+                        HEART_ICON_SIZE,
+                        HEART_ICON_SIZE,
+                        HEART_ICON_SIZE);
                 guiGraphics.disableScissor();
             }
         }
         this.renderTooltip(guiGraphics, mouseX, mouseY);
-        
+
         // 渲染购物车列表 (右侧)
         int listX = this.getRightPanelStartX();
         int listY = this.getPanelStartY();
         int listWidth = this.getGoodsAreaWidth();
-        
+
         // 滚动条相关参数
         int scrollBarX = listX + listWidth + 2;
         int scrollBarY = listY;
         int scrollBarHeight = this.getCartAreaHeight();
         boolean canScroll = this.cart.size() > CART_DISPLAY_ROWS;
-        
+
         // 渲染滚动条背景
-        guiGraphics.fill(scrollBarX, scrollBarY, scrollBarX + SCROLL_BAR_WIDTH, scrollBarY + scrollBarHeight, 0xFF202020);
-        
+        guiGraphics.fill(
+                scrollBarX,
+                scrollBarY,
+                scrollBarX + SCROLL_BAR_WIDTH,
+                scrollBarY + scrollBarHeight,
+                0xFF202020);
+
         // 渲染滚动滑块
         if (canScroll) {
-            int sliderHeight = (int) ((float) (scrollBarHeight * scrollBarHeight) / (float) (this.cart.size() * CART_ITEM_HEIGHT));
+            int sliderHeight =
+                    (int)
+                            ((float) (scrollBarHeight * scrollBarHeight)
+                                    / (float) (this.cart.size() * CART_ITEM_HEIGHT));
             sliderHeight = Math.max(32, sliderHeight);
-            int sliderY = scrollBarY + (int) ((float) (scrollBarHeight - sliderHeight) * this.scrollOffs);
-            guiGraphics.fill(scrollBarX, sliderY, scrollBarX + SCROLL_BAR_WIDTH, sliderY + sliderHeight, 0xFF808080);
-            guiGraphics.fill(scrollBarX, sliderY, scrollBarX + SCROLL_BAR_WIDTH - 1, sliderY + sliderHeight - 1, 0xFFC0C0C0);
+            int sliderY =
+                    scrollBarY + (int) ((float) (scrollBarHeight - sliderHeight) * this.scrollOffs);
+            guiGraphics.fill(
+                    scrollBarX,
+                    sliderY,
+                    scrollBarX + SCROLL_BAR_WIDTH,
+                    sliderY + sliderHeight,
+                    0xFF808080);
+            guiGraphics.fill(
+                    scrollBarX,
+                    sliderY,
+                    scrollBarX + SCROLL_BAR_WIDTH - 1,
+                    sliderY + sliderHeight - 1,
+                    0xFFC0C0C0);
         } else {
-             // 禁用状态滑块
-             guiGraphics.fill(scrollBarX, scrollBarY, scrollBarX + SCROLL_BAR_WIDTH, scrollBarY + scrollBarHeight, 0xFF404040);
+            // 禁用状态滑块
+            guiGraphics.fill(
+                    scrollBarX,
+                    scrollBarY,
+                    scrollBarX + SCROLL_BAR_WIDTH,
+                    scrollBarY + scrollBarHeight,
+                    0xFF404040);
         }
 
         // 计算可见区域
@@ -366,22 +483,33 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         if (canScroll) {
             startIndex = (int) (this.scrollOffs * (this.cart.size() - CART_DISPLAY_ROWS));
         }
-        
+
         // 启用剪裁以限制列表显示区域
         guiGraphics.enableScissor(listX, listY, listX + listWidth, listY + scrollBarHeight);
-        
+
         for (int i = startIndex; i < this.cart.size() && i < startIndex + CART_DISPLAY_ROWS; i++) {
             StoreEntity.StoreItem item = this.cart.get(i);
             int y = listY + (i - startIndex) * CART_ITEM_HEIGHT;
-            
+
             guiGraphics.fill(listX, y, listX + listWidth, y + SLOT_SIZE, 0x33000000);
             guiGraphics.renderItem(item.getItemStack(), listX, y);
             guiGraphics.renderItemDecorations(this.font, item.getItemStack(), listX, y);
-            guiGraphics.drawString(this.font, Component.literal("×" + item.getCurrentStock()), listX + 20, y + 5, 0xFFFFFF);
-            Component priceText = Component.literal("§f\uE001§r" + item.getPrice() * item.getCurrentStock());
-            guiGraphics.drawString(this.font, priceText, listX + listWidth - this.font.width(priceText) - 1, y + 5, 0xFFFF00);
+            guiGraphics.drawString(
+                    this.font,
+                    Component.literal("×" + item.getCurrentStock()),
+                    listX + 20,
+                    y + 5,
+                    0xFFFFFF);
+            Component priceText =
+                    Component.literal("§f\uE001§r" + item.getPrice() * item.getCurrentStock());
+            guiGraphics.drawString(
+                    this.font,
+                    priceText,
+                    listX + listWidth - this.font.width(priceText) - 1,
+                    y + 5,
+                    0xFFFF00);
         }
-        
+
         guiGraphics.disableScissor();
     }
 
@@ -395,18 +523,33 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 playerBalance = teamData.getCoins();
             }
         }
-        
-        Component balanceText = Component.literal( "§f\uE001§r" + playerBalance);
+
+        Component balanceText = Component.literal("§f\uE001§r" + playerBalance);
         int balanceWidth = this.font.width(balanceText);
-        guiGraphics.drawString(this.font, balanceText, (this.imageWidth - balanceWidth) / 2 - 1, 20, 0xFFFFFF, true);
+        guiGraphics.drawString(
+                this.font,
+                balanceText,
+                (this.imageWidth - balanceWidth) / 2 - 1,
+                20,
+                0xFFFFFF,
+                true);
     }
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        
+
         // 渲染背景
-        guiGraphics.blit(this.backgroundTexture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+        guiGraphics.blit(
+                this.backgroundTexture,
+                this.leftPos,
+                this.topPos,
+                0,
+                0,
+                this.imageWidth,
+                this.imageHeight,
+                this.imageWidth,
+                this.imageHeight);
 
         // 渲染商品网格
         int startX = this.getLeftPanelStartX();
@@ -415,64 +558,97 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         int goodsAreaHeight = this.getGoodsAreaHeight();
         int goodsScrollBarX = startX + goodsAreaWidth + 2;
         int goodsScrollBarY = startY;
-        
+
         List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
         int totalRows = (int) Math.ceil(items.size() / (float) GRID_COLS);
         boolean canScrollGoods = totalRows > GOODS_DISPLAY_ROWS;
-        int goodsStartRow = canScrollGoods ? (int) (this.goodsScrollOffs * (totalRows - GOODS_DISPLAY_ROWS)) : 0;
+        int goodsStartRow =
+                canScrollGoods
+                        ? (int) (this.goodsScrollOffs * (totalRows - GOODS_DISPLAY_ROWS))
+                        : 0;
         int goodsStartIndex = goodsStartRow * GRID_COLS;
 
-        guiGraphics.fill(goodsScrollBarX, goodsScrollBarY, goodsScrollBarX + SCROLL_BAR_WIDTH, goodsScrollBarY + goodsAreaHeight, 0xFF202020);
+        guiGraphics.fill(
+                goodsScrollBarX,
+                goodsScrollBarY,
+                goodsScrollBarX + SCROLL_BAR_WIDTH,
+                goodsScrollBarY + goodsAreaHeight,
+                0xFF202020);
         if (canScrollGoods) {
-            int sliderHeight = (int) ((float) (goodsAreaHeight * goodsAreaHeight) / (float) (totalRows * CART_ITEM_HEIGHT));
+            int sliderHeight =
+                    (int)
+                            ((float) (goodsAreaHeight * goodsAreaHeight)
+                                    / (float) (totalRows * CART_ITEM_HEIGHT));
             sliderHeight = Math.max(32, sliderHeight);
-            int sliderY = goodsScrollBarY + (int) ((float) (goodsAreaHeight - sliderHeight) * this.goodsScrollOffs);
-            guiGraphics.fill(goodsScrollBarX, sliderY, goodsScrollBarX + SCROLL_BAR_WIDTH, sliderY + sliderHeight, 0xFF808080);
-            guiGraphics.fill(goodsScrollBarX, sliderY, goodsScrollBarX + SCROLL_BAR_WIDTH - 1, sliderY + sliderHeight - 1, 0xFFC0C0C0);
+            int sliderY =
+                    goodsScrollBarY
+                            + (int)
+                                    ((float) (goodsAreaHeight - sliderHeight)
+                                            * this.goodsScrollOffs);
+            guiGraphics.fill(
+                    goodsScrollBarX,
+                    sliderY,
+                    goodsScrollBarX + SCROLL_BAR_WIDTH,
+                    sliderY + sliderHeight,
+                    0xFF808080);
+            guiGraphics.fill(
+                    goodsScrollBarX,
+                    sliderY,
+                    goodsScrollBarX + SCROLL_BAR_WIDTH - 1,
+                    sliderY + sliderHeight - 1,
+                    0xFFC0C0C0);
         } else {
-            guiGraphics.fill(goodsScrollBarX, goodsScrollBarY, goodsScrollBarX + SCROLL_BAR_WIDTH, goodsScrollBarY + goodsAreaHeight, 0xFF404040);
+            guiGraphics.fill(
+                    goodsScrollBarX,
+                    goodsScrollBarY,
+                    goodsScrollBarX + SCROLL_BAR_WIDTH,
+                    goodsScrollBarY + goodsAreaHeight,
+                    0xFF404040);
         }
 
-        guiGraphics.enableScissor(startX, startY, startX + goodsAreaWidth, startY + goodsAreaHeight);
-        
+        guiGraphics.enableScissor(
+                startX, startY, startX + goodsAreaWidth, startY + goodsAreaHeight);
+
         for (int i = goodsStartIndex; i < items.size(); i++) {
             if (i >= goodsStartIndex + GRID_COLS * GOODS_DISPLAY_ROWS) break;
-            
+
             int relative = i - goodsStartIndex;
             int col = relative % GRID_COLS;
             int row = relative / GRID_COLS;
             int x = startX + col * (SLOT_SIZE + SLOT_SPACING);
             int y = startY + row * (SLOT_SIZE + SLOT_SPACING);
-            
+
             // 绘制槽位背景
             guiGraphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0x33000000);
-            
+
             // 绘制物品
             StoreEntity.StoreItem storeItem = items.get(i);
             boolean isFavorLocked = this.isFavorLocked(storeItem);
-            boolean isOutOfStock = storeItem.getMaxStock() != -1 && storeItem.getCurrentStock() <= 0;
-            
+            boolean isOutOfStock =
+                    storeItem.getMaxStock() != -1 && storeItem.getCurrentStock() <= 0;
+
             if (isOutOfStock || isFavorLocked) {
                 // 绘制灰色遮罩
                 guiGraphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0xA0000000);
             }
-            
+
             guiGraphics.renderItem(storeItem.getItemStack(), x + 1, y + 1);
             guiGraphics.renderItemDecorations(this.font, storeItem.getItemStack(), x + 1, y + 1);
-            
+
             // 渲染库存数量 (右下角)
             int stock = storeItem.getCurrentStock();
-            
+
             // 减去购物车中已有的数量
             for (StoreEntity.StoreItem cartItem : this.cart) {
-                if (ItemStack.isSameItemSameComponents(cartItem.getItemStack(), storeItem.getItemStack())) {
+                if (ItemStack.isSameItemSameComponents(
+                        cartItem.getItemStack(), storeItem.getItemStack())) {
                     stock -= cartItem.getCurrentStock();
                 }
             }
-            
+
             String stockStr;
             int color = 0xFFFFFF;
-            
+
             if (storeItem.getMaxStock() == -1) {
                 stockStr = "∞";
             } else {
@@ -487,13 +663,19 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             if (isFavorLocked) {
                 color = ModColors.ERROR;
             }
-            
+
             // 渲染带阴影的文字，类似于物品数量
             guiGraphics.pose().pushPose();
             guiGraphics.pose().translate(0, 0, 200); // 确保在物品上方
-            guiGraphics.drawString(this.font, stockStr, x + SLOT_SIZE - this.font.width(stockStr) - 1, y + SLOT_SIZE - 9, color, true);
+            guiGraphics.drawString(
+                    this.font,
+                    stockStr,
+                    x + SLOT_SIZE - this.font.width(stockStr) - 1,
+                    y + SLOT_SIZE - 9,
+                    color,
+                    true);
             guiGraphics.pose().popPose();
-            
+
             // 选中高亮 (最后绘制以覆盖在物品上方，确保可见)
             if (items.get(i) == this.selectedItem) {
                 color = 0xFFF8F8FF;
@@ -505,7 +687,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             }
         }
         guiGraphics.disableScissor();
-        
+
         // 渲染选中物品名称
         if (this.selectedItem != null) {
             Component name = this.selectedItem.getItemStack().getHoverName();
@@ -527,10 +709,15 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
         int totalGoodsRows = (int) Math.ceil(items.size() / (float) GRID_COLS);
         boolean canScrollGoods = totalGoodsRows > GOODS_DISPLAY_ROWS;
-        
-        if (mouseX >= goodsStartX && mouseX < goodsStartX + goodsWidth && mouseY >= goodsStartY && mouseY < goodsStartY + goodsHeight && canScrollGoods) {
+
+        if (mouseX >= goodsStartX
+                && mouseX < goodsStartX + goodsWidth
+                && mouseY >= goodsStartY
+                && mouseY < goodsStartY + goodsHeight
+                && canScrollGoods) {
             float scrollStep = 1.0F / (float) (totalGoodsRows - GOODS_DISPLAY_ROWS);
-            this.goodsScrollOffs = (float) ((double) this.goodsScrollOffs - scrollY * (double) scrollStep);
+            this.goodsScrollOffs =
+                    (float) ((double) this.goodsScrollOffs - scrollY * (double) scrollStep);
             this.goodsScrollOffs = net.minecraft.util.Mth.clamp(this.goodsScrollOffs, 0.0F, 1.0F);
             return true;
         }
@@ -539,18 +726,22 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         int cartStartY = this.getPanelStartY();
         int cartWidth = this.getPanelTotalWidth();
         int cartHeight = this.getCartAreaHeight();
-        
-        if (mouseX >= cartStartX && mouseX < cartStartX + cartWidth && mouseY >= cartStartY && mouseY < cartStartY + cartHeight && this.cart.size() > CART_DISPLAY_ROWS) {
-            float scrollStep = 1.0F / (float)(this.cart.size() - CART_DISPLAY_ROWS);
-            this.scrollOffs = (float)((double)this.scrollOffs - scrollY * (double)scrollStep);
+
+        if (mouseX >= cartStartX
+                && mouseX < cartStartX + cartWidth
+                && mouseY >= cartStartY
+                && mouseY < cartStartY + cartHeight
+                && this.cart.size() > CART_DISPLAY_ROWS) {
+            float scrollStep = 1.0F / (float) (this.cart.size() - CART_DISPLAY_ROWS);
+            this.scrollOffs = (float) ((double) this.scrollOffs - scrollY * (double) scrollStep);
             this.scrollOffs = net.minecraft.util.Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
             return true;
         }
 
         if (this.cart.size() > CART_DISPLAY_ROWS) {
             // 每个滚轮单位滚动一项
-            float scrollStep = 1.0F / (float)(this.cart.size() - CART_DISPLAY_ROWS);
-            this.scrollOffs = (float)((double)this.scrollOffs - scrollY * (double)scrollStep);
+            float scrollStep = 1.0F / (float) (this.cart.size() - CART_DISPLAY_ROWS);
+            this.scrollOffs = (float) ((double) this.scrollOffs - scrollY * (double) scrollStep);
             this.scrollOffs = net.minecraft.util.Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
             return true;
         }
@@ -564,25 +755,28 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         int startY = this.getPanelStartY();
         List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
         int totalRows = (int) Math.ceil(items.size() / (float) GRID_COLS);
-        int goodsStartRow = totalRows > GOODS_DISPLAY_ROWS ? (int) (this.goodsScrollOffs * (totalRows - GOODS_DISPLAY_ROWS)) : 0;
+        int goodsStartRow =
+                totalRows > GOODS_DISPLAY_ROWS
+                        ? (int) (this.goodsScrollOffs * (totalRows - GOODS_DISPLAY_ROWS))
+                        : 0;
         int goodsStartIndex = goodsStartRow * GRID_COLS;
-        
+
         for (int i = goodsStartIndex; i < items.size(); i++) {
             if (i >= goodsStartIndex + GRID_COLS * GOODS_DISPLAY_ROWS) break;
-            
+
             int relative = i - goodsStartIndex;
             int col = relative % GRID_COLS;
             int row = relative / GRID_COLS;
             int x = startX + col * (SLOT_SIZE + SLOT_SPACING);
             int y = startY + row * (SLOT_SIZE + SLOT_SPACING);
-            
+
             if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y && mouseY < y + SLOT_SIZE) {
                 if (this.isFavorLocked(items.get(i))) {
                     return false;
                 }
                 // 如果没有库存，不允许选择
                 if (items.get(i).getMaxStock() != -1 && items.get(i).getCurrentStock() <= 0) {
-                     return false;
+                    return false;
                 }
 
                 boolean clickedSelectedItem = this.selectedItem == items.get(i);
@@ -595,7 +789,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 } else if (!hasShiftDown()) {
                     this.addToCart(this.selectedItem, this.purchaseQuantity);
                 }
-                
+
                 // Shift + 点击：快速添加 64 个 (或剩余库存)
                 if (hasShiftDown()) {
                     int addAmount = 64;
@@ -605,16 +799,20 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                     }
                     this.addToCart(this.selectedItem, addAmount);
                 }
-                
+
                 // 播放点击音效
-                Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                Minecraft.getInstance()
+                        .getSoundManager()
+                        .play(
+                                net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
+                                        net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 return true;
             }
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
     }
-    
+
     @Override
     protected void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         super.renderTooltip(guiGraphics, mouseX, mouseY);
@@ -625,63 +823,97 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         int modelMaxX = modelCenterX + modelSize / 2;
         int modelMinY = modelBottomY - modelSize - 10;
         int modelMaxY = modelBottomY + 10;
-        if (mouseX >= modelMinX && mouseX < modelMaxX && mouseY >= modelMinY && mouseY < modelMaxY) {
+        if (mouseX >= modelMinX
+                && mouseX < modelMaxX
+                && mouseY >= modelMinY
+                && mouseY < modelMaxY) {
             int favorLevel = this.menu.getFavorLevel();
             int coinsPerLevel = StoreEntity.getCoinsPerFavorLevelValue();
             int maxLevel = StoreEntity.getMaxFavorLevelValue();
-            int spentInCurrentLevel = this.menu.getTotalSpentCoins() - Math.max(0, (favorLevel - 1) * coinsPerLevel);
+            int spentInCurrentLevel =
+                    this.menu.getTotalSpentCoins() - Math.max(0, (favorLevel - 1) * coinsPerLevel);
             int requiredForNext = favorLevel >= maxLevel ? coinsPerLevel : coinsPerLevel;
             if (favorLevel >= maxLevel) {
                 spentInCurrentLevel = coinsPerLevel;
             } else {
-                spentInCurrentLevel = net.minecraft.util.Mth.clamp(spentInCurrentLevel, 0, coinsPerLevel);
+                spentInCurrentLevel =
+                        net.minecraft.util.Mth.clamp(spentInCurrentLevel, 0, coinsPerLevel);
             }
             List<Component> favorTooltip = new ArrayList<>();
-            Component favorLevelText = Component.translatable("gui.otherworldinn.store.favor.level", favorLevel);
+            Component favorLevelText =
+                    Component.translatable("gui.otherworldinn.store.favor.level", favorLevel);
             if (favorLevel >= maxLevel) {
-                favorLevelText = favorLevelText.copy().append(Component.literal("  -30%off!")
-                        .withStyle(net.minecraft.ChatFormatting.GREEN, net.minecraft.ChatFormatting.BOLD));
+                favorLevelText =
+                        favorLevelText
+                                .copy()
+                                .append(
+                                        Component.literal("  -30%off!")
+                                                .withStyle(
+                                                        net.minecraft.ChatFormatting.GREEN,
+                                                        net.minecraft.ChatFormatting.BOLD));
             }
             favorTooltip.add(favorLevelText);
-            favorTooltip.add(Component.translatable("gui.otherworldinn.store.favor.progress", spentInCurrentLevel, requiredForNext));
-            guiGraphics.renderTooltip(this.font, favorTooltip, java.util.Optional.empty(), mouseX, mouseY);
+            favorTooltip.add(
+                    Component.translatable(
+                            "gui.otherworldinn.store.favor.progress",
+                            spentInCurrentLevel,
+                            requiredForNext));
+            guiGraphics.renderTooltip(
+                    this.font, favorTooltip, java.util.Optional.empty(), mouseX, mouseY);
             return;
         }
-        
+
         // 渲染商品 Tooltip
         int startX = this.leftPos + 20;
         int startY = this.topPos + 20;
         List<StoreEntity.StoreItem> items = this.menu.getStoreItems();
         int totalRows = (int) Math.ceil(items.size() / (float) GRID_COLS);
-        int goodsStartRow = totalRows > GOODS_DISPLAY_ROWS ? (int) (this.goodsScrollOffs * (totalRows - GOODS_DISPLAY_ROWS)) : 0;
+        int goodsStartRow =
+                totalRows > GOODS_DISPLAY_ROWS
+                        ? (int) (this.goodsScrollOffs * (totalRows - GOODS_DISPLAY_ROWS))
+                        : 0;
         int goodsStartIndex = goodsStartRow * GRID_COLS;
-        
+
         for (int i = goodsStartIndex; i < items.size(); i++) {
             if (i >= goodsStartIndex + GRID_COLS * GOODS_DISPLAY_ROWS) break;
-            
+
             int relative = i - goodsStartIndex;
             int col = relative % GRID_COLS;
             int row = relative / GRID_COLS;
             int x = startX + col * (SLOT_SIZE + SLOT_SPACING);
             int y = startY + row * (SLOT_SIZE + SLOT_SPACING);
-            
+
             if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y && mouseY < y + SLOT_SIZE) {
                 StoreEntity.StoreItem item = items.get(i);
                 List<Component> tooltip = getTooltipFromItem(minecraft, item.getItemStack());
-                
+
                 // 使用翻译键和自定义图标
-                tooltip.add(Component.translatable("gui.otherworldinn.store.price", this.getDisplayPrice(item)).withStyle(net.minecraft.ChatFormatting.YELLOW));
-                
+                tooltip.add(
+                        Component.translatable(
+                                        "gui.otherworldinn.store.price", this.getDisplayPrice(item))
+                                .withStyle(net.minecraft.ChatFormatting.YELLOW));
+
                 if (item.getMaxStock() != -1) {
-                     tooltip.add(Component.translatable("gui.otherworldinn.store.stock", item.getCurrentStock(), item.getMaxStock()).withStyle(net.minecraft.ChatFormatting.GRAY));
+                    tooltip.add(
+                            Component.translatable(
+                                            "gui.otherworldinn.store.stock",
+                                            item.getCurrentStock(),
+                                            item.getMaxStock())
+                                    .withStyle(net.minecraft.ChatFormatting.GRAY));
                 } else {
-                     tooltip.add(Component.translatable("gui.otherworldinn.store.stock.infinite").withStyle(net.minecraft.ChatFormatting.GRAY));
+                    tooltip.add(
+                            Component.translatable("gui.otherworldinn.store.stock.infinite")
+                                    .withStyle(net.minecraft.ChatFormatting.GRAY));
                 }
                 if (this.isFavorLocked(item)) {
-                    tooltip.add(Component.translatable("gui.otherworldinn.store.favor_unlock", item.getRequiredFavorLevel())
-                            .withStyle(style -> style.withColor(ModColors.ERROR)));
+                    tooltip.add(
+                            Component.translatable(
+                                            "gui.otherworldinn.store.favor_unlock",
+                                            item.getRequiredFavorLevel())
+                                    .withStyle(style -> style.withColor(ModColors.ERROR)));
                 }
-                guiGraphics.renderTooltip(this.font, tooltip, item.getItemStack().getTooltipImage(), mouseX, mouseY);
+                guiGraphics.renderTooltip(
+                        this.font, tooltip, item.getItemStack().getTooltipImage(), mouseX, mouseY);
             }
         }
     }

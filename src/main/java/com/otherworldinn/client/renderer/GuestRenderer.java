@@ -9,10 +9,8 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * 旅客实体渲染器
- * <p>
- * 使用玩家模型渲染旅客。
- * 支持 Steve (default) 和 Alex (slim) 模型。
- * </p>
+ *
+ * <p>使用玩家模型渲染旅客。 支持 Steve (default) 和 Alex (slim) 模型。
  */
 public class GuestRenderer<T extends GuestEntity> extends HumanoidMobRenderer<T, PlayerModel<T>> {
 
@@ -29,7 +27,13 @@ public class GuestRenderer<T extends GuestEntity> extends HumanoidMobRenderer<T,
     }
 
     @Override
-    public void render(T entity, float entityYaw, float partialTicks, com.mojang.blaze3d.vertex.PoseStack poseStack, net.minecraft.client.renderer.MultiBufferSource buffer, int packedLight) {
+    public void render(
+            T entity,
+            float entityYaw,
+            float partialTicks,
+            com.mojang.blaze3d.vertex.PoseStack poseStack,
+            net.minecraft.client.renderer.MultiBufferSource buffer,
+            int packedLight) {
         if ("slim".equals(entity.getModelType())) {
             this.model = this.slimModel;
         } else {

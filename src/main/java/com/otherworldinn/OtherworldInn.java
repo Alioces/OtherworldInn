@@ -24,9 +24,8 @@ import org.slf4j.Logger;
 
 /**
  * 模组主类
- * <p>
- * 模组的入口点，负责初始化和注册。
- * </p>
+ *
+ * <p>模组的入口点，负责初始化和注册。
  */
 @Mod(OtherworldInn.MODID)
 public class OtherworldInn {
@@ -34,8 +33,14 @@ public class OtherworldInn {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     // 定义标签
-    public static final TagKey<Item> BANNED_IN_TOWN = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "banned_in_town"));
-    public static final TagKey<Item> ONLY_IN_TOWN = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "only_in_town"));
+    public static final TagKey<Item> BANNED_IN_TOWN =
+            TagKey.create(
+                    Registries.ITEM,
+                    ResourceLocation.fromNamespaceAndPath(MODID, "banned_in_town"));
+    public static final TagKey<Item> ONLY_IN_TOWN =
+            TagKey.create(
+                    Registries.ITEM,
+                    ResourceLocation.fromNamespaceAndPath(MODID, "only_in_town"));
 
     public OtherworldInn(IEventBus modEventBus, ModContainer modContainer) {
         // 注册物品和方块
@@ -49,7 +54,7 @@ public class OtherworldInn {
 
         // 注册配置
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
-        
+
         // 注册生命周期事件
         modEventBus.addListener(this::commonSetup);
     }

@@ -11,15 +11,19 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * 客户端 -> 服务端 数据包
- * <p>
- * 请求传送到主世界出生点。
+ *
+ * <p>请求传送到主世界出生点。
  */
 public record C2STeleportOverworldPacket() implements CustomPacketPayload {
 
-    public static final Type<C2STeleportOverworldPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "teleport_overworld"));
+    public static final Type<C2STeleportOverworldPacket> TYPE =
+            new Type<>(
+                    ResourceLocation.fromNamespaceAndPath(
+                            OtherworldInn.MODID, "teleport_overworld"));
 
     // 编解码器
-    public static final StreamCodec<RegistryFriendlyByteBuf, C2STeleportOverworldPacket> STREAM_CODEC = StreamCodec.unit(new C2STeleportOverworldPacket());
+    public static final StreamCodec<RegistryFriendlyByteBuf, C2STeleportOverworldPacket>
+            STREAM_CODEC = StreamCodec.unit(new C2STeleportOverworldPacket());
 
     @Override
     public Type<? extends CustomPacketPayload> type() {
@@ -32,10 +36,11 @@ public record C2STeleportOverworldPacket() implements CustomPacketPayload {
      * @param context 数据包上下文
      */
     public void handle(IPayloadContext context) {
-        context.enqueueWork(() -> {
-            if (context.player() instanceof ServerPlayer player) {
-                TeleportUtils.teleportToOverworldSpawn(player);
-            }
-        });
+        context.enqueueWork(
+                () -> {
+                    if (context.player() instanceof ServerPlayer player) {
+                        TeleportUtils.teleportToOverworldSpawn(player);
+                    }
+                });
     }
 }

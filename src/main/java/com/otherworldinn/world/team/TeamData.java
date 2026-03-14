@@ -1,38 +1,35 @@
 package com.otherworldinn.world.team;
 
-import lombok.Data;
-import lombok.Setter;
-import lombok.AccessLevel;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
-
+import com.otherworldinn.init.ModSounds;
+import com.otherworldinn.world.inn.InnData;
+import com.otherworldinn.world.map.MapPoint;
+import com.otherworldinn.world.map.TownDataProvider;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
-import com.otherworldinn.init.ModSounds;
-import com.otherworldinn.world.inn.InnData;
-import com.otherworldinn.world.map.MapPoint;
-import com.otherworldinn.world.map.TownDataProvider;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Setter;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 
 /**
  * 队伍数据
- * <p>
- * 存储队伍的成员、解锁状态（地图点、功能）等信息。
- * </p>
+ *
+ * <p>存储队伍的成员、解锁状态（地图点、功能）等信息。
  */
 @Data
 public class TeamData {
-    
+
     public record InnRegion(int minX, int minZ, int maxX, int maxZ) {
 
         public boolean contains(int x, int z) {
@@ -40,13 +37,17 @@ public class TeamData {
         }
 
         public boolean contains(InnRegion other) {
-            return this.minX <= other.minX && this.maxX >= other.maxX &&
-                   this.minZ <= other.minZ && this.maxZ >= other.maxZ;
+            return this.minX <= other.minX
+                    && this.maxX >= other.maxX
+                    && this.minZ <= other.minZ
+                    && this.maxZ >= other.maxZ;
         }
 
         public boolean intersects(InnRegion other) {
-            return this.minX <= other.maxX && this.maxX >= other.minX &&
-                   this.minZ <= other.maxZ && this.maxZ >= other.minZ;
+            return this.minX <= other.maxX
+                    && this.maxX >= other.minX
+                    && this.minZ <= other.maxZ
+                    && this.maxZ >= other.minZ;
         }
 
         public CompoundTag save() {
@@ -60,11 +61,7 @@ public class TeamData {
 
         public static InnRegion load(CompoundTag tag) {
             return new InnRegion(
-                tag.getInt("MinX"),
-                tag.getInt("MinZ"),
-                tag.getInt("MaxX"),
-                tag.getInt("MaxZ")
-            );
+                    tag.getInt("MinX"), tag.getInt("MinZ"), tag.getInt("MaxX"), tag.getInt("MaxZ"));
         }
 
         public boolean contains(BlockPos pos) {
@@ -76,18 +73,18 @@ public class TeamData {
     private String name;
     private UUID leaderId;
     private final Set<UUID> members = new HashSet<>();
-    
+
     @Setter(AccessLevel.NONE)
     private final Set<ResourceLocation> unlockedMapPoints = new HashSet<>();
-    
+
     private boolean teleportUnlocked = false;
-    
+
     @Setter(AccessLevel.NONE)
     private int coins = 0; // 队伍金币
-    
+
     // 旅社区域列表
     private final List<InnRegion> innRegions = new ArrayList<>();
-    
+
     private final InnData innData = new InnData(); // 旅社数据管理系统
 
     public TeamData(UUID teamId) {
@@ -125,7 +122,7 @@ public class TeamData {
         if (unlockedMapPoints.contains(pointId)) {
             return true;
         }
-        
+
         // 2. 检查默认解锁条件 (null condition)
         Optional<MapPoint> pointOpt = TownDataProvider.getPoint(pointId);
         if (pointOpt.isPresent()) {
@@ -134,7 +131,7 @@ public class TeamData {
                 return true;
             }
         }
-        
+
         // 3. 硬编码的初始点 (作为后备)
         return pointId.getPath().equals("inn");
     }
@@ -166,7 +163,7 @@ public class TeamData {
             playPaymentSound(server);
         }
     }
-    
+
     // 保留旧方法以兼容，但不播放声音
     public void addCoins(int amount) {
         if (amount > 0) {
@@ -182,7 +179,7 @@ public class TeamData {
         }
         return false;
     }
-    
+
     // 保留旧方法以兼容
     public boolean removeCoins(int amount) {
         if (amount >= 0 && this.coins >= amount) {
@@ -191,10 +188,10 @@ public class TeamData {
         }
         return false;
     }
-    
+
     private void playPaymentSound(net.minecraft.server.MinecraftServer server) {
         if (server == null) return;
-        
+
         for (UUID memberId : members) {
             ServerPlayer player = server.getPlayerList().getPlayer(memberId);
             if (player != null) {
@@ -207,7 +204,7 @@ public class TeamData {
         this.unlockedMapPoints.clear();
         this.unlockedMapPoints.addAll(points);
     }
-    
+
     public void setMembers(Set<UUID> newMembers) {
         this.members.clear();
         this.members.addAll(newMembers);
@@ -219,12 +216,12 @@ public class TeamData {
         int maxX = Math.max(region.minX, region.maxX);
         int minZ = Math.min(region.minZ, region.maxZ);
         int maxZ = Math.max(region.minZ, region.maxZ);
-        
+
         InnRegion normalized = new InnRegion(minX, minZ, maxX, maxZ);
-        
+
         List<InnRegion> toAdd = new ArrayList<>();
         toAdd.add(normalized);
-        
+
         // 用现有的所有区域去切割新区域，确保存储的区域互不重叠
         // 这样做的好处是：
         // 1. 避免重叠区域在渲染时出现颜色叠加加深的问题
@@ -237,91 +234,86 @@ public class TeamData {
             toAdd = nextPass;
             if (toAdd.isEmpty()) break;
         }
-        
+
         if (!toAdd.isEmpty()) {
             innRegions.addAll(toAdd);
             optimizeRegions();
         }
     }
-    
-    /**
-     * 计算区域差集 (A - B)
-     * 返回一组互不重叠的矩形，其并集等于 (A - B)
-     */
+
+    /** 计算区域差集 (A - B) 返回一组互不重叠的矩形，其并集等于 (A - B) */
     private List<InnRegion> subtract(InnRegion a, InnRegion b) {
         List<InnRegion> result = new ArrayList<>();
-        
+
         // 如果不相交，直接返回 A
         if (!a.intersects(b)) {
             result.add(a);
             return result;
         }
-        
+
         // 如果 A 被 B 完全包含，返回空
         if (b.contains(a)) {
             return result;
         }
-        
+
         // 如果有重叠，我们需要将 A 切割
         // 切割策略：上下左右四个方向
-        
+
         int ax1 = a.minX, ax2 = a.maxX, az1 = a.minZ, az2 = a.maxZ;
         int bx1 = b.minX, bx2 = b.maxX, bz1 = b.minZ, bz2 = b.maxZ;
-        
+
         // 1. Top (Z < bz1)
         if (az1 < bz1) {
             result.add(new InnRegion(ax1, az1, ax2, bz1 - 1));
             // 剩下的部分继续处理 (更新 az1)
             az1 = bz1;
         }
-        
+
         // 2. Bottom (Z > bz2)
         if (az2 > bz2) {
             result.add(new InnRegion(ax1, bz2 + 1, ax2, az2));
             // 剩下的部分继续处理 (更新 az2)
             az2 = bz2;
         }
-        
+
         // 现在 Z 范围已经被限制在 B 的 Z 范围内 (或 A 原本的 Z 范围内)
         // 处理 X 方向
-        
+
         // 3. Left (X < bx1)
         if (ax1 < bx1) {
             result.add(new InnRegion(ax1, az1, bx1 - 1, az2));
         }
-        
+
         // 4. Right (X > bx2)
         if (ax2 > bx2) {
             result.add(new InnRegion(bx2 + 1, az1, ax2, az2));
         }
-        
+
         return result;
     }
-    
+
     public void removeRegion(InnRegion region) {
         // 确保 min <= max
         int minX = Math.min(region.minX, region.maxX);
         int maxX = Math.max(region.minX, region.maxX);
         int minZ = Math.min(region.minZ, region.maxZ);
         int maxZ = Math.max(region.minZ, region.maxZ);
-        
+
         InnRegion normalized = new InnRegion(minX, minZ, maxX, maxZ);
 
         List<InnRegion> nextRegions = new ArrayList<>();
-        
+
         // 遍历现有区域，减去要移除的部分
         for (InnRegion existing : innRegions) {
             nextRegions.addAll(subtract(existing, normalized));
         }
-        
+
         innRegions.clear();
         innRegions.addAll(nextRegions);
         optimizeRegions();
     }
 
-    /**
-     * 优化区域列表，合并可合并的矩形
-     */
+    /** 优化区域列表，合并可合并的矩形 */
     public void optimizeRegions() {
         boolean changed = true;
         while (changed) {
@@ -336,7 +328,7 @@ public class TeamData {
                         innRegions.remove(i);
                         innRegions.add(merged);
                         changed = true;
-                        break; 
+                        break;
                     }
                 }
                 if (changed) break;
@@ -348,30 +340,30 @@ public class TeamData {
         // 包含关系
         if (r1.contains(r2)) return r1;
         if (r2.contains(r1)) return r2;
-        
+
         // 水平拼接 (Z 范围相同，X 相邻或重叠)
         if (r1.minZ == r2.minZ && r1.maxZ == r2.maxZ) {
             // 检查 X 是否连续或重叠
             // 连续条件: r1.minX <= r2.maxX + 1 && r2.minX <= r1.maxX + 1
             if (r1.minX <= r2.maxX + 1 && r2.minX <= r1.maxX + 1) {
-                return new InnRegion(Math.min(r1.minX, r2.minX), r1.minZ, Math.max(r1.maxX, r2.maxX), r1.maxZ);
+                return new InnRegion(
+                        Math.min(r1.minX, r2.minX), r1.minZ, Math.max(r1.maxX, r2.maxX), r1.maxZ);
             }
         }
-        
+
         // 垂直拼接 (X 范围相同，Z 相邻或重叠)
         if (r1.minX == r2.minX && r1.maxX == r2.maxX) {
             // 检查 Z 是否连续或重叠
             if (r1.minZ <= r2.maxZ + 1 && r2.minZ <= r1.maxZ + 1) {
-                return new InnRegion(r1.minX, Math.min(r1.minZ, r2.minZ), r1.maxX, Math.max(r1.maxZ, r2.maxZ));
+                return new InnRegion(
+                        r1.minX, Math.min(r1.minZ, r2.minZ), r1.maxX, Math.max(r1.maxZ, r2.maxZ));
             }
         }
-        
+
         return null;
     }
 
-    /**
-     * 检查坐标是否在旅社区域内
-     */
+    /** 检查坐标是否在旅社区域内 */
     public boolean isInInnZone(BlockPos pos) {
         for (InnRegion region : innRegions) {
             if (region.contains(pos.getX(), pos.getZ())) {
@@ -395,7 +387,7 @@ public class TeamData {
         if (leaderId != null) {
             tag.putUUID("LeaderId", leaderId);
         }
-        
+
         ListTag membersTag = new ListTag();
         for (UUID member : members) {
             CompoundTag memberTag = new CompoundTag();
@@ -412,7 +404,7 @@ public class TeamData {
 
         tag.putBoolean("TeleportUnlocked", teleportUnlocked);
         tag.putInt("Coins", coins);
-        
+
         // 旅社数据 (包含 EditMode)
         tag.put("InnData", innData.save(new CompoundTag()));
 
@@ -433,16 +425,15 @@ public class TeamData {
      * @param tag 源 NBT 标签
      */
     public void load(CompoundTag tag) {
-        if (tag.contains("TeamId")) {
+        if (tag.contains("TeamId")) {}
 
-        }
         if (tag.contains("Name")) {
             name = tag.getString("Name");
         }
         if (tag.contains("LeaderId")) {
             leaderId = tag.getUUID("LeaderId");
         }
-        
+
         members.clear();
         if (tag.contains("Members")) {
             ListTag membersTag = tag.getList("Members", Tag.TAG_COMPOUND);
@@ -467,7 +458,7 @@ public class TeamData {
         } else {
             coins = 0;
         }
-        
+
         // 优先加载 InnData，因为后续可能需要用到它
         if (tag.contains("InnData")) {
             innData.load(tag.getCompound("InnData"));

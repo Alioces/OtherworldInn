@@ -17,17 +17,16 @@ import net.minecraft.world.phys.Vec3;
  * @param unlockCondition 解锁条件（例如任务ID或特定物品）
  */
 public record MapPoint(
-    ResourceLocation id,
-    Vec3 worldPosition,
-    Vec2 screenOffset,
-    ResourceLocation iconTexture,
-    Component displayName,
-    MapPointType type,
-    String unlockCondition
-) {
+        ResourceLocation id,
+        Vec3 worldPosition,
+        Vec2 screenOffset,
+        ResourceLocation iconTexture,
+        Component displayName,
+        MapPointType type,
+        String unlockCondition) {
     public enum MapPointType {
-        SHOP,       // 商店/功能点
-        EXIT_GATE,  // 离开城镇的出口
-        LANDMARK    // 地标（仅展示）
+        SHOP, // 商店/功能点
+        EXIT_GATE, // 离开城镇的出口
+        LANDMARK // 地标（仅展示）
     }
 }

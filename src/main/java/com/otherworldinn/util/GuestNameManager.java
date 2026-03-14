@@ -5,10 +5,8 @@ import net.minecraft.util.RandomSource;
 
 /**
  * 旅客姓名管理器
- * <p>
- * 负责生成随机的旅客姓名。
- * 姓名由名（First Name）和姓（Last Name）组成，支持本地化。
- * </p>
+ *
+ * <p>负责生成随机的旅客姓名。 姓名由名（First Name）和姓（Last Name）组成，支持本地化。
  */
 public class GuestNameManager {
 
@@ -17,9 +15,8 @@ public class GuestNameManager {
 
     /**
      * 获取一个随机姓名组件
-     * <p>
-     * 格式：Component.translatable("guest.name.format", FirstName, LastName)
-     * </p>
+     *
+     * <p>格式：Component.translatable("guest.name.format", FirstName, LastName)
      *
      * @param random 随机源
      * @return 姓名组件
@@ -32,8 +29,9 @@ public class GuestNameManager {
         String firstNameKey = "guest.name.first." + firstIndex;
         String lastNameKey = "guest.name.last." + lastIndex;
 
-        return Component.translatable("guest.name.format", 
-                Component.translatable(firstNameKey), 
+        return Component.translatable(
+                "guest.name.format",
+                Component.translatable(firstNameKey),
                 Component.translatable(lastNameKey));
     }
 }

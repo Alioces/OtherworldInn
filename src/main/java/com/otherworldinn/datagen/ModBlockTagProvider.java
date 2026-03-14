@@ -3,6 +3,8 @@ package com.otherworldinn.datagen;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.BlockDataGenInfo;
 import com.otherworldinn.init.ModBlocks;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
@@ -11,21 +13,19 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
-/**
- * 方块标签生成器
- * 负责生成 tags/block JSON 文件 (如 mineable/pickaxe)
- */
+/** 方块标签生成器 负责生成 tags/block JSON 文件 (如 mineable/pickaxe) */
 public class ModBlockTagProvider extends BlockTagsProvider {
-    public ModBlockTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
+    public ModBlockTagProvider(
+            PackOutput output,
+            CompletableFuture<HolderLookup.Provider> lookupProvider,
+            @Nullable ExistingFileHelper existingFileHelper) {
         super(output, lookupProvider, OtherworldInn.MODID, existingFileHelper);
     }
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        for (Map.Entry<DeferredBlock<?>, BlockDataGenInfo> entry : ModBlocks.BLOCK_INFOS.entrySet()) {
+        for (Map.Entry<DeferredBlock<?>, BlockDataGenInfo> entry :
+                ModBlocks.BLOCK_INFOS.entrySet()) {
             DeferredBlock<?> block = entry.getKey();
             BlockDataGenInfo info = entry.getValue();
 
@@ -46,4 +46,3 @@ public class ModBlockTagProvider extends BlockTagsProvider {
         }
     }
 }
-

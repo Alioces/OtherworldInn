@@ -6,20 +6,18 @@ import com.otherworldinn.foundation.ItemDataGenInfo;
 import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModEntities;
 import com.otherworldinn.init.ModItems;
+import java.util.List;
+import java.util.Map;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.entity.EntityType;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * 语言文件生成器
- * <p>
- * 负责生成 en_us.json 和 zh_cn.json 语言文件。
- * 根据传入的 locale 参数决定生成哪种语言。
+ *
+ * <p>负责生成 en_us.json 和 zh_cn.json 语言文件。 根据传入的 locale 参数决定生成哪种语言。
  */
 public class ModLanguageProvider extends LanguageProvider {
     private final String locale;
@@ -36,59 +34,35 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     private void addManualTranslations() {
-        entry("itemGroup.otherworldinn")
-                .zh("旅社物语")
-                .en("Otherworld Inn");
+        entry("itemGroup.otherworldinn").zh("旅社物语").en("Otherworld Inn");
 
-        entry("key.categories.otherworldinn")
-                .zh("旅社物语")
-                .en("Otherworld Inn");
+        entry("key.categories.otherworldinn").zh("旅社物语").en("Otherworld Inn");
 
-        entry("key.otherworldinn.map_mode")
-                .zh("地图视图")
-                .en("Map View");
+        entry("key.otherworldinn.map_mode").zh("地图视图").en("Map View");
 
         // 地图点名称
-        entry("map_point.otherworldinn.inn")
-                .zh("旅社")
-                .en("The Inn");
-        entry("map_point.otherworldinn.blacksmith")
-                .zh("铁匠铺")
-                .en("Blacksmith");
-        entry("map_point.otherworldinn.town_gate")
-                .zh("城镇大门")
-                .en("Town Gate");
-        entry("map_point.otherworldinn.locked")
-                .zh("未解锁")
-                .en("Locked");
-        entry("map_point.otherworldinn.cant_teleport")
-                .zh("无法传送至")
-                .en("Cannot teleport to");
+        entry("map_point.otherworldinn.inn").zh("旅社").en("The Inn");
+        entry("map_point.otherworldinn.blacksmith").zh("铁匠铺").en("Blacksmith");
+        entry("map_point.otherworldinn.town_gate").zh("城镇大门").en("Town Gate");
+        entry("map_point.otherworldinn.locked").zh("未解锁").en("Locked");
+        entry("map_point.otherworldinn.cant_teleport").zh("无法传送至").en("Cannot teleport to");
 
         // 字幕
-        entry("subtitles.otherworldinn.payment")
-                .zh("金币：叮铃")
-                .en("Coins: Clink");
+        entry("subtitles.otherworldinn.payment").zh("金币：叮铃").en("Coins: Clink");
 
         // 队伍命令
         entry("command.otherworldinn.team.already_in_team")
                 .zh("你已经在一个队伍中了！")
                 .en("You are already in a team!");
-        entry("command.otherworldinn.team.created")
-                .zh("已创建队伍：%s")
-                .en("Created team: %s");
+        entry("command.otherworldinn.team.created").zh("已创建队伍：%s").en("Created team: %s");
         entry("command.otherworldinn.team.target_no_team")
                 .zh("目标玩家不在队伍中！")
                 .en("Target player is not in a team!");
-        entry("command.otherworldinn.team.joined")
-                .zh("已加入队伍：%s")
-                .en("Joined team: %s");
+        entry("command.otherworldinn.team.joined").zh("已加入队伍：%s").en("Joined team: %s");
         entry("command.otherworldinn.team.not_in_team")
                 .zh("你不在一个队伍中！")
                 .en("You are not in a team!");
-        entry("command.otherworldinn.team.left")
-                .zh("已离开队伍。")
-                .en("Left the team.");
+        entry("command.otherworldinn.team.left").zh("已离开队伍。").en("Left the team.");
         entry("command.otherworldinn.team.not_leader")
                 .zh("只有队长可以执行此操作！")
                 .en("Only the leader can perform this action!");
@@ -98,18 +72,14 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("command.otherworldinn.team.kick_self")
                 .zh("你不能踢出你自己！请使用离开命令。")
                 .en("You cannot kick yourself! Use leave command.");
-        entry("command.otherworldinn.team.kicked")
-                .zh("已将 %s 踢出队伍。")
-                .en("Kicked %s from the team.");
+        entry("command.otherworldinn.team.kicked").zh("已将 %s 踢出队伍。").en("Kicked %s from the team.");
         entry("command.otherworldinn.team.you_were_kicked")
                 .zh("你已被踢出队伍。")
                 .en("You were kicked from the team.");
         entry("command.otherworldinn.team.transferred")
                 .zh("队长职位已移交给 %s")
                 .en("Transferred leadership to %s");
-        entry("command.otherworldinn.team.renamed")
-                .zh("队伍已重命名为：%s")
-                .en("Renamed team to: %s");
+        entry("command.otherworldinn.team.renamed").zh("队伍已重命名为：%s").en("Renamed team to: %s");
         entry("command.otherworldinn.team.teleport_set")
                 .zh("队伍传送功能已设置为：%s")
                 .en("Team teleport capability set to: %s");
@@ -142,7 +112,8 @@ public class ModLanguageProvider extends LanguageProvider {
 
         entry("message.otherworldinn.reset.warning")
                 .zh("§c[注意] §e外部维度还有%d分钟重置，请尽快回到城镇")
-                .en("§c[Notice] §eExternal dimensions will reset in %d minutes! Please return to Town ASAP.");
+                .en(
+                        "§c[Notice] §eExternal dimensions will reset in %d minutes! Please return to Town ASAP.");
         entry("message.otherworldinn.reset.start")
                 .zh("§c[警告] 外部维度重置中，请暂时不要离开城镇")
                 .en("§c[WARNING] External dimensions resetting... Please do not leave Town.");
@@ -227,9 +198,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.room_register.remove_success_with_reason")
                 .zh("%s号房间已被移除。原因：%s")
                 .en("Room %s has been removed. Reason: %s");
-        entry("message.otherworldinn.room_register.manual_removal")
-                .zh("手动移除")
-                .en("Manual removal");
+        entry("message.otherworldinn.room_register.manual_removal").zh("手动移除").en("Manual removal");
         entry("message.otherworldinn.room_register.validation.too_crowded")
                 .zh("房间过于拥挤")
                 .en("Room is too crowded!");
@@ -237,25 +206,15 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.room_register.overlay.delete_room")
                 .zh("删除房间")
                 .en("Delete Room");
-        entry("message.otherworldinn.room_register.overlay.add_room")
-                .zh("添加房间")
-                .en("Add Room");
-        entry("message.otherworldinn.room_register.overlay.show_room")
-                .zh("显示房间")
-                .en("Show Rooms");
+        entry("message.otherworldinn.room_register.overlay.add_room").zh("添加房间").en("Add Room");
+        entry("message.otherworldinn.room_register.overlay.show_room").zh("显示房间").en("Show Rooms");
 
         // 待办事项
-        entry("todo.otherworldinn.room_cleaning")
-                .zh("%s 号房间需要打扫")
-                .en("Room %s needs cleaning");
-        entry("todo.otherworldinn.guest_waiting")
-                .zh("%s 正在等待办理入住")
-                .en("%s is waiting to check in");
+        entry("todo.otherworldinn.room_cleaning").zh("%s 号房间需要打扫").en("Room %s needs cleaning");
+        entry("todo.otherworldinn.guest_waiting").zh("%s 正在等待办理入住").en("%s is waiting to check in");
 
         // 生物群系
-        entry("biome.otherworldinn.town")
-                .zh("城镇")
-                .en("Town");
+        entry("biome.otherworldinn.town").zh("城镇").en("Town");
 
         // 家具属性
         entry("tooltip.otherworldinn.furniture.comfort")
@@ -269,18 +228,12 @@ public class ModLanguageProvider extends LanguageProvider {
                 .en("§f\uE004§rHumidity: %s");
 
         // 地契
-        entry("message.otherworldinn.land_deed.pos1_set")
-                .zh("位置1已设置：%s")
-                .en("Position 1 set: %s");
+        entry("message.otherworldinn.land_deed.pos1_set").zh("位置1已设置：%s").en("Position 1 set: %s");
         entry("message.otherworldinn.land_deed.success")
                 .zh("旅社区域扩展成功！")
                 .en("Inn area expanded successfully!");
-        entry("message.otherworldinn.land_deed.overlay.set_pos1")
-                .zh("设置第一点")
-                .en("Set 1st Corner");
-        entry("message.otherworldinn.land_deed.overlay.set_pos2")
-                .zh("设置第二点")
-                .en("Set 2nd Corner");
+        entry("message.otherworldinn.land_deed.overlay.set_pos1").zh("设置第一点").en("Set 1st Corner");
+        entry("message.otherworldinn.land_deed.overlay.set_pos2").zh("设置第二点").en("Set 2nd Corner");
         entry("message.otherworldinn.land_deed.overlay.set_pos2_with_cost")
                 .zh("设置第二点 (预计花费: §f\uE001§r %d)")
                 .en("Set 2nd Corner (Est. Cost: §f\uE001§r %d)");
@@ -289,7 +242,8 @@ public class ModLanguageProvider extends LanguageProvider {
                 .en("Area selected successfully (Est. Cost: §f\uE001§r %d)");
         entry("message.otherworldinn.land_deed.pos2_set_with_cost_fail")
                 .zh("余额不足以扩展当前选定的范围！需要 §f\uE001§r %d，当前 §f\uE001§r %d")
-                .en("Insufficient balance to expand the selected area! Need §f\uE001§r %d, have §f\uE001§r %d");
+                .en(
+                        "Insufficient balance to expand the selected area! Need §f\uE001§r %d, have §f\uE001§r %d");
         entry("message.otherworldinn.land_deed.fail_no_money")
                 .zh("余额不足！需要 §f\uE001§r %d，当前 §f\uE001§r %d")
                 .en("Expansion failed: Not enough balance! Need §f\uE001§r %d, have §f\uE001§r %d");
@@ -302,38 +256,20 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.land_deed.selection_cleared")
                 .zh("已取消选定范围。")
                 .en("Selection cleared.");
-        entry("message.otherworldinn.land_deed.overlay.cancel")
-                .zh("取消选定")
-                .en("Cancel Selection");
+        entry("message.otherworldinn.land_deed.overlay.cancel").zh("取消选定").en("Cancel Selection");
 
         // 房间钥匙
-        entry("item.otherworldinn.room_key.bound")
-                .zh("%d号房间钥匙")
-                .en("Room %d Key");
+        entry("item.otherworldinn.room_key.bound").zh("%d号房间钥匙").en("Room %d Key");
         entry("message.otherworldinn.room_key.bound")
                 .zh("成功绑定到 %d 号房间")
                 .en("Successfully bound to Room %d");
-        entry("message.otherworldinn.room_key.unbound")
-                .zh("已解除绑定")
-                .en("Unbound from room");
-        entry("message.otherworldinn.room_key.no_room")
-                .zh("此处没有房间")
-                .en("No room here");
-        entry("message.otherworldinn.room_key.overlay.bind")
-                .zh("绑定房间")
-                .en("Bind Room");
-        entry("message.otherworldinn.room_key.overlay.unbind")
-                .zh("解除绑定")
-                .en("Unbind Room");
-        entry("tooltip.otherworldinn.room_key.room_id")
-                .zh("房间号: %d")
-                .en("Room ID: %d");
-        entry("tooltip.otherworldinn.room_key.pos")
-                .zh("位置: %s -> %s")
-                .en("Pos: %s -> %s");
-        entry("tooltip.otherworldinn.room_key.beds")
-                .zh("床位: %d/%d")
-                .en("Beds: %d/%d");
+        entry("message.otherworldinn.room_key.unbound").zh("已解除绑定").en("Unbound from room");
+        entry("message.otherworldinn.room_key.no_room").zh("此处没有房间").en("No room here");
+        entry("message.otherworldinn.room_key.overlay.bind").zh("绑定房间").en("Bind Room");
+        entry("message.otherworldinn.room_key.overlay.unbind").zh("解除绑定").en("Unbind Room");
+        entry("tooltip.otherworldinn.room_key.room_id").zh("房间号: %d").en("Room ID: %d");
+        entry("tooltip.otherworldinn.room_key.pos").zh("位置: %s -> %s").en("Pos: %s -> %s");
+        entry("tooltip.otherworldinn.room_key.beds").zh("床位: %d/%d").en("Beds: %d/%d");
         entry("tooltip.otherworldinn.room_key.price")
                 .zh("床位价格: §f\uE001§r%d")
                 .en("Price: §f\uE001§r%d");
@@ -353,9 +289,7 @@ public class ModLanguageProvider extends LanguageProvider {
                 .en("Error: Guest is not within any Inn area!");
 
         // Todo
-        entry("message.otherworldinn.todo.new_task")
-                .zh("有新的事项待处理: %s")
-                .en("New Task: %s");
+        entry("message.otherworldinn.todo.new_task").zh("有新的事项待处理: %s").en("New Task: %s");
         entry("message.otherworldinn.room_key.checkin_fail_no_room")
                 .zh("房间不存在或已被拆除")
                 .en("Room does not exist or has been demolished.");
@@ -370,18 +304,12 @@ public class ModLanguageProvider extends LanguageProvider {
                 .en("Arrange Check-in (Consumes Key)");
 
         // 铃铛
-        entry("message.otherworldinn.desk_bell.status.open")
-                .zh("旅社营业中")
-                .en("The Inn is OPEN");
-        entry("message.otherworldinn.desk_bell.status.closed")
-                .zh("旅社已打烊")
-                .en("The Inn is CLOSED");
+        entry("message.otherworldinn.desk_bell.status.open").zh("旅社营业中").en("The Inn is OPEN");
+        entry("message.otherworldinn.desk_bell.status.closed").zh("旅社已打烊").en("The Inn is CLOSED");
         entry("message.otherworldinn.desk_bell.status.edit_mode")
                 .zh("旅社装修中")
                 .en("The Inn is under RENOVATION");
-        entry("message.otherworldinn.store.overlay.open")
-                .zh("打开商店")
-                .en("Open Store");
+        entry("message.otherworldinn.store.overlay.open").zh("打开商店").en("Open Store");
 
         // 旅社钥匙
         entry("message.otherworldinn.inn_key.no_permission")
@@ -402,9 +330,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.inn_key.closed")
                 .zh("旅社已歇业，快去休息吧...")
                 .en("The Inn is now CLOSED. Time to rest...");
-        entry("message.otherworldinn.inn_key.status")
-                .zh("当前状态: %s")
-                .en("Current State: %s");
+        entry("message.otherworldinn.inn_key.status").zh("当前状态: %s").en("Current State: %s");
         entry("message.otherworldinn.space_sphere.no_team")
                 .zh("你当前不在任何队伍中")
                 .en("You are not in any team");
@@ -419,15 +345,11 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.bed_sheet.overlay.replace")
                 .zh("替换脏乱床单")
                 .en("Replace Messy Sheet");
-        entry("message.otherworldinn.messy_bed_sheet.overlay.wash")
-                .zh("清洗床单")
-                .en("Wash Sheet");
-  
+        entry("message.otherworldinn.messy_bed_sheet.overlay.wash").zh("清洗床单").en("Wash Sheet");
+
         // 旅客姓名
-        entry("guest.name.format")
-                .zh("%s·%s")
-                .en("%s %s");
-        
+        entry("guest.name.format").zh("%s·%s").en("%s %s");
+
         // First Names
         entry("guest.name.first.1").zh("亚瑟").en("Arthur");
         entry("guest.name.first.2").zh("贝阿特丽丝").en("Beatrice");
@@ -449,7 +371,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("guest.name.first.18").zh("罗伊纳").en("Rowena");
         entry("guest.name.first.19").zh("塞拉斯").en("Silas");
         entry("guest.name.first.20").zh("塔莉亚").en("Thalia");
-        
+
         // Last Names
         entry("guest.name.last.1").zh("阿什福德").en("Ashford");
         entry("guest.name.last.2").zh("布莱克伍德").en("Blackwood");
@@ -473,35 +395,19 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("guest.name.last.20").zh("温特").en("Winter");
 
         // 实体
-        entry(ModEntities.ORDINARY_GUEST.get())
-                .zh("普通旅客")
-                .en("Ordinary Guest");
-        entry(ModEntities.BLACKSMITH.get())
-                .zh("铁匠")
-                .en("Blacksmith");
+        entry(ModEntities.ORDINARY_GUEST.get()).zh("普通旅客").en("Ordinary Guest");
+        entry(ModEntities.BLACKSMITH.get()).zh("铁匠").en("Blacksmith");
 
         // 商店 GUI
-        entry("gui.otherworldinn.store.confirm")
-                .zh("确定")
-                .en("Confirm");
-        entry("gui.otherworldinn.store.purchase")
-                .zh("§f\uE001§r%s购买")
-                .en("§f\uE001§r%sBuy");
-        entry("gui.otherworldinn.store.price")
-                .zh("价格: §f\uE001§r%s")
-                .en("Price: §f\uE001§r%s");
-        entry("gui.otherworldinn.store.stock")
-                .zh("库存: %s/%s")
-                .en("Stock: %s/%s");
-        entry("gui.otherworldinn.store.stock.infinite")
-                .zh("库存: ∞")
-                .en("Stock: ∞");
+        entry("gui.otherworldinn.store.confirm").zh("确定").en("Confirm");
+        entry("gui.otherworldinn.store.purchase").zh("§f\uE001§r%s购买").en("§f\uE001§r%sBuy");
+        entry("gui.otherworldinn.store.price").zh("价格: §f\uE001§r%s").en("Price: §f\uE001§r%s");
+        entry("gui.otherworldinn.store.stock").zh("库存: %s/%s").en("Stock: %s/%s");
+        entry("gui.otherworldinn.store.stock.infinite").zh("库存: ∞").en("Stock: ∞");
         entry("gui.otherworldinn.store.favor_unlock")
                 .zh("%s级好感度解锁")
                 .en("Unlocks at Favor Level %s");
-        entry("gui.otherworldinn.store.favor.level")
-                .zh("好感度: %s")
-                .en("Favor Level: %s");
+        entry("gui.otherworldinn.store.favor.level").zh("好感度: %s").en("Favor Level: %s");
         entry("gui.otherworldinn.store.favor.progress")
                 .zh("进度: §f\uE001§r%s/%s")
                 .en("Progress: §f\uE001§r%s/%s");
@@ -511,7 +417,8 @@ public class ModLanguageProvider extends LanguageProvider {
         boolean isZh = "zh_cn".equals(locale);
 
         // 生成方块语言键
-        for (Map.Entry<DeferredBlock<?>, BlockDataGenInfo> entry : ModBlocks.BLOCK_INFOS.entrySet()) {
+        for (Map.Entry<DeferredBlock<?>, BlockDataGenInfo> entry :
+                ModBlocks.BLOCK_INFOS.entrySet()) {
             DeferredBlock<?> block = entry.getKey();
             BlockDataGenInfo info = entry.getValue();
 
@@ -546,7 +453,7 @@ public class ModLanguageProvider extends LanguageProvider {
     private TranslationBuilder entry(String key) {
         return new TranslationBuilder(key);
     }
-    
+
     private TranslationBuilder entry(EntityType<?> entity) {
         return new TranslationBuilder(entity.getDescriptionId());
     }

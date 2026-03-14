@@ -3,31 +3,26 @@ package com.otherworldinn.entity.store;
 import com.otherworldinn.OtherworldInn;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-
-import net.minecraft.util.RandomSource;
-
 /**
  * 铁匠实体
- * <p>
- * 出售粗矿和矿锭
- * 也会随机刷新一些带有损耗或附魔的铁制工具。
- * </p>
+ *
+ * <p>出售粗矿和矿锭 也会随机刷新一些带有损耗或附魔的铁制工具。
  */
 public class BlacksmithEntity extends StoreEntity {
 
@@ -42,57 +37,76 @@ public class BlacksmithEntity extends StoreEntity {
         this.setDropChance(EquipmentSlot.OFFHAND, 0.0F);
         // 初始化商品列表
         if (!level.isClientSide) {
-             this.initDefaultStoreItems();
-             
-             // 初始化工具池 (如果为空)
-             if (TOOL_POOL.isEmpty()) {
-                 initToolPool();
-             }
+            this.initDefaultStoreItems();
+
+            // 初始化工具池 (如果为空)
+            if (TOOL_POOL.isEmpty()) {
+                initToolPool();
+            }
         }
     }
 
     private void initToolPool() {
         // 定义一个通用的随机耐久和附魔修改器
-        Consumer<ItemStack> randomToolModifier = (stack) -> {
-            RandomSource random = this.getRandom();
-            // 随机耐久损耗 (10% - 50%)
-            int maxDamage = stack.getMaxDamage();
-            int damage = (int) (maxDamage * (0.1f + random.nextFloat() * 0.4f));
-            stack.setDamageValue(damage);
-            
-            // 随机附魔 (低级)
-            if (random.nextBoolean()) {
-                this.registryAccess().lookup(Registries.ENCHANTMENT)
-                    .flatMap(reg -> reg.get(Enchantments.EFFICIENCY))
-                    .ifPresent(enchantment -> stack.enchant(enchantment, 1 + random.nextInt(2)));
-            }
-            if (random.nextFloat() < 0.3f) {
-                this.registryAccess().lookup(Registries.ENCHANTMENT)
-                    .flatMap(reg -> reg.get(Enchantments.UNBREAKING))
-                    .ifPresent(enchantment -> stack.enchant(enchantment, 1));
-            }
-        };
+        Consumer<ItemStack> randomToolModifier =
+                (stack) -> {
+                    RandomSource random = this.getRandom();
+                    // 随机耐久损耗 (10% - 50%)
+                    int maxDamage = stack.getMaxDamage();
+                    int damage = (int) (maxDamage * (0.1f + random.nextFloat() * 0.4f));
+                    stack.setDamageValue(damage);
 
-        Consumer<ItemStack> randomArmorModifier = (stack) -> {
-            RandomSource random = this.getRandom();
-            int maxDamage = stack.getMaxDamage();
-            int damage = (int) (maxDamage * (0.05f + random.nextFloat() * 0.4f));
-            stack.setDamageValue(damage);
+                    // 随机附魔 (低级)
+                    if (random.nextBoolean()) {
+                        this.registryAccess()
+                                .lookup(Registries.ENCHANTMENT)
+                                .flatMap(reg -> reg.get(Enchantments.EFFICIENCY))
+                                .ifPresent(
+                                        enchantment ->
+                                                stack.enchant(enchantment, 1 + random.nextInt(2)));
+                    }
+                    if (random.nextFloat() < 0.3f) {
+                        this.registryAccess()
+                                .lookup(Registries.ENCHANTMENT)
+                                .flatMap(reg -> reg.get(Enchantments.UNBREAKING))
+                                .ifPresent(enchantment -> stack.enchant(enchantment, 1));
+                    }
+                };
 
-            this.registryAccess().lookup(Registries.ENCHANTMENT).ifPresent(registry -> {
-                if (random.nextFloat() < 0.7f) {
-                    var primary = switch (random.nextInt(3)) {
-                        case 0 -> Enchantments.PROTECTION;
-                        case 1 -> Enchantments.PROJECTILE_PROTECTION;
-                        default -> Enchantments.BLAST_PROTECTION;
-                    };
-                    registry.get(primary).ifPresent(enchantment -> stack.enchant(enchantment, 1 + random.nextInt(2)));
-                }
-                if (random.nextFloat() < 0.25f) {
-                    registry.get(Enchantments.UNBREAKING).ifPresent(enchantment -> stack.enchant(enchantment, 1));
-                }
-            });
-        };
+        Consumer<ItemStack> randomArmorModifier =
+                (stack) -> {
+                    RandomSource random = this.getRandom();
+                    int maxDamage = stack.getMaxDamage();
+                    int damage = (int) (maxDamage * (0.05f + random.nextFloat() * 0.4f));
+                    stack.setDamageValue(damage);
+
+                    this.registryAccess()
+                            .lookup(Registries.ENCHANTMENT)
+                            .ifPresent(
+                                    registry -> {
+                                        if (random.nextFloat() < 0.7f) {
+                                            var primary =
+                                                    switch (random.nextInt(3)) {
+                                                        case 0 -> Enchantments.PROTECTION;
+                                                        case 1 ->
+                                                                Enchantments.PROJECTILE_PROTECTION;
+                                                        default -> Enchantments.BLAST_PROTECTION;
+                                                    };
+                                            registry.get(primary)
+                                                    .ifPresent(
+                                                            enchantment ->
+                                                                    stack.enchant(
+                                                                            enchantment,
+                                                                            1 + random.nextInt(2)));
+                                        }
+                                        if (random.nextFloat() < 0.25f) {
+                                            registry.get(Enchantments.UNBREAKING)
+                                                    .ifPresent(
+                                                            enchantment ->
+                                                                    stack.enchant(enchantment, 1));
+                                        }
+                                    });
+                };
 
         TOOL_POOL.add(new RandomItemData(Items.IRON_PICKAXE, 25, 35, 1, 1, 10, randomToolModifier));
         TOOL_POOL.add(new RandomItemData(Items.IRON_AXE, 20, 30, 1, 1, 10, randomToolModifier));
@@ -100,28 +114,38 @@ public class BlacksmithEntity extends StoreEntity {
         TOOL_POOL.add(new RandomItemData(Items.IRON_SWORD, 15, 25, 1, 1, 10, randomToolModifier));
         TOOL_POOL.add(new RandomItemData(Items.IRON_HOE, 10, 20, 1, 1, 5, randomToolModifier));
 
-        TOOL_POOL.add(new RandomItemData(Items.GOLDEN_PICKAXE, 20, 30, 1, 1, 5, randomToolModifier));
+        TOOL_POOL.add(
+                new RandomItemData(Items.GOLDEN_PICKAXE, 20, 30, 1, 1, 5, randomToolModifier));
         TOOL_POOL.add(new RandomItemData(Items.GOLDEN_SWORD, 20, 30, 1, 1, 5, randomToolModifier));
 
         TOOL_POOL.add(new RandomItemData(Items.IRON_HELMET, 28, 40, 1, 1, 8, randomArmorModifier));
-        TOOL_POOL.add(new RandomItemData(Items.IRON_CHESTPLATE, 40, 58, 1, 1, 6, randomArmorModifier));
-        TOOL_POOL.add(new RandomItemData(Items.IRON_LEGGINGS, 36, 52, 1, 1, 6, randomArmorModifier));
+        TOOL_POOL.add(
+                new RandomItemData(Items.IRON_CHESTPLATE, 40, 58, 1, 1, 6, randomArmorModifier));
+        TOOL_POOL.add(
+                new RandomItemData(Items.IRON_LEGGINGS, 36, 52, 1, 1, 6, randomArmorModifier));
         TOOL_POOL.add(new RandomItemData(Items.IRON_BOOTS, 24, 36, 1, 1, 8, randomArmorModifier));
-        TOOL_POOL.add(new RandomItemData(Items.CHAINMAIL_HELMET, 18, 28, 1, 1, 8, randomArmorModifier));
-        TOOL_POOL.add(new RandomItemData(Items.CHAINMAIL_CHESTPLATE, 30, 44, 1, 1, 6, randomArmorModifier));
-        TOOL_POOL.add(new RandomItemData(Items.CHAINMAIL_LEGGINGS, 26, 38, 1, 1, 6, randomArmorModifier));
-        TOOL_POOL.add(new RandomItemData(Items.CHAINMAIL_BOOTS, 16, 24, 1, 1, 8, randomArmorModifier));
+        TOOL_POOL.add(
+                new RandomItemData(Items.CHAINMAIL_HELMET, 18, 28, 1, 1, 8, randomArmorModifier));
+        TOOL_POOL.add(
+                new RandomItemData(
+                        Items.CHAINMAIL_CHESTPLATE, 30, 44, 1, 1, 6, randomArmorModifier));
+        TOOL_POOL.add(
+                new RandomItemData(Items.CHAINMAIL_LEGGINGS, 26, 38, 1, 1, 6, randomArmorModifier));
+        TOOL_POOL.add(
+                new RandomItemData(Items.CHAINMAIL_BOOTS, 16, 24, 1, 1, 8, randomArmorModifier));
     }
 
     @Override
     public void tick() {
         super.tick();
         // 初始生成随机商品
-        if (!this.level().isClientSide && this.storeItems.size() == this.fixedItemsCount && !TOOL_POOL.isEmpty()) {
-             this.refreshRandomItems();
+        if (!this.level().isClientSide
+                && this.storeItems.size() == this.fixedItemsCount
+                && !TOOL_POOL.isEmpty()) {
+            this.refreshRandomItems();
         }
     }
-    
+
     @Override
     protected void refreshRandomItems() {
         super.refreshRandomItems();
@@ -133,7 +157,7 @@ public class BlacksmithEntity extends StoreEntity {
     }
 
     private void initDefaultStoreItems() {
-        //原矿
+        // 原矿
         this.addStoreItem(new ItemStack(Items.IRON_ORE), 8, 16);
         this.addStoreItem(new ItemStack(AllBlocks.ZINC_ORE.get()), 6, 16);
         this.addStoreItem(new ItemStack(Items.COPPER_ORE), 6, 16);
@@ -145,7 +169,7 @@ public class BlacksmithEntity extends StoreEntity {
         this.addStoreItem(new ItemStack(Items.RAW_COPPER), 3, 64);
         this.addStoreItem(new ItemStack(Items.RAW_GOLD), 8, 32);
 
-        //粉碎矿
+        // 粉碎矿
         this.addStoreItem(new ItemStack(AllItems.CRUSHED_IRON.get()), 5, 32);
         this.addStoreItem(new ItemStack(AllItems.CRUSHED_ZINC.get()), 4, 32);
         this.addStoreItem(new ItemStack(AllItems.CRUSHED_COPPER.get()), 3, 32);
@@ -157,7 +181,7 @@ public class BlacksmithEntity extends StoreEntity {
         this.addStoreItem(new ItemStack(Items.COPPER_INGOT), 6, 32);
         this.addStoreItem(new ItemStack(Items.GOLD_INGOT), 15, 16);
 
-        //好感度物品
+        // 好感度物品
         this.addFavorStoreItem(2, new ItemStack(AllItems.ANDESITE_ALLOY.get()), 4, 32);
         this.addFavorStoreItem(4, new ItemStack(AllItems.BRASS_INGOT.get()), 10, 32);
         this.addFavorStoreItem(6, new ItemStack(AllItems.POLISHED_ROSE_QUARTZ.get()), 12, 32);
@@ -166,7 +190,8 @@ public class BlacksmithEntity extends StoreEntity {
 
     @Override
     public ResourceLocation getStoreBackground() {
-        return ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "textures/gui/store/blacksmith.png");
+        return ResourceLocation.fromNamespaceAndPath(
+                OtherworldInn.MODID, "textures/gui/store/blacksmith.png");
     }
 
     @Override

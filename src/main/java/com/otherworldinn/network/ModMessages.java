@@ -15,8 +15,8 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 /**
  * 网络消息注册中心
- * <p>
- * 负责注册和发送自定义数据包。
+ *
+ * <p>负责注册和发送自定义数据包。
  */
 @EventBusSubscriber(modid = OtherworldInn.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class ModMessages {
@@ -24,32 +24,24 @@ public class ModMessages {
     @SubscribeEvent
     public static void register(RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1");
-        
+
         // 注册 S2C 数据包
         registrar.playToClient(
-                S2CTeamSyncPacket.TYPE,
-                S2CTeamSyncPacket.STREAM_CODEC,
-                S2CTeamSyncPacket::handle
-        );
-        
+                S2CTeamSyncPacket.TYPE, S2CTeamSyncPacket.STREAM_CODEC, S2CTeamSyncPacket::handle);
+
         // 注册 C2S 数据包
         registrar.playToServer(
-                C2STeleportPacket.TYPE,
-                C2STeleportPacket.STREAM_CODEC,
-                C2STeleportPacket::handle
-        );
+                C2STeleportPacket.TYPE, C2STeleportPacket.STREAM_CODEC, C2STeleportPacket::handle);
 
         registrar.playToServer(
                 C2STeleportOverworldPacket.TYPE,
                 C2STeleportOverworldPacket.STREAM_CODEC,
-                C2STeleportOverworldPacket::handle
-        );
+                C2STeleportOverworldPacket::handle);
 
         registrar.playToServer(
                 C2SStorePurchasePacket.TYPE,
                 C2SStorePurchasePacket.STREAM_CODEC,
-                C2SStorePurchasePacket::handle
-        );
+                C2SStorePurchasePacket::handle);
     }
 
     /**
@@ -61,7 +53,7 @@ public class ModMessages {
     public static void sendToPlayer(CustomPacketPayload packet, ServerPlayer player) {
         PacketDistributor.sendToPlayer(player, packet);
     }
-    
+
     /**
      * 发送数据包给服务端 (Client -> Server)
      *

@@ -2,26 +2,26 @@ package com.otherworldinn.datagen;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.init.ModItems;
-
+import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.ItemTagsProvider;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.concurrent.CompletableFuture;
-
 /**
  * 物品标签生成器
- * <p>
- * 负责生成 tags/item JSON 文件。
+ *
+ * <p>负责生成 tags/item JSON 文件。
  */
 public class ModItemTagProvider extends ItemTagsProvider {
-    public ModItemTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, CompletableFuture<TagLookup<Block>> blockTags, @Nullable ExistingFileHelper existingFileHelper) {
+    public ModItemTagProvider(
+            PackOutput output,
+            CompletableFuture<HolderLookup.Provider> lookupProvider,
+            CompletableFuture<TagLookup<Block>> blockTags,
+            @Nullable ExistingFileHelper existingFileHelper) {
         super(output, lookupProvider, blockTags, OtherworldInn.MODID, existingFileHelper);
     }
 
@@ -33,8 +33,7 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(Items.FLINT_AND_STEEL)
                 .add(Items.LAVA_BUCKET)
                 .add(Items.END_CRYSTAL)
-                .add(Items.FIRE_CHARGE)
-                ;
+                .add(Items.FIRE_CHARGE);
 
         // 定义“仅城镇维度可用”标签
         tag(OtherworldInn.ONLY_IN_TOWN)

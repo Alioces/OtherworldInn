@@ -5,17 +5,15 @@ import net.minecraft.world.entity.Entity;
 
 /**
  * 实体工具类
- * <p>
- * 提供实体的通用辅助方法。
- * </p>
+ *
+ * <p>提供实体的通用辅助方法。
  */
 public class EntityUtils {
 
     /**
      * 安排实体消失
-     * <p>
-     * 随机等待 3-5 秒 (60-100 ticks)，随后移除自身并发出生物死亡的粒子效果。
-     * </p>
+     *
+     * <p>随机等待 3-5 秒 (60-100 ticks)，随后移除自身并发出生物死亡的粒子效果。
      *
      * @param entity 目标实体
      */

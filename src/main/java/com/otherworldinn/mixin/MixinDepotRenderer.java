@@ -14,7 +14,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinDepotRenderer {
 
     @Inject(method = "renderSafe", at = @At("TAIL"), remap = false)
-    private void injectRenderSafe(DepotBlockEntity blockEntity, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int light, int overlay, CallbackInfo ci) {
-        DisplayPriceRenderer.render(blockEntity, partialTicks, poseStack, bufferSource, light, overlay);
+    private void injectRenderSafe(
+            DepotBlockEntity blockEntity,
+            float partialTicks,
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            int light,
+            int overlay,
+            CallbackInfo ci) {
+        DisplayPriceRenderer.render(
+                blockEntity, partialTicks, poseStack, bufferSource, light, overlay);
     }
 }

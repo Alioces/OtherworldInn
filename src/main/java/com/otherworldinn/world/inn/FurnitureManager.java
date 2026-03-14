@@ -2,8 +2,9 @@ package com.otherworldinn.world.inn;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ModColors;
-
-import net.minecraft.ChatFormatting;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -16,16 +17,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
 /**
  * 家具管理器
- * <p>
- * 管理所有家具的属性配置，包括舒适度、光照度和湿度。
- * 支持为特定方块或方块标签配置属性。
- * </p>
+ *
+ * <p>管理所有家具的属性配置，包括舒适度、光照度和湿度。 支持为特定方块或方块标签配置属性。
  */
 public class FurnitureManager {
 
@@ -36,13 +31,14 @@ public class FurnitureManager {
         initDefaultFurniture();
     }
 
-    /**
-     * 初始化默认家具配置
-     */
+    /** 初始化默认家具配置 */
     private static void initDefaultFurniture() {
         // 配置原版床：舒适度 +15
         FurnitureStats bedStats = new FurnitureStats(15, 0, 0);
-        TagKey<Block> bedsTag = TagKey.create(BuiltInRegistries.BLOCK.key(), ResourceLocation.withDefaultNamespace("beds"));
+        TagKey<Block> bedsTag =
+                TagKey.create(
+                        BuiltInRegistries.BLOCK.key(),
+                        ResourceLocation.withDefaultNamespace("beds"));
         registerTag(bedsTag, bedStats);
     }
 
@@ -59,7 +55,7 @@ public class FurnitureManager {
     /**
      * 为指定方块标签注册家具属性
      *
-     * @param tag   目标方块标签
+     * @param tag 目标方块标签
      * @param stats 家具属性
      */
     public static void registerTag(TagKey<Block> tag, FurnitureStats stats) {
@@ -68,9 +64,8 @@ public class FurnitureManager {
 
     /**
      * 获取指定方块的家具属性
-     * <p>
-     * 优先匹配方块本身的配置，其次匹配标签配置。
-     * </p>
+     *
+     * <p>优先匹配方块本身的配置，其次匹配标签配置。
      *
      * @param block 目标方块
      * @return 对应的家具属性，如果未配置则返回空
@@ -95,20 +90,16 @@ public class FurnitureManager {
 
     /**
      * 家具属性记录类
-     * <p>
-     * 包含舒适度、光照度和湿度三个维度的数值。
-     * </p>
      *
-     * @param comfort  舒适度 (-20 ~ 20)
-     * @param light    光照度 (-20 ~ 20)
+     * <p>包含舒适度、光照度和湿度三个维度的数值。
+     *
+     * @param comfort 舒适度 (-20 ~ 20)
+     * @param light 光照度 (-20 ~ 20)
      * @param humidity 湿度 (-20 ~ 20)
      */
-    public record FurnitureStats(int comfort, int light, int humidity) {
-    }
+    public record FurnitureStats(int comfort, int light, int humidity) {}
 
-    /**
-     * 客户端事件处理器
-     */
+    /** 客户端事件处理器 */
     @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT)
     public static class ClientHandler {
         /**
@@ -121,17 +112,51 @@ public class FurnitureManager {
             ItemStack stack = event.getItemStack();
             if (stack.getItem() instanceof BlockItem blockItem) {
                 Block block = blockItem.getBlock();
-                getStats(block).ifPresent(stats -> {
-                    if (stats.comfort != 0) {
-                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.comfort", String.format("%+d", stats.comfort)).withStyle(style -> style.withColor(ModColors.COMFORT)));
-                    }
-                    if (stats.light != 0) {
-                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.light", String.format("%+d", stats.light)).withStyle(style -> style.withColor(ModColors.LIGHT)));
-                    }
-                    if (stats.humidity != 0) {
-                        event.getToolTip().add(Component.translatable("tooltip.otherworldinn.furniture.humidity", String.format("%+d", stats.humidity)).withStyle(style -> style.withColor(ModColors.HUMIDITY)));
-                    }
-                });
+                getStats(block)
+                        .ifPresent(
+                                stats -> {
+                                    if (stats.comfort != 0) {
+                                        event.getToolTip()
+                                                .add(
+                                                        Component.translatable(
+                                                                        "tooltip.otherworldinn.furniture.comfort",
+                                                                        String.format(
+                                                                                "%+d",
+                                                                                stats.comfort))
+                                                                .withStyle(
+                                                                        style ->
+                                                                                style.withColor(
+                                                                                        ModColors
+                                                                                                .COMFORT)));
+                                    }
+                                    if (stats.light != 0) {
+                                        event.getToolTip()
+                                                .add(
+                                                        Component.translatable(
+                                                                        "tooltip.otherworldinn.furniture.light",
+                                                                        String.format(
+                                                                                "%+d", stats.light))
+                                                                .withStyle(
+                                                                        style ->
+                                                                                style.withColor(
+                                                                                        ModColors
+                                                                                                .LIGHT)));
+                                    }
+                                    if (stats.humidity != 0) {
+                                        event.getToolTip()
+                                                .add(
+                                                        Component.translatable(
+                                                                        "tooltip.otherworldinn.furniture.humidity",
+                                                                        String.format(
+                                                                                "%+d",
+                                                                                stats.humidity))
+                                                                .withStyle(
+                                                                        style ->
+                                                                                style.withColor(
+                                                                                        ModColors
+                                                                                                .HUMIDITY)));
+                                    }
+                                });
             }
         }
     }

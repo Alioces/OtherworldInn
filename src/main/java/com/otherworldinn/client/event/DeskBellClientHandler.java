@@ -17,7 +17,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
-
 @EventBusSubscriber(value = Dist.CLIENT)
 public class DeskBellClientHandler {
 
@@ -25,17 +24,19 @@ public class DeskBellClientHandler {
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         Level level = event.getLevel();
         if (!level.isClientSide) return;
-        
+
         BlockPos pos = event.getPos();
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        
+
         if (blockEntity instanceof DeskBellBlockEntity) {
             Player player = event.getEntity();
             TeamData team = TeamManager.getInstance().getClientPlayerTeam();
-            
-            if (player.isShiftKeyDown()) {return;}
+
+            if (player.isShiftKeyDown()) {
+                return;
+            }
             if (team == null) return;
-            
+
             // 检查是否在旅社区域内
             boolean inside = false;
             for (TeamData.InnRegion region : team.getInnRegions()) {
@@ -49,25 +50,30 @@ public class DeskBellClientHandler {
             InnData.InnState state = team.getInnData().getState();
             MutableComponent message;
             int color;
-            
+
             switch (state) {
                 case OPEN:
                     message = Component.translatable("message.otherworldinn.desk_bell.status.open");
                     color = 0x00FF7F;
                     break;
                 case CLOSED:
-                    message = Component.translatable("message.otherworldinn.desk_bell.status.closed");
+                    message =
+                            Component.translatable("message.otherworldinn.desk_bell.status.closed");
                     color = 0xFF6A6A;
                     break;
                 case EDIT_MODE:
-                    message = Component.translatable("message.otherworldinn.desk_bell.status.edit_mode");
+                    message =
+                            Component.translatable(
+                                    "message.otherworldinn.desk_bell.status.edit_mode");
                     color = 0x1E90FF;
                     break;
                 default:
                     return;
             }
-            
-            Minecraft.getInstance().gui.setOverlayMessage(message.withStyle(Style.EMPTY.withColor(color)), false);
+
+            Minecraft.getInstance()
+                    .gui
+                    .setOverlayMessage(message.withStyle(Style.EMPTY.withColor(color)), false);
         }
     }
 }

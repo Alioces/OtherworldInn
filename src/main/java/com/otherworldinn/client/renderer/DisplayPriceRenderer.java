@@ -18,21 +18,38 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 
 public class DisplayPriceRenderer {
-    public static void render(DepotBlockEntity blockEntity, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int light, int overlay) {
+    public static void render(
+            DepotBlockEntity blockEntity,
+            float partialTicks,
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            int light,
+            int overlay) {
         renderPriceLabel(blockEntity, poseStack, bufferSource);
     }
 
-    public static void render(EjectorBlockEntity blockEntity, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int light, int overlay) {
+    public static void render(
+            EjectorBlockEntity blockEntity,
+            float partialTicks,
+            PoseStack poseStack,
+            MultiBufferSource bufferSource,
+            int light,
+            int overlay) {
         renderPriceLabel(blockEntity, poseStack, bufferSource);
     }
 
-    private static void renderPriceLabel(BlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource) {
+    private static void renderPriceLabel(
+            BlockEntity blockEntity, PoseStack poseStack, MultiBufferSource bufferSource) {
         Level level = blockEntity.getLevel();
-        if (level == null || !level.isClientSide || level.dimension() != TownDimensions.TOWN_LEVEL) {
+        if (level == null
+                || !level.isClientSide
+                || level.dimension() != TownDimensions.TOWN_LEVEL) {
             return;
         }
 
-        int unitPrice = getDisplayUnitPrice(level, blockEntity.getBlockPos(), blockEntity.getBlockState(), blockEntity);
+        int unitPrice =
+                getDisplayUnitPrice(
+                        level, blockEntity.getBlockPos(), blockEntity.getBlockState(), blockEntity);
         if (unitPrice <= 0) {
             return;
         }
@@ -50,12 +67,24 @@ public class DisplayPriceRenderer {
         poseStack.translate(0.5D, 1.5D, 0.5D);
         poseStack.mulPose(Axis.YP.rotationDegrees(-yaw));
         poseStack.scale(-0.025F, -0.025F, 0.025F);
-        mc.font.drawInBatch(text, -width / 2.0F, 0.0F, 0xFFFFFFFF, false, poseStack.last().pose(), bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
+        mc.font.drawInBatch(
+                text,
+                -width / 2.0F,
+                0.0F,
+                0xFFFFFFFF,
+                false,
+                poseStack.last().pose(),
+                bufferSource,
+                net.minecraft.client.gui.Font.DisplayMode.NORMAL,
+                0,
+                LightTexture.FULL_BRIGHT);
         poseStack.popPose();
     }
 
-    private static int getDisplayUnitPrice(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
-        IItemHandler itemHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, state, blockEntity, null);
+    private static int getDisplayUnitPrice(
+            Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
+        IItemHandler itemHandler =
+                level.getCapability(Capabilities.ItemHandler.BLOCK, pos, state, blockEntity, null);
         if (itemHandler == null) {
             return 0;
         }

@@ -3,6 +3,9 @@ package com.otherworldinn.datagen;
 import com.otherworldinn.foundation.BlockDataGenInfo;
 import com.otherworldinn.foundation.LootConfig;
 import com.otherworldinn.init.ModBlocks;
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -22,14 +25,7 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 import net.neoforged.neoforge.registries.DeferredBlock;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-/**
- * 方块战利品表生成器
- * 负责生成方块被破坏时的掉落物
- */
+/** 方块战利品表生成器 负责生成方块被破坏时的掉落物 */
 public class ModBlockLootSubProvider extends BlockLootSubProvider {
     private final HolderLookup.Provider registries;
 
@@ -40,7 +36,8 @@ public class ModBlockLootSubProvider extends BlockLootSubProvider {
 
     @Override
     protected void generate() {
-        for (Map.Entry<DeferredBlock<?>, BlockDataGenInfo> entry : ModBlocks.BLOCK_INFOS.entrySet()) {
+        for (Map.Entry<DeferredBlock<?>, BlockDataGenInfo> entry :
+                ModBlocks.BLOCK_INFOS.entrySet()) {
             DeferredBlock<?> block = entry.getKey();
 
             if (block.get().getLootTable() == BuiltInLootTables.EMPTY) {
@@ -58,37 +55,55 @@ public class ModBlockLootSubProvider extends BlockLootSubProvider {
 
                     if (lootConfig.silkTouchDropSelf()) {
                         // 创建精准采集条目：掉落方块自身
-                        LootPool.Builder silkTouchPool = LootPool.lootPool()
-                                .when(hasSilkTouch())
-                                .setRolls(ConstantValue.exactly(1.0F))
-                                .add(LootItem.lootTableItem(block.get()));
-                         poolBuilder.withPool(silkTouchPool);
+                        LootPool.Builder silkTouchPool =
+                                LootPool.lootPool()
+                                        .when(hasSilkTouch())
+                                        .setRolls(ConstantValue.exactly(1.0F))
+                                        .add(LootItem.lootTableItem(block.get()));
+                        poolBuilder.withPool(silkTouchPool);
                     }
 
                     // 创建其他掉落物条目
                     for (LootConfig.LootEntry lootEntry : lootConfig.entries()) {
-                         Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(lootEntry.itemId()));
-                         
-                         LootPool.Builder entryPool = LootPool.lootPool()
-                                 .setRolls(ConstantValue.exactly(1.0F));
-                         
-                         // 如果启用了精准采集掉落自身，则这些自定义掉落物仅在未使用精准采集时掉落
-                         if (lootConfig.silkTouchDropSelf()) {
-                             entryPool.when(doesNotHaveSilkTouch());
-                         }
-                         
-                         // 添加概率条件
-                         if (lootEntry.chance() < 1.0f) {
-                             entryPool.when(LootItemRandomChanceCondition.randomChance(lootEntry.chance()));
-                         }
+                        Item item =
+                                BuiltInRegistries.ITEM.get(
+                                        ResourceLocation.parse(lootEntry.itemId()));
 
-                         entryPool.add(LootItem.lootTableItem(item)
-                                 .apply(SetItemCountFunction.setCount(UniformGenerator.between(lootEntry.minCount(), lootEntry.maxCount())))
-                                 .apply(ApplyBonusCount.addOreBonusCount(this.registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(net.minecraft.world.item.enchantment.Enchantments.FORTUNE))));
-                                 
-                         poolBuilder.withPool(entryPool);
+                        LootPool.Builder entryPool =
+                                LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F));
+
+                        // 如果启用了精准采集掉落自身，则这些自定义掉落物仅在未使用精准采集时掉落
+                        if (lootConfig.silkTouchDropSelf()) {
+                            entryPool.when(doesNotHaveSilkTouch());
+                        }
+
+                        // 添加概率条件
+                        if (lootEntry.chance() < 1.0f) {
+                            entryPool.when(
+                                    LootItemRandomChanceCondition.randomChance(lootEntry.chance()));
+                        }
+
+                        entryPool.add(
+                                LootItem.lootTableItem(item)
+                                        .apply(
+                                                SetItemCountFunction.setCount(
+                                                        UniformGenerator.between(
+                                                                lootEntry.minCount(),
+                                                                lootEntry.maxCount())))
+                                        .apply(
+                                                ApplyBonusCount.addOreBonusCount(
+                                                        this.registries
+                                                                .lookupOrThrow(
+                                                                        Registries.ENCHANTMENT)
+                                                                .getOrThrow(
+                                                                        net.minecraft.world.item
+                                                                                .enchantment
+                                                                                .Enchantments
+                                                                                .FORTUNE))));
+
+                        poolBuilder.withPool(entryPool);
                     }
-                    
+
                     add(block.get(), poolBuilder);
                 }
             }

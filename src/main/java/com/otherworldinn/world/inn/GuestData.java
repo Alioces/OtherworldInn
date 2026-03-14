@@ -1,5 +1,8 @@
 package com.otherworldinn.world.inn;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
@@ -14,24 +17,20 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 /**
  * 旅客数据
- * <p>
- * 存储旅社中单个旅客的信息。
- * </p>
+ *
+ * <p>存储旅社中单个旅客的信息。
  */
 @Data
 public class GuestData {
     private final UUID uuid;
     private long checkoutTime; // 预计退房时间 (GameTime)
+
     // 旅客状态
     public enum GuestState {
-        IDLE,       // 空闲
-        WAITING,    // 等待入住
+        IDLE, // 空闲
+        WAITING, // 等待入住
         CHECKED_IN, // 已入住
         CHECKED_OUT // 已退房
     }
@@ -65,7 +64,7 @@ public class GuestData {
             this.state = GuestState.IDLE;
         }
     }
-    
+
     public boolean isCheckedOut() {
         return this.state == GuestState.CHECKED_OUT;
     }
@@ -90,16 +89,15 @@ public class GuestData {
 
     /**
      * 奖励物品列表
-     * <p>
-     * 旅客退房时可能给予的奖励物品。
-     * </p>
+     *
+     * <p>旅客退房时可能给予的奖励物品。
      */
     private final List<RewardItem> rewardItems = new ArrayList<>();
 
     /**
      * 构造一个新的旅客数据
      *
-     * @param uuid         旅客UUID
+     * @param uuid 旅客UUID
      * @param checkoutTime 预计退房时间 (GameTime)
      */
     public GuestData(UUID uuid, long checkoutTime) {
@@ -125,14 +123,9 @@ public class GuestData {
 
     /**
      * 根据房间属性更新偏好分数
-     * <p>
-     * 计算逻辑：
-     * 1. 基础分 10 分。
-     * 2. 对每个属性（舒适度、光照、湿度），计算房间属性值与偏好范围中位数的差距。
-     * 3. 差距越大，扣分越多。
-     *    - 差距 <= 范围半径：不扣分（即在偏好范围内）。
-     *    - 差距 > 范围半径：每超出 5 点扣 1 分。
-     * </p>
+     *
+     * <p>计算逻辑： 1. 基础分 10 分。 2. 对每个属性（舒适度、光照、湿度），计算房间属性值与偏好范围中位数的差距。 3. 差距越大，扣分越多。 - 差距 <=
+     * 范围半径：不扣分（即在偏好范围内）。 - 差距 > 范围半径：每超出 5 点扣 1 分。
      *
      * @param room 房间数据
      */
@@ -141,29 +134,29 @@ public class GuestData {
             this.preferenceScore = 0;
             return;
         }
-        
+
         int totalPenalty = 0;
-        
+
         totalPenalty += calculatePenalty(comfortPreference, room.getComfort());
         totalPenalty += calculatePenalty(lightPreference, room.getLight());
         totalPenalty += calculatePenalty(humidityPreference, room.getHumidity());
-        
+
         this.preferenceScore = Math.max(0, 10 - totalPenalty);
     }
-    
+
     private int calculatePenalty(IntRange preference, int actualValue) {
         double median = (preference.min + preference.max) / 2.0;
         double radius = (preference.max - preference.min) / 2.0;
         double diff = Math.abs(actualValue - median);
-        
+
         // 如果在范围内（差距小于等于半径），不扣分
         if (diff <= radius) {
             return 0;
         }
-        
+
         // 超出范围的部分
         double excess = diff - radius;
-        
+
         // 每超出 5 点扣 1 分
         return (int) Math.ceil(excess / 5.0);
     }
@@ -178,11 +171,11 @@ public class GuestData {
      * 在指定位置掉落奖励物品并清空列表
      *
      * @param level 服务器等级
-     * @param pos   掉落位置
+     * @param pos 掉落位置
      */
     public void dropRewards(ServerLevel level, BlockPos pos) {
         RandomSource random = level.getRandom();
-        
+
         // 根据偏好分数计算掉落概率乘数 (0.0 - 1.0)
         // 0 分 -> 0.0 (不掉落)
         // 10 分 -> 1.0 (正常掉落)
@@ -191,7 +184,7 @@ public class GuestData {
         for (RewardItem reward : rewardItems) {
             // 计算基础数量
             int count = random.nextInt(reward.count.max - reward.count.min + 1) + reward.count.min;
-            
+
             // 应用概率判定
             // 只有当随机值 < multiplier 时才掉落
             if (random.nextFloat() >= multiplier) {
@@ -202,17 +195,26 @@ public class GuestData {
                 // 为了避免 lambda 问题，先获取 Item 再处理
                 var itemOptional = BuiltInRegistries.ITEM.getOptional(reward.item);
                 if (itemOptional.isPresent()) {
-                     ItemStack stack = new ItemStack(itemOptional.get(), count);
-                     ItemEntity itemEntity = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
-                     itemEntity.setDeltaMovement(random.nextGaussian() * 0.05, random.nextGaussian() * 0.05 + 0.2, random.nextGaussian() * 0.05);
-                     
-                     // 设置特殊属性：发光、无重力、无敌、永不消失
-                     itemEntity.setGlowingTag(true);
-                     itemEntity.setNoGravity(true);
-                     itemEntity.setInvulnerable(true);
-                     itemEntity.setUnlimitedLifetime();
-                     
-                     level.addFreshEntity(itemEntity);
+                    ItemStack stack = new ItemStack(itemOptional.get(), count);
+                    ItemEntity itemEntity =
+                            new ItemEntity(
+                                    level,
+                                    pos.getX() + 0.5,
+                                    pos.getY() + 0.5,
+                                    pos.getZ() + 0.5,
+                                    stack);
+                    itemEntity.setDeltaMovement(
+                            random.nextGaussian() * 0.05,
+                            random.nextGaussian() * 0.05 + 0.2,
+                            random.nextGaussian() * 0.05);
+
+                    // 设置特殊属性：发光、无重力、无敌、永不消失
+                    itemEntity.setGlowingTag(true);
+                    itemEntity.setNoGravity(true);
+                    itemEntity.setInvulnerable(true);
+                    itemEntity.setUnlimitedLifetime();
+
+                    level.addFreshEntity(itemEntity);
                 }
             }
         }
@@ -222,10 +224,8 @@ public class GuestData {
 
     /**
      * 每 tick 更新逻辑
-     * <p>
-     * 可以在此检查是否到达退房时间。
-     * 目前留空，暂不实现自动退房逻辑。
-     * </p>
+     *
+     * <p>可以在此检查是否到达退房时间。 目前留空，暂不实现自动退房逻辑。
      */
     public void tick() {
         // 退房逻辑暂不实现
@@ -245,7 +245,7 @@ public class GuestData {
         tag.putInt("RoomID", roomId);
         tag.putInt("State", state.ordinal());
         tag.putLong("WaitingSince", waitingSince);
-        
+
         tag.put("Comfort", comfortPreference.save());
         tag.put("Light", lightPreference.save());
         tag.put("Humidity", humidityPreference.save());
@@ -274,7 +274,7 @@ public class GuestData {
         if (tag.contains("RoomID")) {
             guest.roomId = tag.getInt("RoomID");
         }
-        
+
         if (tag.contains("State")) {
             int stateOrdinal = tag.getInt("State");
             if (stateOrdinal >= 0 && stateOrdinal < GuestState.values().length) {
@@ -291,7 +291,7 @@ public class GuestData {
                 guest.state = GuestState.IDLE;
             }
         }
-        
+
         if (tag.contains("WaitingSince")) {
             guest.waitingSince = tag.getLong("WaitingSince");
         }
@@ -320,10 +320,8 @@ public class GuestData {
 
         return guest;
     }
-    
-    /**
-     * 奖励物品记录类
-     */
+
+    /** 奖励物品记录类 */
     public record RewardItem(ResourceLocation item, IntRange count) {
         public CompoundTag save() {
             CompoundTag tag = new CompoundTag();
@@ -341,9 +339,8 @@ public class GuestData {
 
     /**
      * 整数区间记录类
-     * <p>
-     * 用于存储属性偏好范围 (min, max)。
-     * </p>
+     *
+     * <p>用于存储属性偏好范围 (min, max)。
      */
     public record IntRange(int min, int max) {
         /**
@@ -355,14 +352,14 @@ public class GuestData {
         public boolean contains(int value) {
             return value >= min && value <= max;
         }
-        
+
         public CompoundTag save() {
             CompoundTag tag = new CompoundTag();
             tag.putInt("Min", min);
             tag.putInt("Max", max);
             return tag;
         }
-        
+
         public static IntRange load(CompoundTag tag) {
             return new IntRange(tag.getInt("Min"), tag.getInt("Max"));
         }

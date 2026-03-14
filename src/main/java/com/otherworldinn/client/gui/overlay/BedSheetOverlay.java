@@ -21,7 +21,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
-@EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(
+        modid = OtherworldInn.MODID,
+        value = Dist.CLIENT,
+        bus = EventBusSubscriber.Bus.MOD)
 public class BedSheetOverlay {
 
     @SubscribeEvent
@@ -38,60 +41,69 @@ public class BedSheetOverlay {
         // 检查玩家是否持有床单或脏乱的床单
         ItemStack mainHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         ItemStack offHand = player.getItemInHand(InteractionHand.OFF_HAND);
-        
-        return mainHand.is(ModItems.BED_SHEET.get()) || offHand.is(ModItems.BED_SHEET.get()) ||
-               mainHand.is(ModItems.MESSY_BED_SHEET.get()) || offHand.is(ModItems.MESSY_BED_SHEET.get());
+
+        return mainHand.is(ModItems.BED_SHEET.get())
+                || offHand.is(ModItems.BED_SHEET.get())
+                || mainHand.is(ModItems.MESSY_BED_SHEET.get())
+                || offHand.is(ModItems.MESSY_BED_SHEET.get());
     }
 
-    private static void render(GuiGraphics guiGraphics, net.minecraft.client.DeltaTracker deltaTracker) {
+    private static void render(
+            GuiGraphics guiGraphics, net.minecraft.client.DeltaTracker deltaTracker) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null) return;
-        
+
         HitResult hitResult = mc.hitResult;
         if (!(hitResult instanceof BlockHitResult blockHitResult)) return;
-        
+
         BlockPos pos = blockHitResult.getBlockPos();
         BlockState state = mc.level.getBlockState(pos);
-        
+
         ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
         // 优先处理主手，如果主手不是相关物品，则检查副手
         if (!isRelevantItem(stack)) {
             stack = player.getItemInHand(InteractionHand.OFF_HAND);
         }
-        
+
         // 1. 手持干净床单 -> 对准脏乱的床
         if (stack.is(ModItems.BED_SHEET.get())) {
-            if (state.getBlock() instanceof BedBlock && 
-                state.hasProperty(ModBlockProperties.MESSY) && 
-                state.getValue(ModBlockProperties.MESSY)) {
-                
-                ItemHudOverlay.renderMouseActions(guiGraphics, 
-                    new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, Component.translatable("message.otherworldinn.bed_sheet.overlay.replace"))
-                );
+            if (state.getBlock() instanceof BedBlock
+                    && state.hasProperty(ModBlockProperties.MESSY)
+                    && state.getValue(ModBlockProperties.MESSY)) {
+
+                ItemHudOverlay.renderMouseActions(
+                        guiGraphics,
+                        new ItemHudOverlay.MouseAction(
+                                ItemHudOverlay.MouseButton.RIGHT,
+                                Component.translatable(
+                                        "message.otherworldinn.bed_sheet.overlay.replace")));
             }
         }
         // 2. 手持脏乱床单 -> 对准水流
         else if (stack.is(ModItems.MESSY_BED_SHEET.get())) {
-            
+
             // 执行包含流体的射线检测
             HitResult fluidHit = player.pick(player.blockInteractionRange(), 0.0F, true);
             if (fluidHit.getType() == HitResult.Type.BLOCK) {
                 BlockPos fluidPos = ((BlockHitResult) fluidHit).getBlockPos();
                 BlockState fluidState = mc.level.getBlockState(fluidPos);
-                
+
                 boolean isWater = fluidState.getBlock() == Blocks.WATER;
                 boolean isWaterlogged = fluidState.getFluidState().is(FluidTags.WATER);
-                
+
                 if (isWater || isWaterlogged) {
-                    ItemHudOverlay.renderMouseActions(guiGraphics, 
-                        new ItemHudOverlay.MouseAction(ItemHudOverlay.MouseButton.RIGHT, Component.translatable("message.otherworldinn.messy_bed_sheet.overlay.wash"))
-                    );
+                    ItemHudOverlay.renderMouseActions(
+                            guiGraphics,
+                            new ItemHudOverlay.MouseAction(
+                                    ItemHudOverlay.MouseButton.RIGHT,
+                                    Component.translatable(
+                                            "message.otherworldinn.messy_bed_sheet.overlay.wash")));
                 }
             }
         }
     }
-    
+
     private static boolean isRelevantItem(ItemStack stack) {
         return stack.is(ModItems.BED_SHEET.get()) || stack.is(ModItems.MESSY_BED_SHEET.get());
     }

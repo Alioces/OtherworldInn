@@ -8,6 +8,12 @@ import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.inn.InnData.InnState;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.TeamSavedData;
+import com.simibubi.create.AllBlocks;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -25,7 +31,9 @@ import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingEquipmentChangeEvent;
@@ -33,21 +41,10 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
-import net.minecraft.world.level.block.state.BlockState;
-import com.simibubi.create.AllBlocks;
-import com.otherworldinn.world.team.TeamSavedData;
-import net.minecraft.world.phys.AABB;
-
 /**
  * 旅社事件处理器
- * <p>
- * 处理与旅社运营相关的事件，例如方块更新触发的房间检查。
- * </p>
+ *
+ * <p>处理与旅社运营相关的事件，例如方块更新触发的房间检查。
  */
 @EventBusSubscriber(modid = OtherworldInn.MODID)
 public class InnEventHandler {
@@ -58,10 +55,8 @@ public class InnEventHandler {
 
     /**
      * 监听方块更新事件 (NeighborNotifyEvent)
-     * <p>
-     * 当方块发生更新（放置、破坏、状态改变）时触发。
-     * 如果更新发生在开启了编辑模式的旅社区域内，则标记该队伍在 tick 结束时进行房间检查。
-     * </p>
+     *
+     * <p>当方块发生更新（放置、破坏、状态改变）时触发。 如果更新发生在开启了编辑模式的旅社区域内，则标记该队伍在 tick 结束时进行房间检查。
      */
     @SubscribeEvent
     public static void onBlockUpdate(BlockEvent.NeighborNotifyEvent event) {
@@ -77,13 +72,11 @@ public class InnEventHandler {
             }
         }
     }
-    
+
     /**
      * 监听方块放置事件
-     * <p>
-     * NeighborNotifyEvent 可能不覆盖所有情况（如直接放置），补充监听 PlaceEvent。
-     * 同时也负责检测剪贴板的放置，同步缓存的待办事项。
-     * </p>
+     *
+     * <p>NeighborNotifyEvent 可能不覆盖所有情况（如直接放置），补充监听 PlaceEvent。 同时也负责检测剪贴板的放置，同步缓存的待办事项。
      */
     @SubscribeEvent
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
@@ -101,7 +94,7 @@ public class InnEventHandler {
                     pendingChecks.add(team.getTeamId());
                 }
             }
-            
+
             // 检查是否放置了剪贴板
             BlockState state = event.getState();
             if (AllBlocks.CLIPBOARD.has(state)) {
@@ -112,10 +105,8 @@ public class InnEventHandler {
             }
         }
     }
-    
-    /**
-     * 监听方块破坏事件
-     */
+
+    /** 监听方块破坏事件 */
     @SubscribeEvent
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
@@ -144,15 +135,27 @@ public class InnEventHandler {
             return false;
         }
         event.setCanceled(true);
-        BlockPos headPos = state.getValue(BedBlock.PART) == BedPart.HEAD ? pos : pos.relative(state.getValue(BedBlock.FACING));
-        BlockPos footPos = state.getValue(BedBlock.PART) == BedPart.FOOT ? pos : pos.relative(state.getValue(BedBlock.FACING).getOpposite());
+        BlockPos headPos =
+                state.getValue(BedBlock.PART) == BedPart.HEAD
+                        ? pos
+                        : pos.relative(state.getValue(BedBlock.FACING));
+        BlockPos footPos =
+                state.getValue(BedBlock.PART) == BedPart.FOOT
+                        ? pos
+                        : pos.relative(state.getValue(BedBlock.FACING).getOpposite());
         BlockState headState = level.getBlockState(headPos);
         BlockState footState = level.getBlockState(footPos);
         if (isMessyBedState(headState)) {
-            level.setBlock(headPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(
+                    headPos,
+                    net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),
+                    Block.UPDATE_ALL);
         }
         if (isMessyBedState(footState)) {
-            level.setBlock(footPos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            level.setBlock(
+                    footPos,
+                    net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),
+                    Block.UPDATE_ALL);
         }
         ItemStack drop = createMessyBedStack(state);
         Block.popResource(level, headPos, drop);
@@ -167,7 +170,8 @@ public class InnEventHandler {
 
     private static void applyMessyBedOnPlace(BlockEvent.EntityPlaceEvent event) {
         BlockState state = event.getState();
-        if (!(state.getBlock() instanceof BedBlock) || !state.hasProperty(com.otherworldinn.foundation.ModBlockProperties.MESSY)) {
+        if (!(state.getBlock() instanceof BedBlock)
+                || !state.hasProperty(com.otherworldinn.foundation.ModBlockProperties.MESSY)) {
             return;
         }
         if (!(event.getEntity() instanceof Player player)) {
@@ -175,7 +179,8 @@ public class InnEventHandler {
         }
         ItemStack main = player.getMainHandItem();
         ItemStack off = player.getOffhandItem();
-        ItemStack source = isMessyBedItem(main) ? main : (isMessyBedItem(off) ? off : ItemStack.EMPTY);
+        ItemStack source =
+                isMessyBedItem(main) ? main : (isMessyBedItem(off) ? off : ItemStack.EMPTY);
         if (source.isEmpty()) {
             return;
         }
@@ -183,14 +188,24 @@ public class InnEventHandler {
             return;
         }
         BlockPos pos = event.getPos();
-        BlockPos otherPos = state.getValue(BedBlock.PART) == BedPart.HEAD ? pos.relative(state.getValue(BedBlock.FACING).getOpposite()) : pos.relative(state.getValue(BedBlock.FACING));
+        BlockPos otherPos =
+                state.getValue(BedBlock.PART) == BedPart.HEAD
+                        ? pos.relative(state.getValue(BedBlock.FACING).getOpposite())
+                        : pos.relative(state.getValue(BedBlock.FACING));
         BlockState current = level.getBlockState(pos);
         BlockState other = level.getBlockState(otherPos);
         if (current.hasProperty(com.otherworldinn.foundation.ModBlockProperties.MESSY)) {
-            level.setBlock(pos, current.setValue(com.otherworldinn.foundation.ModBlockProperties.MESSY, true), Block.UPDATE_ALL);
+            level.setBlock(
+                    pos,
+                    current.setValue(com.otherworldinn.foundation.ModBlockProperties.MESSY, true),
+                    Block.UPDATE_ALL);
         }
-        if (other.getBlock() instanceof BedBlock && other.hasProperty(com.otherworldinn.foundation.ModBlockProperties.MESSY)) {
-            level.setBlock(otherPos, other.setValue(com.otherworldinn.foundation.ModBlockProperties.MESSY, true), Block.UPDATE_ALL);
+        if (other.getBlock() instanceof BedBlock
+                && other.hasProperty(com.otherworldinn.foundation.ModBlockProperties.MESSY)) {
+            level.setBlock(
+                    otherPos,
+                    other.setValue(com.otherworldinn.foundation.ModBlockProperties.MESSY, true),
+                    Block.UPDATE_ALL);
         }
     }
 
@@ -218,9 +233,8 @@ public class InnEventHandler {
 
     /**
      * 在 Level Tick 结束时处理待定检查
-     * <p>
-     * 确保每个 tick 每个队伍最多只执行检查一次。
-     * </p>
+     *
+     * <p>确保每个 tick 每个队伍最多只执行检查一次。
      */
     @SubscribeEvent
     public static void onLevelTick(LevelTickEvent.Post event) {
@@ -249,7 +263,7 @@ public class InnEventHandler {
             if (team != null) {
                 // 执行房间合法性检查
                 team.getInnData().checkAllRoomsValidity(level, team);
-                
+
                 // 更新房间属性 (家具统计)
                 team.getInnData().updateAllRoomsStats(level);
                 // 同步数据给客户端
@@ -260,10 +274,8 @@ public class InnEventHandler {
 
     /**
      * 监听装备变更事件 (服务器端)
-     * <p>
-     * 当房间登记册进入副手时，播放翻页音效。
-     * 这通常发生在玩家将物品从主手切换到副手时。
-     * </p>
+     *
+     * <p>当房间登记册进入副手时，播放翻页音效。 这通常发生在玩家将物品从主手切换到副手时。
      */
     @SubscribeEvent
     public static void onEquipmentChange(LivingEquipmentChangeEvent event) {
@@ -275,11 +287,18 @@ public class InnEventHandler {
             if (event.getSlot() == EquipmentSlot.OFFHAND) {
                 ItemStack to = event.getTo();
                 ItemStack from = event.getFrom();
-                
+
                 // 检查是否切换到了房间登记册，且之前不是房间登记册
                 if (to.is(ModItems.ROOM_REGISTER.get()) && !from.is(ModItems.ROOM_REGISTER.get())) {
                     // 使用 null 作为 player 参数，确保包括触发者在内的所有附近玩家都能听到声音
-                    player.level().playSound(null, player.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 1.0F);
+                    player.level()
+                            .playSound(
+                                    null,
+                                    player.blockPosition(),
+                                    SoundEvents.BOOK_PAGE_TURN,
+                                    SoundSource.PLAYERS,
+                                    1.0F,
+                                    1.0F);
                 }
             }
         }
@@ -287,10 +306,8 @@ public class InnEventHandler {
 
     /**
      * 处理玩家左键点击方块事件 (服务器端)
-     * <p>
-     * 1. 地契：清除选定范围
-     * 2. 房间登记册：删除房间（并阻止方块破坏）
-     * </p>
+     *
+     * <p>1. 地契：清除选定范围 2. 房间登记册：删除房间（并阻止方块破坏）
      */
     @SubscribeEvent
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
@@ -301,7 +318,8 @@ public class InnEventHandler {
         // 1. 处理地契逻辑 (主手)
         ItemStack mainHandItem = player.getItemInHand(InteractionHand.MAIN_HAND);
         if (mainHandItem.is(ModItems.LAND_DEED.get())) {
-            CustomData customData = mainHandItem.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+            CustomData customData =
+                    mainHandItem.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
             CompoundTag tag = customData.copyTag();
 
             if (tag.contains("Pos1")) {
@@ -309,8 +327,11 @@ public class InnEventHandler {
                     tag.remove("Pos1");
                     tag.remove("Pos2");
                     mainHandItem.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
-                    player.displayClientMessage(Component.translatable("message.otherworldinn.land_deed.selection_cleared")
-                            .withStyle(style -> style.withColor(ModColors.INFO)), true);
+                    player.displayClientMessage(
+                            Component.translatable(
+                                            "message.otherworldinn.land_deed.selection_cleared")
+                                    .withStyle(style -> style.withColor(ModColors.INFO)),
+                            true);
                 }
                 event.setCanceled(true); // 取消方块破坏
                 return;
@@ -323,8 +344,10 @@ public class InnEventHandler {
             if (roomId.isPresent()) {
                 if (!level.isClientSide) {
                     RoomKeyItem.unbindRoom(mainHandItem);
-                    player.displayClientMessage(Component.translatable("message.otherworldinn.room_key.unbound")
-                            .withStyle(style -> style.withColor(ModColors.INFO)), true);
+                    player.displayClientMessage(
+                            Component.translatable("message.otherworldinn.room_key.unbound")
+                                    .withStyle(style -> style.withColor(ModColors.INFO)),
+                            true);
                 }
                 event.setCanceled(true); // 取消方块破坏
                 return;
@@ -342,9 +365,8 @@ public class InnEventHandler {
 
     /**
      * 处理玩家右键点击方块事件 (服务器端)
-     * <p>
-     * 1. 铃铛：手持工具切换装修模式
-     * </p>
+     *
+     * <p>1. 铃铛：手持工具切换装修模式
      */
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
@@ -354,21 +376,27 @@ public class InnEventHandler {
         BlockPos pos = event.getPos();
         Player player = event.getEntity();
         if (!player.isShiftKeyDown()) return;
-        
+
         // 检查是否点击的是 DeskBell
-        if (level.getBlockEntity(pos) instanceof com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity) {
+        if (level.getBlockEntity(pos)
+                instanceof com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity) {
             ItemStack heldItem = player.getItemInHand(event.getHand());
-            
+
             // 检查是否持有工具 (斧、镐、铲、锄)
             if (isTool(heldItem)) {
-                if (level instanceof ServerLevel serverLevel && level.dimension() == TownDimensions.TOWN_LEVEL) {
-                    TeamData team = TeamManager.getInstance().getTeamAt(pos, serverLevel.getServer());
-                    
+                if (level instanceof ServerLevel serverLevel
+                        && level.dimension() == TownDimensions.TOWN_LEVEL) {
+                    TeamData team =
+                            TeamManager.getInstance().getTeamAt(pos, serverLevel.getServer());
+
                     if (team != null) {
                         // 检查权限
                         if (!team.hasMember(player.getUUID())) {
-                            player.displayClientMessage(Component.translatable("message.otherworldinn.inn_key.no_permission")
-                                    .withStyle(style -> style.withColor(ModColors.ERROR)), true);
+                            player.displayClientMessage(
+                                    Component.translatable(
+                                                    "message.otherworldinn.inn_key.no_permission")
+                                            .withStyle(style -> style.withColor(ModColors.ERROR)),
+                                    true);
                             event.setCanceled(true);
                             return;
                         }
@@ -376,46 +404,60 @@ public class InnEventHandler {
                         InnData innData = team.getInnData();
                         InnState currentState = innData.getState();
                         SoundEvent sound = null;
-                        
+
                         InnState newState;
                         if (currentState == InnState.EDIT_MODE) {
                             newState = InnState.CLOSED;
                         } else {
                             if (currentState == InnState.OPEN) {
-                                player.displayClientMessage(Component.translatable("message.otherworldinn.inn_key.fail_open")
-                                        .withStyle(style -> style.withColor(ModColors.ERROR)), true);
+                                player.displayClientMessage(
+                                        Component.translatable(
+                                                        "message.otherworldinn.inn_key.fail_open")
+                                                .withStyle(
+                                                        style -> style.withColor(ModColors.ERROR)),
+                                        true);
                                 return;
                             }
                             if (!innData.getGuestIds().isEmpty()) {
-                                player.displayClientMessage(Component.translatable("message.otherworldinn.inn_key.fail_guests")
-                                        .withStyle(style -> style.withColor(ModColors.ERROR)), true);
+                                player.displayClientMessage(
+                                        Component.translatable(
+                                                        "message.otherworldinn.inn_key.fail_guests")
+                                                .withStyle(
+                                                        style -> style.withColor(ModColors.ERROR)),
+                                        true);
                                 return;
                             }
                             newState = InnState.EDIT_MODE;
                         }
-                        
+
                         if (innData.setState(newState)) {
                             TeamManager.getInstance().syncTeam(team, serverLevel.getServer());
-                            
+
                             // 发送反馈消息
                             Component message;
                             int color;
                             switch (newState) {
                                 case EDIT_MODE:
-                                    message = Component.translatable("message.otherworldinn.desk_bell.status.edit_mode");
+                                    message =
+                                            Component.translatable(
+                                                    "message.otherworldinn.desk_bell.status.edit_mode");
                                     color = 0x1E90FF;
                                     sound = SoundEvents.PISTON_EXTEND;
                                     break;
                                 case CLOSED:
                                 default: // 从 EDIT_MODE 切回时默认为 CLOSED
-                                    message = Component.translatable("message.otherworldinn.desk_bell.status.closed");
+                                    message =
+                                            Component.translatable(
+                                                    "message.otherworldinn.desk_bell.status.closed");
                                     color = 0xFF6A6A;
                                     sound = SoundEvents.PISTON_CONTRACT;
                                     break;
                             }
-                            
+
                             level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
-                            player.displayClientMessage(message.copy().withStyle(style -> style.withColor(color)), true);
+                            player.displayClientMessage(
+                                    message.copy().withStyle(style -> style.withColor(color)),
+                                    true);
                         }
                     }
                 }
@@ -424,22 +466,20 @@ public class InnEventHandler {
     }
 
     private static boolean isTool(ItemStack stack) {
-        return stack.is(net.minecraft.tags.ItemTags.AXES) || 
-               stack.is(net.minecraft.tags.ItemTags.PICKAXES) || 
-               stack.is(net.minecraft.tags.ItemTags.SHOVELS) || 
-               stack.is(net.minecraft.tags.ItemTags.HOES);
+        return stack.is(net.minecraft.tags.ItemTags.AXES)
+                || stack.is(net.minecraft.tags.ItemTags.PICKAXES)
+                || stack.is(net.minecraft.tags.ItemTags.SHOVELS)
+                || stack.is(net.minecraft.tags.ItemTags.HOES);
     }
 
     /**
      * 处理左键点击方块的公共逻辑
-     * <p>
-     * 检查玩家副手是否持有房间登记册，且处于编辑模式下。
-     * 如果条件满足，则删除点击位置所在的房间。
-     * </p>
+     *
+     * <p>检查玩家副手是否持有房间登记册，且处于编辑模式下。 如果条件满足，则删除点击位置所在的房间。
      *
      * @param player 玩家实体
-     * @param pos    点击的方块坐标
-     * @param level  世界实例
+     * @param pos 点击的方块坐标
+     * @param level 世界实例
      */
     private static void handleLeftClick(Player player, BlockPos pos, Level level) {
         if (level.isClientSide || !(player instanceof ServerPlayer serverPlayer)) {
@@ -460,11 +500,16 @@ public class InnEventHandler {
             InnData innData = team.getInnData();
 
             RoomData room = innData.getRoomAt(pos);
-            
+
             if (room != null) {
                 // 执行删除
-                innData.removeRoom(room.getId(), level, team, Component.translatable("message.otherworldinn.room_register.manual_removal"));
-                
+                innData.removeRoom(
+                        room.getId(),
+                        level,
+                        team,
+                        Component.translatable(
+                                "message.otherworldinn.room_register.manual_removal"));
+
                 // 同步数据给客户端
                 TeamManager.getInstance().syncTeam(team, serverPlayer.getServer());
             }

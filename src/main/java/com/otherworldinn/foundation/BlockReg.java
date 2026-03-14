@@ -2,6 +2,11 @@ package com.otherworldinn.foundation;
 
 import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModItems;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
@@ -10,17 +15,10 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.neoforge.registries.DeferredBlock;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
-
 /**
  * 方块注册构建器
- * <p>
- * 用于链式配置方块的属性、物品、DataGen信息等
- * </p>
+ *
+ * <p>用于链式配置方块的属性、物品、DataGen信息等
  *
  * @param <T> 方块类型
  */
@@ -28,18 +26,18 @@ public class BlockReg<T extends Block> {
     private final String name;
     private final Function<BlockBehaviour.Properties, T> blockFactory;
     private BlockBehaviour.Properties properties = BlockBehaviour.Properties.of();
-    
+
     private boolean hasItem = true;
     private Item.Properties itemProperties = new Item.Properties();
-    
+
     private boolean generateModel = true;
     private String renderType = "solid";
-    
+
     private BlockDataGenInfo.ToolType toolType = BlockDataGenInfo.ToolType.NONE;
     private BlockDataGenInfo.MiningLevel miningLevel = BlockDataGenInfo.MiningLevel.NONE;
-    
+
     private LootConfig lootConfig = LootConfig.DEFAULT;
-    
+
     private String enName = "";
     private String cnName = "";
     private final List<String> enTooltips = new ArrayList<>();
@@ -66,7 +64,7 @@ public class BlockReg<T extends Block> {
         this.properties.strength(hardness);
         return this;
     }
-    
+
     public BlockReg<T> strength(float hardness, float resistance) {
         this.properties.strength(hardness, resistance);
         return this;
@@ -86,7 +84,7 @@ public class BlockReg<T extends Block> {
         this.properties.sound(soundType);
         return this;
     }
-    
+
     // --- 语言与工具提示 (Language & Tooltips) ---
 
     public BlockReg<T> lang(String enName) {
@@ -115,7 +113,7 @@ public class BlockReg<T extends Block> {
         this.cnTooltips.add(cnTooltip);
         return this;
     }
-    
+
     // --- 物品配置 (Item) ---
 
     public BlockReg<T> withItem() {
@@ -179,68 +177,71 @@ public class BlockReg<T extends Block> {
         this.generateModel = false;
         return this;
     }
-    
+
     // --- 战利品表 (Loot Tables) ---
-    
+
     public BlockReg<T> noLoot() {
         this.lootConfig = LootConfig.EMPTY;
         return this;
     }
-    
+
     public BlockReg<T> loot(String itemId, int min, int max, boolean silkTouch) {
         return loot(itemId, 1.0f, min, max, silkTouch);
     }
 
     public BlockReg<T> loot(String itemId, float chance, int min, int max, boolean silkTouch) {
         if (this.lootConfig == LootConfig.DEFAULT || this.lootConfig == LootConfig.EMPTY) {
-            this.lootConfig = new LootConfig(LootConfig.LootType.CUSTOM, new ArrayList<>(), silkTouch);
+            this.lootConfig =
+                    new LootConfig(LootConfig.LootType.CUSTOM, new ArrayList<>(), silkTouch);
         }
-        
+
         // 如果任意一个条目启用了 silkTouch 行为（类似矿石），则更新全局配置
         if (silkTouch) {
-             this.lootConfig = new LootConfig(this.lootConfig.type(), this.lootConfig.entries(), true);
+            this.lootConfig =
+                    new LootConfig(this.lootConfig.type(), this.lootConfig.entries(), true);
         }
 
         this.lootConfig.entries().add(new LootConfig.LootEntry(itemId, chance, min, max, false));
         return this;
     }
-    
+
     public BlockReg<T> loot(String itemId, int min, int max) {
         return loot(itemId, 1.0f, min, max, false);
     }
-    
+
     public BlockReg<T> loot(String itemId) {
         return loot(itemId, 1.0f, 1, 1, false);
     }
 
     // --- 挖掘工具与等级 (Tools & Mining) ---
 
-    public BlockReg<T> requiresTool(BlockDataGenInfo.ToolType tool, BlockDataGenInfo.MiningLevel level) {
+    public BlockReg<T> requiresTool(
+            BlockDataGenInfo.ToolType tool, BlockDataGenInfo.MiningLevel level) {
         this.toolType = tool;
         this.miningLevel = level;
         return this;
     }
-    
+
     public BlockReg<T> pickaxe() {
         this.toolType = BlockDataGenInfo.ToolType.PICKAXE;
         return this;
     }
-    
+
     public BlockReg<T> axe() {
         this.toolType = BlockDataGenInfo.ToolType.AXE;
         return this;
     }
-    
+
     public BlockReg<T> shovel() {
         this.toolType = BlockDataGenInfo.ToolType.SHOVEL;
         return this;
     }
-    
+
     public BlockReg<T> hoe() {
         this.toolType = BlockDataGenInfo.ToolType.HOE;
         return this;
     }
-    
+
     public BlockReg<T> needsStone() {
         this.miningLevel = BlockDataGenInfo.MiningLevel.STONE;
         return this;
@@ -263,21 +264,31 @@ public class BlockReg<T extends Block> {
 
     /**
      * 注册方块
-     * <p>
-     * 必须调用此方法以完成注册
-     * </p>
+     *
+     * <p>必须调用此方法以完成注册
      */
     public DeferredBlock<T> register() {
         // 使用配置的属性创建方块
         Supplier<T> blockSupplier = () -> this.blockFactory.apply(this.properties);
-        
+
         DeferredBlock<T> block = ModBlocks.BLOCKS.register(name, blockSupplier);
-        
+
         if (hasItem) {
             ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), itemProperties));
         }
 
-        ModBlocks.BLOCK_INFOS.put(block, new BlockDataGenInfo(generateModel, renderType, lootConfig, toolType, miningLevel, enName, cnName, enTooltips, cnTooltips));
+        ModBlocks.BLOCK_INFOS.put(
+                block,
+                new BlockDataGenInfo(
+                        generateModel,
+                        renderType,
+                        lootConfig,
+                        toolType,
+                        miningLevel,
+                        enName,
+                        cnName,
+                        enTooltips,
+                        cnTooltips));
 
         return block;
     }

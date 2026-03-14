@@ -1,6 +1,5 @@
 package com.otherworldinn.item;
 
-import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamManager;
@@ -12,7 +11,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -33,17 +31,17 @@ public class InnKeyItem extends Item {
 
         if (blockEntity instanceof DeskBellBlockEntity) {
             Player player = context.getPlayer();
-            
+
             // 客户端直接返回成功，以便触发手部动画
             if (level.isClientSide) {
                 return InteractionResult.SUCCESS;
             }
-            
+
             if (player instanceof ServerPlayer serverPlayer) {
                 TeamData team = TeamManager.getInstance().getTeamAt(pos, level.getServer());
                 if (team != null) {
                     // 检查权限 (假设拥有地契或者队伍成员有权限)
-                    if (team.hasMember(player.getUUID()) ) {
+                    if (team.hasMember(player.getUUID())) {
                         InnData innData = team.getInnData();
                         InnData.InnState currentState = innData.getState();
                         InnData.InnState newState;
@@ -51,10 +49,12 @@ public class InnKeyItem extends Item {
                         MutableComponent message;
                         int color;
 
-                        if (currentState == InnData.InnState.EDIT_MODE || currentState == InnData.InnState.OPEN) {
+                        if (currentState == InnData.InnState.EDIT_MODE
+                                || currentState == InnData.InnState.OPEN) {
                             sound = SoundEvents.WOODEN_DOOR_OPEN;
                             newState = InnData.InnState.CLOSED;
-                            message = Component.translatable("message.otherworldinn.inn_key.closed");
+                            message =
+                                    Component.translatable("message.otherworldinn.inn_key.closed");
                             color = 0xFF6A6A;
                         } else {
                             sound = SoundEvents.WOODEN_DOOR_CLOSE;
@@ -66,9 +66,13 @@ public class InnKeyItem extends Item {
                         innData.setState(newState);
                         level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
                         TeamManager.getInstance().syncTeam(team, level.getServer());
-                        serverPlayer.displayClientMessage(message.withStyle(style -> style.withColor(color)), true);
+                        serverPlayer.displayClientMessage(
+                                message.withStyle(style -> style.withColor(color)), true);
                     } else {
-                        player.displayClientMessage(Component.translatable("message.otherworldinn.inn_key.no_permission"), true);
+                        player.displayClientMessage(
+                                Component.translatable(
+                                        "message.otherworldinn.inn_key.no_permission"),
+                                true);
                     }
                 }
             }
