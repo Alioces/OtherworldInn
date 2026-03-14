@@ -94,6 +94,16 @@ public abstract class StoreEntity extends PathfinderMob {
     }
 
     @Override
+    public boolean requiresCustomPersistence() {
+        return true;
+    }
+
+    @Override
+    public boolean removeWhenFarAway(double distanceToClosestPlayer) {
+        return false;
+    }
+
+    @Override
     public void tick() {
         // 客户端动画逻辑
         if (this.level().isClientSide) {

@@ -1,6 +1,8 @@
 package com.otherworldinn.world.event;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.entity.store.BlacksmithEntity;
+import com.otherworldinn.init.ModEntities;
 import com.otherworldinn.world.data.TownSavedData;
 import com.otherworldinn.world.dimension.TownDimensions;
 import java.util.Optional;
@@ -14,6 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.level.LevelEvent;
@@ -24,6 +27,8 @@ public class TownStructurePlacer {
     private static final ResourceLocation TOWN_STRUCTURE =
             ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "town_main");
     private static final BlockPos ORIGIN = new BlockPos(0, 70, 0);
+    private static final int CENTER_CHUNK_RADIUS = 2;
+    private static final BlockPos BLACKSMITH_FALLBACK_POS = new BlockPos(17, 71, 3);
 
     @SubscribeEvent
     public static void onLevelLoad(LevelEvent.Load event) {
@@ -35,6 +40,15 @@ public class TownStructurePlacer {
             if (!data.isGenerated()) {
                 generateTown(level);
                 data.setGenerated(true);
+            }
+            ensureCenterChunksAlwaysLoaded(level);
+        }
+    }
+
+    private static void ensureCenterChunksAlwaysLoaded(ServerLevel level) {
+        for (int chunkX = -CENTER_CHUNK_RADIUS; chunkX <= CENTER_CHUNK_RADIUS; chunkX++) {
+            for (int chunkZ = -CENTER_CHUNK_RADIUS; chunkZ <= CENTER_CHUNK_RADIUS; chunkZ++) {
+                level.setChunkForced(chunkX, chunkZ, true);
             }
         }
     }
