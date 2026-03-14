@@ -1,10 +1,10 @@
-package com.otherworldinn.client;
+package com.otherworldinn.client.control;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.client.gui.MapViewScreen;
-import com.otherworldinn.client.map.MapPageManager;
+import com.otherworldinn.client.map.service.MapPageManager;
 import com.otherworldinn.foundation.ClientConfig;
 import com.otherworldinn.init.ModKeyBindings;
 import com.otherworldinn.world.dimension.TownDimensions;

@@ -1,10 +1,10 @@
 package com.otherworldinn.network.packet;
 
 import com.otherworldinn.OtherworldInn;
-import com.otherworldinn.entity.store.StoreEntity;
+import com.otherworldinn.entity.base.StoreEntity;
 import com.otherworldinn.world.inventory.StoreMenu;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;

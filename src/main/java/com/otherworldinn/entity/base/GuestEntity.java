@@ -1,11 +1,11 @@
-package com.otherworldinn.entity;
+package com.otherworldinn.entity.base;
 
-import com.otherworldinn.util.GuestNameManager;
-import com.otherworldinn.world.economy.ItemSellPriceManager;
+import com.otherworldinn.util.service.GuestNameManager;
+import com.otherworldinn.world.economy.service.ItemSellPriceManager;
 import com.otherworldinn.world.inn.GuestData;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity;
 import java.util.ArrayList;
 import java.util.EnumSet;

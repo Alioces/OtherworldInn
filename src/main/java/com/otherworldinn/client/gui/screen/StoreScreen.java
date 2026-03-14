@@ -1,13 +1,13 @@
-package com.otherworldinn.client.gui.store;
+package com.otherworldinn.client.gui.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.otherworldinn.entity.store.StoreEntity;
+import com.otherworldinn.entity.base.StoreEntity;
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.network.ModMessages;
 import com.otherworldinn.network.packet.C2SStorePurchasePacket;
 import com.otherworldinn.world.inventory.StoreMenu;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -445,7 +445,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 scrollBarY,
                 scrollBarX + SCROLL_BAR_WIDTH,
                 scrollBarY + scrollBarHeight,
-                0xFF202020);
+                ModColors.BLACK_DARK_32);
 
         // 渲染滚动滑块
         if (canScroll) {
@@ -461,13 +461,13 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                     sliderY,
                     scrollBarX + SCROLL_BAR_WIDTH,
                     sliderY + sliderHeight,
-                    0xFF808080);
+                    ModColors.GRAY_50);
             guiGraphics.fill(
                     scrollBarX,
                     sliderY,
                     scrollBarX + SCROLL_BAR_WIDTH - 1,
                     sliderY + sliderHeight - 1,
-                    0xFFC0C0C0);
+                    ModColors.GRAY_LIGHT);
         } else {
             // 禁用状态滑块
             guiGraphics.fill(
@@ -475,7 +475,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                     scrollBarY,
                     scrollBarX + SCROLL_BAR_WIDTH,
                     scrollBarY + scrollBarHeight,
-                    0xFF404040);
+                    ModColors.BLACK_DARK_64);
         }
 
         // 计算可见区域
@@ -491,7 +491,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             StoreEntity.StoreItem item = this.cart.get(i);
             int y = listY + (i - startIndex) * CART_ITEM_HEIGHT;
 
-            guiGraphics.fill(listX, y, listX + listWidth, y + SLOT_SIZE, 0x33000000);
+            guiGraphics.fill(listX, y, listX + listWidth, y + SLOT_SIZE, ModColors.BLACK_ALPHA_20);
             guiGraphics.renderItem(item.getItemStack(), listX, y);
             guiGraphics.renderItemDecorations(this.font, item.getItemStack(), listX, y);
             guiGraphics.drawString(
@@ -499,7 +499,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                     Component.literal("×" + item.getCurrentStock()),
                     listX + 20,
                     y + 5,
-                    0xFFFFFF);
+                    ModColors.WHITE);
             Component priceText =
                     Component.literal("§f\uE001§r" + item.getPrice() * item.getCurrentStock());
             guiGraphics.drawString(
@@ -507,7 +507,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                     priceText,
                     listX + listWidth - this.font.width(priceText) - 1,
                     y + 5,
-                    0xFFFF00);
+                    ModColors.YELLOW);
         }
 
         guiGraphics.disableScissor();
@@ -531,7 +531,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 balanceText,
                 (this.imageWidth - balanceWidth) / 2 - 1,
                 20,
-                0xFFFFFF,
+                ModColors.WHITE,
                 true);
     }
 
@@ -573,7 +573,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 goodsScrollBarY,
                 goodsScrollBarX + SCROLL_BAR_WIDTH,
                 goodsScrollBarY + goodsAreaHeight,
-                0xFF202020);
+                ModColors.BLACK_DARK_32);
         if (canScrollGoods) {
             int sliderHeight =
                     (int)
@@ -590,20 +590,20 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                     sliderY,
                     goodsScrollBarX + SCROLL_BAR_WIDTH,
                     sliderY + sliderHeight,
-                    0xFF808080);
+                    ModColors.GRAY_50);
             guiGraphics.fill(
                     goodsScrollBarX,
                     sliderY,
                     goodsScrollBarX + SCROLL_BAR_WIDTH - 1,
                     sliderY + sliderHeight - 1,
-                    0xFFC0C0C0);
+                    ModColors.GRAY_LIGHT);
         } else {
             guiGraphics.fill(
                     goodsScrollBarX,
                     goodsScrollBarY,
                     goodsScrollBarX + SCROLL_BAR_WIDTH,
                     goodsScrollBarY + goodsAreaHeight,
-                    0xFF404040);
+                    ModColors.BLACK_DARK_64);
         }
 
         guiGraphics.enableScissor(
@@ -619,7 +619,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             int y = startY + row * (SLOT_SIZE + SLOT_SPACING);
 
             // 绘制槽位背景
-            guiGraphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0x33000000);
+            guiGraphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, ModColors.BLACK_ALPHA_20);
 
             // 绘制物品
             StoreEntity.StoreItem storeItem = items.get(i);
@@ -629,7 +629,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
 
             if (isOutOfStock || isFavorLocked) {
                 // 绘制灰色遮罩
-                guiGraphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0xA0000000);
+                guiGraphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, ModColors.BLACK_ALPHA_62);
             }
 
             guiGraphics.renderItem(storeItem.getItemStack(), x + 1, y + 1);
@@ -647,7 +647,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             }
 
             String stockStr;
-            int color = 0xFFFFFF;
+            int color = ModColors.WHITE;
 
             if (storeItem.getMaxStock() == -1) {
                 stockStr = "∞";
@@ -657,7 +657,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                     color = ModColors.ERROR;
                 } else if (stock < storeItem.getCurrentStock()) {
                     // 如果购物车中有此商品，且当前显示的库存不是原始库存（即被减少了），显示为黄色
-                    color = 0xFFFF00;
+                    color = ModColors.YELLOW;
                 }
             }
             if (isFavorLocked) {
@@ -678,8 +678,8 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
 
             // 选中高亮 (最后绘制以覆盖在物品上方，确保可见)
             if (items.get(i) == this.selectedItem) {
-                color = 0xFFF8F8FF;
-                int shadowColor = 0xDEDEDEDE;
+                color = ModColors.WHITE_GHOST;
+                int shadowColor = ModColors.GRAY_ALPHA_LIGHT;
                 guiGraphics.fill(x, y, x + SLOT_SIZE, y + 1, shadowColor); // 上
                 guiGraphics.fill(x, y + SLOT_SIZE - 1, x + SLOT_SIZE, y + SLOT_SIZE, color); // 下
                 guiGraphics.fill(x, y, x + 1, y + SLOT_SIZE, shadowColor); // 左
@@ -696,7 +696,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             startX = this.getLeftPanelStartX();
             // 计算居中位置
             int x = startX + (areaWidth - nameWidth) / 2;
-            guiGraphics.drawString(this.font, name, x, this.topPos + 100, 0xFFFFFF);
+            guiGraphics.drawString(this.font, name, x, this.topPos + 100, ModColors.WHITE);
         }
     }
 

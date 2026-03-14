@@ -1,6 +1,7 @@
 package com.otherworldinn.entity.store;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.entity.base.StoreEntity;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 import java.util.ArrayList;

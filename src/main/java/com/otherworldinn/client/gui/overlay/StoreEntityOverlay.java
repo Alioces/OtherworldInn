@@ -1,7 +1,7 @@
 package com.otherworldinn.client.gui.overlay;
 
 import com.otherworldinn.OtherworldInn;
-import com.otherworldinn.entity.store.StoreEntity;
+import com.otherworldinn.entity.base.StoreEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;

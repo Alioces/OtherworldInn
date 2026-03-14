@@ -5,7 +5,7 @@ import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.RoomData;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;

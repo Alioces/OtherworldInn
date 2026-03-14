@@ -1,4 +1,4 @@
-package com.otherworldinn.world.event;
+package com.otherworldinn.world.inn.service;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllDataComponents;

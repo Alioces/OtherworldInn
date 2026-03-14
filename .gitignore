@@ -6,6 +6,7 @@ out/
 gradle/kotlin/
 src/generated/resources/.cache
 .github/
+.eclipse/
 
 # Eclipse
 .classpath

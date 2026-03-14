@@ -1,4 +1,4 @@
-package com.otherworldinn.world.economy;
+package com.otherworldinn.world.economy.service;
 
 import java.util.HashMap;
 import java.util.Map;

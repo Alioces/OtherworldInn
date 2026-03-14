@@ -1,16 +1,17 @@
 package com.otherworldinn.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.otherworldinn.client.CameraHandler;
-import com.otherworldinn.client.map.MapPageManager;
+import com.otherworldinn.client.control.CameraHandler;
+import com.otherworldinn.client.map.service.MapPageManager;
 import com.otherworldinn.foundation.ClientConfig;
+import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.init.ModKeyBindings;
 import com.otherworldinn.network.ModMessages;
 import com.otherworldinn.network.packet.C2STeleportPacket;
 import com.otherworldinn.world.map.MapPoint;
 import com.otherworldinn.world.map.TownDataProvider;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -638,7 +639,7 @@ public class MapViewScreen extends Screen {
                 int textX = getX() + (width - textWidth) / 2;
                 int textY = getY() - 10;
                 guiGraphics.drawString(
-                        Minecraft.getInstance().font, text, textX, textY, 0xFFFFFF, true);
+                        Minecraft.getInstance().font, text, textX, textY, ModColors.WHITE, true);
             }
 
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);

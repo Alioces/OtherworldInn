@@ -1,7 +1,7 @@
 package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
-import com.otherworldinn.client.gui.store.StoreScreen;
+import com.otherworldinn.client.gui.screen.StoreScreen;
 import com.otherworldinn.client.renderer.BlacksmithModel;
 import com.otherworldinn.client.renderer.BlacksmithRenderer;
 import com.otherworldinn.client.renderer.GuestRenderer;

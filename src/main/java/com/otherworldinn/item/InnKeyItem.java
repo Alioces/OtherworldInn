@@ -1,8 +1,9 @@
 package com.otherworldinn.item;
 
+import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -55,12 +56,12 @@ public class InnKeyItem extends Item {
                             newState = InnData.InnState.CLOSED;
                             message =
                                     Component.translatable("message.otherworldinn.inn_key.closed");
-                            color = 0xFF6A6A;
+                            color = ModColors.RED;
                         } else {
                             sound = SoundEvents.WOODEN_DOOR_CLOSE;
                             newState = InnData.InnState.OPEN;
                             message = Component.translatable("message.otherworldinn.inn_key.open");
-                            color = 0x00FF7F;
+                            color = ModColors.GREEN;
                         }
 
                         innData.setState(newState);

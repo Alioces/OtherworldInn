@@ -1,8 +1,9 @@
-package com.otherworldinn.client.event;
+package com.otherworldinn.client.event.listener;
 
+import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -54,18 +55,18 @@ public class DeskBellClientHandler {
             switch (state) {
                 case OPEN:
                     message = Component.translatable("message.otherworldinn.desk_bell.status.open");
-                    color = 0x00FF7F;
+                    color = ModColors.GREEN;
                     break;
                 case CLOSED:
                     message =
                             Component.translatable("message.otherworldinn.desk_bell.status.closed");
-                    color = 0xFF6A6A;
+                    color = ModColors.RED;
                     break;
                 case EDIT_MODE:
                     message =
                             Component.translatable(
                                     "message.otherworldinn.desk_bell.status.edit_mode");
-                    color = 0x1E90FF;
+                    color = ModColors.BLUE;
                     break;
                 default:
                     return;

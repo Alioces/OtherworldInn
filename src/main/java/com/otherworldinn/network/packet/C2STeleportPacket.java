@@ -4,7 +4,7 @@ import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.world.map.MapPoint;
 import com.otherworldinn.world.map.TownDataProvider;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import java.util.Optional;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;

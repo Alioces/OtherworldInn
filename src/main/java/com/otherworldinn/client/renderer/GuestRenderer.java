@@ -1,6 +1,6 @@
 package com.otherworldinn.client.renderer;
 
-import com.otherworldinn.entity.GuestEntity;
+import com.otherworldinn.entity.base.GuestEntity;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;

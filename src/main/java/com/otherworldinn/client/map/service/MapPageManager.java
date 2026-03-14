@@ -1,4 +1,4 @@
-package com.otherworldinn.client.map;
+package com.otherworldinn.client.map.service;
 
 import com.otherworldinn.OtherworldInn;
 import java.util.Collections;

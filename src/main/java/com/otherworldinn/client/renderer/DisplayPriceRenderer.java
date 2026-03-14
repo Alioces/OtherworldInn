@@ -2,8 +2,9 @@ package com.otherworldinn.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.dimension.TownDimensions;
-import com.otherworldinn.world.economy.ItemSellPriceManager;
+import com.otherworldinn.world.economy.service.ItemSellPriceManager;
 import com.simibubi.create.content.logistics.depot.DepotBlockEntity;
 import com.simibubi.create.content.logistics.depot.EjectorBlockEntity;
 import net.minecraft.client.Minecraft;
@@ -71,7 +72,7 @@ public class DisplayPriceRenderer {
                 text,
                 -width / 2.0F,
                 0.0F,
-                0xFFFFFFFF,
+                ModColors.WHITE_ALPHA_FULL,
                 false,
                 poseStack.last().pose(),
                 bufferSource,

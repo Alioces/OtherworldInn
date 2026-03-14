@@ -1,9 +1,9 @@
-package com.otherworldinn.world.event;
+package com.otherworldinn.world.event.listener;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.world.dimension.TownDimensions;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import com.otherworldinn.world.teleport.TeleportUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;

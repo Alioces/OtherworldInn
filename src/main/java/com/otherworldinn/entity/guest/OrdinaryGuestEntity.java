@@ -1,7 +1,8 @@
-package com.otherworldinn.entity;
+package com.otherworldinn.entity.guest;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.client.util.TextureUtils;
+import com.otherworldinn.entity.base.GuestEntity;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;

@@ -1,7 +1,7 @@
 package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
-import com.otherworldinn.entity.GuestEntity;
+import com.otherworldinn.entity.base.GuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;

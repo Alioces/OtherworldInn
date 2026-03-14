@@ -1,6 +1,6 @@
 package com.otherworldinn.world.inventory;
 
-import com.otherworldinn.entity.store.StoreEntity;
+import com.otherworldinn.entity.base.StoreEntity;
 import com.otherworldinn.init.ModMenuTypes;
 import java.util.ArrayList;
 import java.util.List;

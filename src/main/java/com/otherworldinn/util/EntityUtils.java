@@ -1,6 +1,6 @@
 package com.otherworldinn.util;
 
-import com.otherworldinn.world.event.DisappearManager;
+import com.otherworldinn.world.event.runtime.DisappearManager;
 import net.minecraft.world.entity.Entity;
 
 /**

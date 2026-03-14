@@ -6,21 +6,31 @@ package com.otherworldinn.foundation;
  * <p>存储模组中使用的标准颜色代码。
  */
 public class ModColors {
-    /** 错误提示颜色 (FF6A6A) */
-    public static final int ERROR = 0xFF6A6A;
+    public static final int RED = 0xFF6A6A; // #FF6A6A
+    public static final int BLUE = 0x1E90FF; // #1E90FF
+    public static final int YELLOW = 0xFFD700; // #FFD700
+    public static final int GREEN = 0x00FF7F; // #00FF7F
 
-    /** 成功提示颜色 (3CB371) */
-    public static final int SUCCESS = 0x3CB371;
+    public static final int BLACK_ALPHA_20 = 0x33000000; // #33000000
+    public static final int BLACK_ALPHA_62 = 0xA0000000; // #A0000000
+    public static final int BLACK_DARK_32 = 0xFF202020; // #FF202020
+    public static final int BLACK_DARK_64 = 0xFF404040; // #FF404040
 
-    /** 一般提示/信息颜色 (97FFFF) */
-    public static final int INFO = 0x97FFFF;
+    public static final int WHITE = 0xFFFFFF; // #FFFFFF
+    public static final int WHITE_ALPHA_FULL = 0xFFFFFFFF; // #FFFFFFFF
+    public static final int WHITE_GHOST = 0xFFF8F8FF; // #FFF8F8FF
 
-    /** 舒适度颜色 (FF6A6A) */
-    public static final int COMFORT = 0xFF6A6A;
+    public static final int GRAY_DARK = 0xA9A9A9; // #A9A9A9
+    public static final int GRAY_50 = 0xFF808080; // #FF808080
+    public static final int GRAY_LIGHT = 0xFFC0C0C0; // #FFC0C0C0
+    public static final int GRAY_ALPHA_LIGHT = 0xDEDEDEDE; // #DEDEDEDE
 
-    /** 光照度颜色 (FFEC8B) */
-    public static final int LIGHT = 0xFFEC8B;
+    public static final int ERROR = RED;
+    public static final int SUCCESS = GREEN;
+    public static final int INFO = BLUE;
+    public static final int COMFORT = RED;
+    public static final int LIGHT = YELLOW;
+    public static final int HUMIDITY = BLUE;
 
-    /** 湿度颜色 (00BFFF) */
-    public static final int HUMIDITY = 0x00BFFF;
+    private ModColors() {}
 }

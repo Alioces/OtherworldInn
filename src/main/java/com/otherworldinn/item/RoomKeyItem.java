@@ -1,12 +1,12 @@
 package com.otherworldinn.item;
 
-import com.otherworldinn.entity.GuestEntity;
+import com.otherworldinn.entity.base.GuestEntity;
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.inn.GuestData;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.RoomData;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import com.otherworldinn.world.team.TeamSavedData;
 import java.util.List;
 import java.util.Optional;

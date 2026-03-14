@@ -2,7 +2,7 @@ package com.otherworldinn.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import com.otherworldinn.world.event.DimensionResetManager;
+import com.otherworldinn.world.event.runtime.DimensionResetManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;

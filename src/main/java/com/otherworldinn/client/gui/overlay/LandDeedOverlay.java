@@ -1,10 +1,11 @@
 package com.otherworldinn.client.gui.overlay;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.item.LandDeedItem;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
@@ -80,7 +81,7 @@ public class LandDeedOverlay {
             BlockPos pos1 = BlockPos.of(tag.getLong("Pos1"));
 
             Component text;
-            int color = 0xFFFFFF;
+            int color = ModColors.WHITE;
 
             // 实时获取光标位置
             BlockPos pos2 = null;
@@ -97,13 +98,13 @@ public class LandDeedOverlay {
                     text =
                             Component.translatable(
                                     "message.otherworldinn.land_deed.fail_out_of_bounds");
-                    color = 0xFF5555; // 红色
+                    color = ModColors.RED;
                 } else {
                     int price = LandDeedItem.calculatePrice(team, pos1, pos2);
                     int coins = team != null ? team.getCoins() : 0;
 
                     if (price > coins) {
-                        color = 0xFF5555; // 红色
+                        color = ModColors.RED;
                     }
 
                     text =
@@ -129,20 +130,20 @@ public class LandDeedOverlay {
             BlockPos pos2 = BlockPos.of(tag.getLong("Pos2"));
 
             Component text;
-            int color = 0xFFFFFF;
+            int color = ModColors.WHITE;
 
             TeamData team = TeamManager.getInstance().getClientPlayerTeam();
 
             // 检查是否超出最大范围 (双重保险)
             if (!LandDeedItem.isWithinBounds(pos1, pos2)) {
                 text = Component.translatable("message.otherworldinn.land_deed.fail_out_of_bounds");
-                color = 0xFF5555;
+                color = ModColors.RED;
             } else {
                 int price = LandDeedItem.calculatePrice(team, pos1, pos2);
                 int coins = team != null ? team.getCoins() : 0;
 
                 if (price > coins) {
-                    color = 0xFF5555; // 红色
+                    color = ModColors.RED;
                 }
 
                 text =

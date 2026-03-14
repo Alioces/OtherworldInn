@@ -1,7 +1,7 @@
 package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
-import com.otherworldinn.entity.OrdinaryGuestEntity;
+import com.otherworldinn.entity.guest.OrdinaryGuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
 import java.util.function.Supplier;
 import net.minecraft.core.registries.BuiltInRegistries;

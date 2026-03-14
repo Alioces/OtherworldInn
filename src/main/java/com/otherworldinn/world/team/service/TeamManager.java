@@ -1,7 +1,9 @@
-package com.otherworldinn.world.team;
+package com.otherworldinn.world.team.service;
 
 import com.otherworldinn.network.ModMessages;
 import com.otherworldinn.network.packet.S2CTeamSyncPacket;
+import com.otherworldinn.world.team.TeamData;
+import com.otherworldinn.world.team.TeamSavedData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

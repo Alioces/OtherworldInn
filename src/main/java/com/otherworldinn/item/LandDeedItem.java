@@ -2,7 +2,7 @@ package com.otherworldinn.item;
 
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;

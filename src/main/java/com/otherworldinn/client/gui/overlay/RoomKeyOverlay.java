@@ -1,7 +1,7 @@
 package com.otherworldinn.client.gui.overlay;
 
 import com.otherworldinn.OtherworldInn;
-import com.otherworldinn.entity.GuestEntity;
+import com.otherworldinn.entity.base.GuestEntity;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.item.RoomKeyItem;
 import java.util.Optional;

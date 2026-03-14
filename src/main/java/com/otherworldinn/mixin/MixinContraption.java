@@ -3,7 +3,7 @@ package com.otherworldinn.mixin;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.inn.InnData.InnState;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import com.simibubi.create.content.contraptions.Contraption;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Containers;

@@ -1,4 +1,4 @@
-package com.otherworldinn.util;
+package com.otherworldinn.util.service;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;

@@ -3,7 +3,7 @@ package com.otherworldinn.compat;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.inn.InnData.InnState;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import com.simibubi.create.api.contraption.BlockMovementChecks;
 import com.simibubi.create.api.contraption.BlockMovementChecks.CheckResult;
 import net.minecraft.core.BlockPos;

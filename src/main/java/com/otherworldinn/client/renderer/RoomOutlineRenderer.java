@@ -8,13 +8,14 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.item.LandDeedItem;
 import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.RoomData;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import com.simibubi.create.AllSpecialTextures;
 import java.util.List;
 import net.createmod.catnip.outliner.Outliner;
@@ -138,7 +139,7 @@ public class RoomOutlineRenderer {
                                     room.getMaxPos().getZ() + 1.0);
                     Outliner.getInstance()
                             .showAABB(room.getId(), box)
-                            .colored(0x4682B4)
+                            .colored(ModColors.BLUE)
                             .lineWidth(1 / 16f)
                             .withFaceTextures(
                                     AllSpecialTextures.CUTOUT_CHECKERED,
@@ -146,15 +147,15 @@ public class RoomOutlineRenderer {
                 }
             } else if (holdingRoomKey) {
                 // 手持房间钥匙：渲染所有房间
-                // 绑定的房间：蓝色 (0x4682B4)
-                // 其他房间：灰色 (0xA9A9A9)
+                // 绑定的房间：蓝色 (ModColors.BLUE)
+                // 其他房间：灰色 (ModColors.GRAY_DARK)
                 java.util.Optional<java.util.UUID> boundRoomUUID =
                         RoomKeyItem.getBoundRoomUUID(stack);
 
                 for (RoomData room : innData.getRooms().values()) {
                     boolean isBound =
                             boundRoomUUID.isPresent() && boundRoomUUID.get().equals(room.getUuid());
-                    int color = isBound ? 0x4682B4 : 0xA9A9A9;
+                    int color = isBound ? ModColors.BLUE : ModColors.GRAY_DARK;
 
                     AABB box =
                             new AABB(
@@ -193,7 +194,7 @@ public class RoomOutlineRenderer {
 
                     Outliner.getInstance()
                             .showAABB("inn_region_" + i, innBox)
-                            .colored(0x97FFFF)
+                            .colored(ModColors.BLUE)
                             .lineWidth(1 / 16f)
                             .withFaceTextures(
                                     AllSpecialTextures.CUTOUT_CHECKERED,
@@ -254,12 +255,12 @@ public class RoomOutlineRenderer {
 
                 int color;
                 if (!LandDeedItem.isWithinBounds(pos1, pos2)) {
-                    color = 0xFF0000; // 红色 (超出范围)
+                    color = ModColors.RED;
                 } else {
                     // 检查余额，如果不足显示红色
                     int price = LandDeedItem.calculatePrice(team, pos1, pos2);
                     int coins = team != null ? team.getCoins() : 0;
-                    color = (coins >= price) ? 0xFFD700 : 0xFF5555;
+                    color = (coins >= price) ? ModColors.YELLOW : ModColors.RED;
                 }
 
                 Outliner.getInstance()
@@ -302,7 +303,7 @@ public class RoomOutlineRenderer {
 
                 Outliner.getInstance()
                         .showAABB(PREVIEW_SLOT, previewBox)
-                        .colored(0xC0FF3E)
+                        .colored(ModColors.GREEN)
                         .lineWidth(1 / 16f)
                         .withFaceTextures(
                                 AllSpecialTextures.CUTOUT_CHECKERED,

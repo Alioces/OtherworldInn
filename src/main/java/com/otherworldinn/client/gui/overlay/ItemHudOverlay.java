@@ -1,6 +1,7 @@
 package com.otherworldinn.client.gui.overlay;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.foundation.ModColors;
 import com.simibubi.create.foundation.gui.AllIcons;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -45,7 +46,7 @@ public class ItemHudOverlay {
 
     public record MouseAction(MouseButton button, Component text, int color) {
         public MouseAction(MouseButton button, Component text) {
-            this(button, text, 0xFFFFFF);
+            this(button, text, ModColors.WHITE);
         }
     }
 

@@ -1,7 +1,7 @@
 package com.otherworldinn.network.packet;
 
 import com.otherworldinn.OtherworldInn;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

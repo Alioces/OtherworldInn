@@ -1,13 +1,14 @@
 package com.otherworldinn.world.inn;
 
-import com.otherworldinn.entity.GuestEntity;
+import com.otherworldinn.entity.base.GuestEntity;
 import com.otherworldinn.foundation.ModBlockProperties;
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.init.ModEntities;
 import com.otherworldinn.util.EntityUtils;
-import com.otherworldinn.world.event.ClipboardManager;
+import com.otherworldinn.world.inn.service.ClipboardManager;
+import com.otherworldinn.world.inn.service.FurnitureManager;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import com.otherworldinn.world.team.TeamSavedData;
 import java.util.*;
 import lombok.AccessLevel;

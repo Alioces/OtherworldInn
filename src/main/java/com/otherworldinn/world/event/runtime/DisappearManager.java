@@ -1,4 +1,4 @@
-package com.otherworldinn.world.event;
+package com.otherworldinn.world.event.runtime;
 
 import com.otherworldinn.OtherworldInn;
 import java.util.ArrayList;

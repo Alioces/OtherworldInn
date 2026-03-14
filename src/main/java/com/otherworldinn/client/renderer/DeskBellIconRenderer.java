@@ -3,9 +3,10 @@ package com.otherworldinn.client.renderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity;
 import com.simibubi.create.foundation.gui.AllIcons;
 import java.util.HashMap;
@@ -76,15 +77,15 @@ public class DeskBellIconRenderer {
         switch (state) {
             case OPEN:
                 icon = AllIcons.I_WHITELIST;
-                color = 0x00FF7F; // 绿色
+                color = ModColors.GREEN;
                 break;
             case CLOSED:
                 icon = AllIcons.I_BLACKLIST;
-                color = 0xFF6A6A; // 淡红色
+                color = ModColors.RED;
                 break;
             case EDIT_MODE:
                 icon = AllIcons.I_SCHEMATIC;
-                color = 0x1E90FF; // 蓝色
+                color = ModColors.BLUE;
                 break;
             default:
                 return;

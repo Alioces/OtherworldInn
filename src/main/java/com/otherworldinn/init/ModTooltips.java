@@ -3,11 +3,12 @@ package com.otherworldinn.init;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.BlockDataGenInfo;
 import com.otherworldinn.foundation.ItemDataGenInfo;
+import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.dimension.TownDimensions;
-import com.otherworldinn.world.economy.ItemSellPriceManager;
+import com.otherworldinn.world.economy.service.ItemSellPriceManager;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import java.util.Map;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -75,20 +76,20 @@ public class ModTooltips {
                             stateText =
                                     Component.translatable(
                                             "message.otherworldinn.desk_bell.status.open");
-                            color = 0x00FF7F;
+                            color = ModColors.GREEN;
                             break;
                         case EDIT_MODE:
                             stateText =
                                     Component.translatable(
                                             "message.otherworldinn.desk_bell.status.edit_mode");
-                            color = 0x1E90FF;
+                            color = ModColors.BLUE;
                             break;
                         case CLOSED:
                         default:
                             stateText =
                                     Component.translatable(
                                             "message.otherworldinn.desk_bell.status.closed");
-                            color = 0xFF6A6A;
+                            color = ModColors.RED;
                             break;
                     }
 
@@ -111,7 +112,7 @@ public class ModTooltips {
                             .add(
                                     Component.translatable(
                                                     item.getDescriptionId() + ".tooltip." + i)
-                                            .withStyle(style -> style.withColor(0x97FFFF)));
+                                            .withStyle(style -> style.withColor(ModColors.INFO)));
                 }
                 return;
             }
@@ -129,7 +130,7 @@ public class ModTooltips {
                                 .add(
                                         Component.translatable(
                                                         block.getDescriptionId() + ".tooltip." + i)
-                                                .withStyle(style -> style.withColor(0x97FFFF)));
+                                                .withStyle(style -> style.withColor(ModColors.INFO)));
                     }
                     return;
                 }

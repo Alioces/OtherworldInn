@@ -1,4 +1,4 @@
-package com.otherworldinn.entity.store;
+package com.otherworldinn.entity.base;
 
 import com.otherworldinn.world.inventory.StoreMenu;
 import java.util.ArrayList;

@@ -1,10 +1,11 @@
-package com.otherworldinn.world.event;
+package com.otherworldinn.world.event.listener;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -139,7 +140,7 @@ public class TownProtectionHandler {
     private static void sendDenyMessage(Player player, Component message) {
         // 使用 Status Bar
         player.displayClientMessage(
-                message.copy().withStyle(style -> style.withColor(0xFF6A6A)), true);
+                message.copy().withStyle(style -> style.withColor(ModColors.RED)), true);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

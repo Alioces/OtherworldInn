@@ -1,13 +1,16 @@
-package com.otherworldinn.world.inn;
+package com.otherworldinn.world.inn.listener;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.world.dimension.TownDimensions;
+import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.InnData.InnState;
+import com.otherworldinn.world.inn.RoomData;
+import com.otherworldinn.world.inn.RoomData;
 import com.otherworldinn.world.team.TeamData;
-import com.otherworldinn.world.team.TeamManager;
+import com.otherworldinn.world.team.service.TeamManager;
 import com.otherworldinn.world.team.TeamSavedData;
 import com.simibubi.create.AllBlocks;
 import java.util.HashSet;
@@ -441,7 +444,7 @@ public class InnEventHandler {
                                     message =
                                             Component.translatable(
                                                     "message.otherworldinn.desk_bell.status.edit_mode");
-                                    color = 0x1E90FF;
+                                    color = ModColors.BLUE;
                                     sound = SoundEvents.PISTON_EXTEND;
                                     break;
                                 case CLOSED:
@@ -449,7 +452,7 @@ public class InnEventHandler {
                                     message =
                                             Component.translatable(
                                                     "message.otherworldinn.desk_bell.status.closed");
-                                    color = 0xFF6A6A;
+                                    color = ModColors.RED;
                                     sound = SoundEvents.PISTON_CONTRACT;
                                     break;
                             }

@@ -1,4 +1,4 @@
-package com.otherworldinn.world.inn;
+package com.otherworldinn.world.inn.service;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ModColors;
