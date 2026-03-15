@@ -43,11 +43,13 @@ public class OrdinaryGuestEntity extends GuestEntity {
         this.getGuestData().setHumidityPreference(10, 90);
     }
 
+    /*
     @Override
     protected void initRewardItems() {
         ResourceLocation reward = this.getRandom().nextBoolean() ? IRON_INGOT_ID : GOLD_INGOT_ID;
-        //this.getGuestData().addRewardItem(reward, 1, 2);
+        this.getGuestData().addRewardItem(reward, 1, 2);
     }
+    */
 
     @Override
     public ResourceLocation getSkinTexture() {
