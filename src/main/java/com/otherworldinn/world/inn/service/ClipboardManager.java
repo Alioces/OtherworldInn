@@ -1,5 +1,6 @@
 package com.otherworldinn.world.inn.service;
 
+import com.otherworldinn.util.BlockEntitySearchUtils;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllDataComponents;
 import com.simibubi.create.content.equipment.clipboard.ClipboardBlockEntity;
@@ -13,10 +14,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 
 public class ClipboardManager {
@@ -98,7 +99,7 @@ public class ClipboardManager {
             Level level, AABB area, Consumer<List<List<ClipboardEntry>>> modifier) {
         if (level.isClientSide) return false;
 
-        boolean modified = false;
+        boolean[] modified = new boolean[] {false};
         BlockPos min = BlockPos.containing(area.minX, area.minY, area.minZ);
         BlockPos max = BlockPos.containing(area.maxX, area.maxY, area.maxZ);
 
@@ -107,59 +108,50 @@ public class ClipboardManager {
         int minChunkZ = min.getZ() >> 4;
         int maxChunkZ = max.getZ() >> 4;
 
-        // 遍历范围内的所有区块
-        for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
-            for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
-                LevelChunk chunk = level.getChunkSource().getChunk(chunkX, chunkZ, false);
-                if (chunk == null) continue;
-
-                // 遍历区块内的所有 BlockEntity
-                for (BlockPos pos : chunk.getBlockEntitiesPos()) {
-                    // 检查是否在范围内
-                    if (!area.contains(pos.getX(), pos.getY(), pos.getZ())) continue;
-
-                    if (level.getBlockEntity(pos) instanceof ClipboardBlockEntity cbe) {
-                        BlockState state = cbe.getBlockState();
-
-                        // 检查是否为墙面剪贴板
-                        if (!AllBlocks.CLIPBOARD.has(state)) continue;
-                        if (state.getValue(BlockStateProperties.ATTACH_FACE) != AttachFace.WALL)
-                            continue;
-
-                        // 读取当前内容
-                        ClipboardContent content =
-                                cbe.components()
-                                        .getOrDefault(
-                                                AllDataComponents.CLIPBOARD_CONTENT,
-                                                ClipboardContent.EMPTY);
-
-                        // readAll 返回的是页面列表的可变副本，可以直接修改
-                        List<List<ClipboardEntry>> pages = ClipboardEntry.readAll(content);
-
-                        // 应用修改逻辑
-                        modifier.accept(pages);
-                        modified = true;
-
-                        // 构建新的内容对象
-                        ClipboardContent newContent =
-                                content.setPages(pages)
-                                        .setType(
-                                                pages.isEmpty()
-                                                        ? ClipboardType.EMPTY
-                                                        : ClipboardType.WRITTEN);
-
-                        // 写回 BlockEntity 的组件数据中
-                        PatchedDataComponentMap map = new PatchedDataComponentMap(cbe.components());
-                        map.set(AllDataComponents.CLIPBOARD_CONTENT, newContent);
-                        cbe.setComponents(map);
-
-                        // 通知更新（确保客户端同步和方块状态更新）
-                        cbe.notifyUpdate();
-                        cbe.updateWrittenState();
+        BlockEntitySearchUtils.forEachInChunkRange(
+                level,
+                minChunkX,
+                maxChunkX,
+                minChunkZ,
+                maxChunkZ,
+                blockEntity -> {
+                    BlockPos pos = blockEntity.getBlockPos();
+                    if (!area.contains(pos.getX(), pos.getY(), pos.getZ())) {
+                        return;
                     }
-                }
-            }
-        }
-        return modified;
+                    if (!(blockEntity instanceof ClipboardBlockEntity cbe)) {
+                        return;
+                    }
+
+                    BlockState state = cbe.getBlockState();
+                    if (!AllBlocks.CLIPBOARD.has(state)) {
+                        return;
+                    }
+                    if (state.getValue(BlockStateProperties.ATTACH_FACE) != AttachFace.WALL) {
+                        return;
+                    }
+
+                    ClipboardContent content =
+                            cbe.components()
+                                    .getOrDefault(
+                                            AllDataComponents.CLIPBOARD_CONTENT,
+                                            ClipboardContent.EMPTY);
+                    List<List<ClipboardEntry>> pages = ClipboardEntry.readAll(content);
+                    modifier.accept(pages);
+                    modified[0] = true;
+
+                    ClipboardContent newContent =
+                            content.setPages(pages)
+                                    .setType(
+                                            pages.isEmpty()
+                                                    ? ClipboardType.EMPTY
+                                                    : ClipboardType.WRITTEN);
+                    PatchedDataComponentMap map = new PatchedDataComponentMap(cbe.components());
+                    map.set(AllDataComponents.CLIPBOARD_CONTENT, newContent);
+                    cbe.setComponents(map);
+                    cbe.notifyUpdate();
+                    cbe.updateWrittenState();
+                });
+        return modified[0];
     }
 }

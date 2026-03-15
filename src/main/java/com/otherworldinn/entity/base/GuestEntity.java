@@ -1,5 +1,6 @@
 package com.otherworldinn.entity.base;
 
+import com.otherworldinn.util.BlockEntitySearchUtils;
 import com.otherworldinn.util.service.GuestNameManager;
 import com.otherworldinn.world.economy.service.ItemSellPriceManager;
 import com.otherworldinn.world.inn.GuestData;
@@ -466,26 +467,32 @@ public abstract class GuestEntity extends PathfinderMob {
 
     @Nullable
     private BlockPos findNearbyDiningDisplay(ServerLevel level) {
-        // 仅在“触发购买时刻”执行全量扫描，平时不做，避免频繁性能开销
         List<BlockPos> candidates = new ArrayList<>();
         BlockPos origin = this.blockPosition();
-        for (int x = -DINING_SEARCH_RADIUS; x <= DINING_SEARCH_RADIUS; x++) {
-            for (int y = -4; y <= 4; y++) {
-                for (int z = -DINING_SEARCH_RADIUS; z <= DINING_SEARCH_RADIUS; z++) {
-                    BlockPos pos = origin.offset(x, y, z);
+        int minX = origin.getX() - DINING_SEARCH_RADIUS;
+        int maxX = origin.getX() + DINING_SEARCH_RADIUS;
+        int minZ = origin.getZ() - DINING_SEARCH_RADIUS;
+        int maxZ = origin.getZ() + DINING_SEARCH_RADIUS;
+        int minY = Math.max(level.getMinBuildHeight(), origin.getY() - 4);
+        int maxY = Math.min(level.getMaxBuildHeight() - 1, origin.getY() + 4);
+        BlockEntitySearchUtils.forEachInBlockRange(
+                level,
+                minX,
+                maxX,
+                minY,
+                maxY,
+                minZ,
+                maxZ,
+                blockEntity -> {
+                    BlockPos pos = blockEntity.getBlockPos();
                     if (origin.distSqr(pos) > DINING_SEARCH_RADIUS * DINING_SEARCH_RADIUS) {
-                        continue;
+                        return;
                     }
-                    BlockState state = level.getBlockState(pos);
-                    if (!isDiningDisplay(state)) {
-                        continue;
-                    }
-                    if (hasSellableItem(level, pos, state)) {
+                    BlockState state = blockEntity.getBlockState();
+                    if (isDiningDisplay(state) && hasSellableItem(level, pos, state)) {
                         candidates.add(pos.immutable());
                     }
-                }
-            }
-        }
+                });
         if (candidates.isEmpty()) {
             return null;
         }
@@ -881,27 +888,48 @@ public abstract class GuestEntity extends PathfinderMob {
     private BlockPos findNearestDeskBellInInn(
             ServerLevel level, TeamData team, int minY, int maxY) {
         BlockPos origin = this.blockPosition();
-        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
-        BlockPos bestPos = null;
-        double bestDist = Double.MAX_VALUE;
+        BlockPos[] bestPos = new BlockPos[1];
+        double[] bestDist = new double[] {Double.MAX_VALUE};
+        int minChunkX = Integer.MAX_VALUE;
+        int maxChunkX = Integer.MIN_VALUE;
+        int minChunkZ = Integer.MAX_VALUE;
+        int maxChunkZ = Integer.MIN_VALUE;
+
         for (TeamData.InnRegion region : team.getInnRegions()) {
-            for (int x = region.minX(); x <= region.maxX(); x++) {
-                for (int z = region.minZ(); z <= region.maxZ(); z++) {
-                    for (int y = minY; y <= maxY; y++) {
-                        mutable.set(x, y, z);
-                        BlockEntity blockEntity = level.getBlockEntity(mutable);
-                        if (!(blockEntity instanceof DeskBellBlockEntity)) {
-                            continue;
-                        }
-                        double dist = origin.distSqr(mutable);
-                        if (dist < bestDist) {
-                            bestDist = dist;
-                            bestPos = mutable.immutable();
-                        }
-                    }
-                }
-            }
+            minChunkX = Math.min(minChunkX, region.minX() >> 4);
+            maxChunkX = Math.max(maxChunkX, region.maxX() >> 4);
+            minChunkZ = Math.min(minChunkZ, region.minZ() >> 4);
+            maxChunkZ = Math.max(maxChunkZ, region.maxZ() >> 4);
         }
-        return bestPos;
+
+        if (minChunkX == Integer.MAX_VALUE) {
+            return null;
+        }
+
+        BlockEntitySearchUtils.forEachInChunkRange(
+                level,
+                minChunkX,
+                maxChunkX,
+                minChunkZ,
+                maxChunkZ,
+                blockEntity -> {
+                    if (!(blockEntity instanceof DeskBellBlockEntity)) {
+                        return;
+                    }
+                    BlockPos pos = blockEntity.getBlockPos();
+                    int y = pos.getY();
+                    if (y < minY || y > maxY) {
+                        return;
+                    }
+                    if (!team.isInInnZone(pos)) {
+                        return;
+                    }
+                    double dist = origin.distSqr(pos);
+                    if (dist < bestDist[0]) {
+                        bestDist[0] = dist;
+                        bestPos[0] = pos.immutable();
+                    }
+                });
+        return bestPos[0];
     }
 }
