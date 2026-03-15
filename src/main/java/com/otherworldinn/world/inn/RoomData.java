@@ -44,7 +44,7 @@ public class RoomData {
     private int humidity;
 
     // 房间整洁度 (0-100)
-    // 目前由床位的整洁程度决定：(干净床位 / 总床位) * 100
+    // 当前按床位整洁度计算：(干净床位 / 总床位) * 100
     @Setter(AccessLevel.NONE)
     private int cleanliness = 100;
 

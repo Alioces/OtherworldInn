@@ -56,6 +56,7 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items)
         context.enqueueWork(
                 () -> {
                     if (context.player() instanceof ServerPlayer player) {
+                        // 校验实体与菜单上下文
                         Entity entity = player.level().getEntity(packet.entityId);
                         if (entity instanceof StoreEntity storeEntity) {
                             if (!(player.containerMenu instanceof StoreMenu storeMenu)) {
@@ -72,6 +73,7 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items)
                                     || packet.items.size() > MAX_REQUEST_ITEMS) {
                                 return;
                             }
+                            // 读取队伍数据用于扣费与同步
                             TeamManager manager = TeamManager.getInstance();
                             TeamData team = manager.getPlayerTeam(player);
 
@@ -83,10 +85,11 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items)
                             List<ItemStack> toGive = new ArrayList<>();
                             List<StoreEntity.StoreItem> toDeductStock = new ArrayList<>();
                             List<Integer> deductQuantities = new ArrayList<>();
+                            // 按库存对象聚合数量，处理重复购买
                             Map<StoreEntity.StoreItem, Integer> requestedByStock =
                                     new IdentityHashMap<>();
 
-                            // 验证并计算总价
+                            // 逐项校验并计算总价
                             for (PurchaseItem request : packet.items) {
                                 if (request == null
                                         || request.stack == null
@@ -138,7 +141,7 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items)
                                     }
                                 }
                                 if (!found) {
-                                    // 请求了商店没有的物品，可能是作弊或数据不同步
+                                    // 请求了商店没有的物品，直接拒绝本次交易
                                     return;
                                 }
                             }
@@ -148,7 +151,7 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items)
                                 return;
                             }
                             if (team.getCoins() >= totalPrice) {
-                                // 扣钱
+                                // 提交交易：扣费、扣库存、发货
                                 team.removeCoins(totalPrice, player.getServer());
                                 storeEntity.addSpentCoins(totalPrice);
                                 manager.syncTeam(team, player.getServer());
@@ -170,17 +173,10 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items)
                                     }
                                 }
 
-                                // 同步商店库存变化给附近玩家 (简单起见，可以只让当前打开界面的玩家刷新，或者依赖定期同步)
-                                // 目前 StoreEntity 没有自动同步库存给所有打开的 Container 的机制，
-                                // 但 StoreMenu 可以监听。
-                                // 这里我们手动让客户端刷新可能比较复杂，StoreEntity 数据变化应自动同步。
-                                // 如果 StoreEntity 使用 EntityDataSerializers 则会自动同步，但这里是用 NBT/List。
-                                // 简单做法：不做额外同步，下次打开时更新。或者发送一个更新包。
+                                // 库存刷新依赖后续同步
                             }
                         }
                     }
                 });
     }
-
-    // 移除多余的 PurchaseItem 类定义
 }

@@ -12,15 +12,15 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 城镇地图数据提供者
  *
- * <p>负责管理城镇中的所有地图点（POI）。 目前使用静态数据
+ * <p>负责管理城镇中的所有地图点（POI）。 当前使用静态数据
  */
 public class TownDataProvider {
 
     private static final List<MapPoint> POINTS = new ArrayList<>();
 
     static {
-        // 示例数据：初始化城镇中的几个关键点
-        // 注意：这里的世界坐标 (x, y, z) 和屏幕偏移 (x, y) 仅为示例，需要根据实际地图调整
+        // 初始化城镇关键点
+        // 坐标和屏幕偏移为当前配置值
 
         // 旅社 (Inn)
         POINTS.add(

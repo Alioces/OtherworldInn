@@ -27,6 +27,7 @@ public class StoreMenu extends AbstractContainerMenu {
     private final int totalSpentCoins;
 
     public StoreMenu(int containerId, Inventory playerInventory, FriendlyByteBuf extraData) {
+        // 客户端构造：从网络缓冲还原商店快照
         this(
                 containerId,
                 playerInventory,
@@ -51,6 +52,7 @@ public class StoreMenu extends AbstractContainerMenu {
         List<StoreEntity.StoreItem> items = new ArrayList<>();
         int size = extraData.readInt();
         HolderLookup.Provider registryAccess = playerInventory.player.registryAccess();
+        // 逐项反序列化，避免直接信任客户端缓存
         for (int i = 0; i < size; i++) {
             items.add(StoreEntity.StoreItem.load(registryAccess, extraData.readNbt()));
         }
@@ -88,6 +90,7 @@ public class StoreMenu extends AbstractContainerMenu {
         this.player = playerInventory.player;
         this.storeEntityId = storeEntityId;
         this.storeEntityType = storeEntityType;
+        // 尝试按实体 ID 绑定真实商店实体，失败时使用快照模式
         Entity entity =
                 storeEntityId >= 0 ? playerInventory.player.level().getEntity(storeEntityId) : null;
         this.storeEntity = entity instanceof StoreEntity store ? store : null;
@@ -116,6 +119,7 @@ public class StoreMenu extends AbstractContainerMenu {
         if (this.storeEntityId < 0) {
             return null;
         }
+        // 兜底：当初始引用失效时再按 ID 二次查找
         Entity entity = this.player.level().getEntity(this.storeEntityId);
         return entity instanceof StoreEntity store ? store : null;
     }

@@ -48,15 +48,18 @@ public record C2STeleportPacket(ResourceLocation pointId) implements CustomPacke
         context.enqueueWork(
                 () -> {
                     if (context.player() instanceof ServerPlayer player) {
-                        // 验证玩家队伍信息
+                        // 校验玩家队伍
                         TeamData team = TeamManager.getInstance().getPlayerTeam(player);
+                        if (team == null) {
+                            return;
+                        }
 
-                        // 验证地图点是否解锁
+                        // 校验目标点解锁状态
                         if (!team.isMapPointUnlocked(pointId)) {
                             return;
                         }
 
-                        // 执行传送
+                        // 查找目标点并执行传送
                         Optional<MapPoint> pointOpt = TownDataProvider.getPoint(pointId);
                         if (pointOpt.isPresent()) {
                             Vec3 target = pointOpt.get().worldPosition();

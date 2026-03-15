@@ -95,11 +95,13 @@ public abstract class StoreEntity extends PathfinderMob {
 
     @Override
     public boolean requiresCustomPersistence() {
+        // 强制持久化，避免被常规生物清理流程移除
         return true;
     }
 
     @Override
     public boolean removeWhenFarAway(double distanceToClosestPlayer) {
+        // 无论玩家距离多远都不允许自动卸载
         return false;
     }
 

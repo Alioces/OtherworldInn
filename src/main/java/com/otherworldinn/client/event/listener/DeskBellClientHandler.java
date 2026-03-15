@@ -26,6 +26,7 @@ public class DeskBellClientHandler {
         Level level = event.getLevel();
         if (!level.isClientSide) return;
 
+        // 仅处理铃铛方块点击的客户端提示逻辑
         BlockPos pos = event.getPos();
         BlockEntity blockEntity = level.getBlockEntity(pos);
 
@@ -48,6 +49,7 @@ public class DeskBellClientHandler {
             }
             if (!inside) return;
 
+            // 按旅社状态选择提示文本与颜色
             InnData.InnState state = team.getInnData().getState();
             MutableComponent message;
             int color;

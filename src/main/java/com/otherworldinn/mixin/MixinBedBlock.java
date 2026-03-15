@@ -59,7 +59,7 @@ public abstract class MixinBedBlock extends HorizontalDirectionalBlock {
     /**
      * 拦截右键交互
      *
-     * <p>如果床是脏乱的，且玩家手持床单，则禁止睡觉/设置重生点。 这样可以确保优先执行床单的清理/交互逻辑。
+     * <p>床处于脏乱状态且玩家手持床单时，拦截睡觉与重生点设置。
      */
     @Inject(method = "useWithoutItem", at = @At("HEAD"), cancellable = true)
     public void injectUseWithoutItem(

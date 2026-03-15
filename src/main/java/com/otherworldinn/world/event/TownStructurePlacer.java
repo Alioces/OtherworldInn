@@ -34,6 +34,7 @@ public class TownStructurePlacer {
     public static void onLevelLoad(LevelEvent.Load event) {
         if (event.getLevel() instanceof ServerLevel level
                 && level.dimension() == TownDimensions.TOWN_LEVEL) {
+            // 读取城镇生成状态
             TownSavedData data = TownSavedData.get(level);
 
             // 如果城镇尚未生成，则生成它
@@ -41,11 +42,13 @@ public class TownStructurePlacer {
                 generateTown(level);
                 data.setGenerated(true);
             }
+            // 常加载中心 5x5 区块，降低关键设施被卸载风险
             ensureCenterChunksAlwaysLoaded(level);
         }
     }
 
     private static void ensureCenterChunksAlwaysLoaded(ServerLevel level) {
+        // 半径 2 个区块 => (2*2+1)^2 = 25 区块
         for (int chunkX = -CENTER_CHUNK_RADIUS; chunkX <= CENTER_CHUNK_RADIUS; chunkX++) {
             for (int chunkZ = -CENTER_CHUNK_RADIUS; chunkZ <= CENTER_CHUNK_RADIUS; chunkZ++) {
                 level.setChunkForced(chunkX, chunkZ, true);
@@ -61,6 +64,7 @@ public class TownStructurePlacer {
         Optional<StructureTemplate> templateOptional = manager.get(TOWN_STRUCTURE);
 
         if (templateOptional.isPresent()) {
+            // 主路径：按模板放置整座城镇
             StructureTemplate template = templateOptional.get();
             StructurePlaceSettings settings =
                     new StructurePlaceSettings()
@@ -72,6 +76,7 @@ public class TownStructurePlacer {
             template.placeInWorld(level, ORIGIN, BlockPos.ZERO, settings, level.getRandom(), 2);
             OtherworldInn.LOGGER.info("Town structure placed successfully.");
         } else {
+            // 兜底路径：模板缺失时生成简化平台
             OtherworldInn.LOGGER.warn(
                     "Town structure not found: {}. Generating fallback platform.", TOWN_STRUCTURE);
             generateFallbackPlatform(level);

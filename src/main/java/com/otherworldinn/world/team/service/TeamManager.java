@@ -57,7 +57,7 @@ public class TeamManager {
     /**
      * 处理玩家加入世界
      *
-     * <p>无论单人多人，如果这是该服务器的第一个玩家，则自动建队。 后续加入的玩家将自动加入已存在的第一个队伍（临时逻辑）。
+     * <p>无论单人多人，如果这是该服务器的第一个玩家，则自动建队。 后续加入的玩家默认加入已存在的第一个队伍。
      *
      * @param player 加入的玩家
      * @param server 服务器实例
@@ -84,7 +84,7 @@ public class TeamManager {
         if (server.getPlayerList().getPlayerCount() <= 1 && data.getTeams().isEmpty()) {
             joinedTeam = createTeam(player, "Team-" + player.getName().getString());
         } else if (!data.getTeams().isEmpty()) {
-            // 临时逻辑：后续玩家自动加入第一个队伍
+            // 当前默认策略：后续玩家加入第一个队伍
             UUID firstTeamId = data.getTeams().keySet().iterator().next();
             if (joinTeam(player, firstTeamId)) {
                 joinedTeam = data.getTeams().get(firstTeamId);

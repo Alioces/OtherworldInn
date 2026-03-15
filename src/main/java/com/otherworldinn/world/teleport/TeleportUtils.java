@@ -29,7 +29,7 @@ public class TeleportUtils {
         ServerLevel targetLevel =
                 player.getServer().getLevel(TownDimensions.RESOURCE_OVERWORLD_LEVEL);
 
-        // 如果资源主世界不存在（例如未正确注册），则回退到原版主世界
+        // 资源主世界不可用时回退到原版主世界
         if (targetLevel == null) {
             targetLevel = player.getServer().getLevel(Level.OVERWORLD);
         }

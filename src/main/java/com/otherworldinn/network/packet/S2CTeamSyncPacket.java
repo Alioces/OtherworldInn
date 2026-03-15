@@ -38,6 +38,7 @@ public record S2CTeamSyncPacket(
     public static final StreamCodec<RegistryFriendlyByteBuf, S2CTeamSyncPacket> STREAM_CODEC =
             StreamCodec.of(
                     (buf, packet) -> {
+                        // 编码顺序必须与解码顺序严格一致
                         UUIDUtil.STREAM_CODEC.encode(buf, packet.teamId());
                         ByteBufCodecs.STRING_UTF8.encode(buf, packet.teamName());
                         UUIDUtil.STREAM_CODEC.encode(buf, packet.leaderId());
@@ -52,6 +53,7 @@ public record S2CTeamSyncPacket(
                                 .encode(buf, new ArrayList<>(packet.innRegions()));
                     },
                     buf ->
+                            // 按相同字段顺序恢复队伍快照
                             new S2CTeamSyncPacket(
                                     UUIDUtil.STREAM_CODEC.decode(buf),
                                     ByteBufCodecs.STRING_UTF8.decode(buf),
@@ -81,7 +83,7 @@ public record S2CTeamSyncPacket(
     public void handle(IPayloadContext context) {
         context.enqueueWork(
                 () -> {
-                    // 在客户端主线程执行
+                    // 在客户端主线程覆写本地缓存，保证 UI/逻辑读取一致
                     TeamManager.getInstance()
                             .updateClientTeamData(
                                     teamId(),

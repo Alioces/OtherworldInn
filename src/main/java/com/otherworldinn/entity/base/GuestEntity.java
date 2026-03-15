@@ -627,7 +627,6 @@ public abstract class GuestEntity extends PathfinderMob {
         super.tick();
         if (!this.level().isClientSide) {
             spawnDelay++;
-            this.guestData.tick();
 
             // 检测是否进入旅社范围并触发登记
             if (this.tickCount % 20 == 0

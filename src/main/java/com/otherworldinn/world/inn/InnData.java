@@ -673,9 +673,7 @@ public class InnData {
         for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
             BlockState state = level.getBlockState(pos);
             if (state.getBlock() instanceof BedBlock) {
-                // 确保我们设置的是床头，或者两部分都设置
-                // 实际上只需要设置一部分，因为床通常是联动的，但为了保险起见，或者只设置床头
-                // 这里我们简单地找到第一张床并设置其为脏乱
+                // 找到第一张可处理的床并标记为脏乱
                 if (state.hasProperty(ModBlockProperties.MESSY)) {
                     // 检查是否已经是脏乱的，我们只弄乱干净的床
                     if (!state.getValue(ModBlockProperties.MESSY)) {
@@ -826,13 +824,10 @@ public class InnData {
                         1.0f);
             }
         } else {
-            // 正常退房逻辑 (checkOut 中已有部分逻辑，这里作为统一入口可能更好，但 checkOut 包含更多结算逻辑)
-            // 目前 checkOut 处理正常退房，handleGuestDeparture 处理异常离开
+            // 正常退房由 checkOut 处理；此处处理异常离开
         }
 
-        // 3. 通用离开逻辑 (移除房间占用、寻路离开)
-        // 复用 checkOut 的后半部分逻辑，但 checkOut 需要 RoomData
-        // 这里如果是等待状态离开，可能没有 RoomData
+        // 通用离开逻辑：移除占用并触发离场
 
         if (entity instanceof GuestEntity guestEntity) {
             guestEntity.setNavigationTarget(new BlockPos(10, 71, 0));
@@ -842,9 +837,7 @@ public class InnData {
             guestEntity.getGuestData().setCheckedOut(true);
         }
 
-        // 从列表中移除 (调用者处理，或者在这里处理)
-        // 注意：tick 中遍历时移除需要迭代器，这里如果是 tick 调用，则由 tick 移除
-        // 如果是外部调用，需要确保从 guestIds 移除
+        // 从列表移除：tick 内遍历场景由调用方处理
         if (!isAngry) { // 仅非 tick 调用的情况
             removeGuest(guestId);
         }

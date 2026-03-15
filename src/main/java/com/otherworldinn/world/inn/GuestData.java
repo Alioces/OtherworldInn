@@ -222,15 +222,6 @@ public class GuestData {
         rewardItems.clear();
     }
 
-    /**
-     * 每 tick 更新逻辑
-     *
-     * <p>可以在此检查是否到达退房时间。 目前留空，暂不实现自动退房逻辑。
-     */
-    public void tick() {
-        // 退房逻辑暂不实现
-    }
-
     // --- NBT 序列化 ---
 
     /**
