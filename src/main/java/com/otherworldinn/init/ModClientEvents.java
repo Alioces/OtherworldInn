@@ -5,6 +5,8 @@ import com.otherworldinn.client.gui.screen.StoreScreen;
 import com.otherworldinn.client.renderer.BlacksmithModel;
 import com.otherworldinn.client.renderer.BlacksmithRenderer;
 import com.otherworldinn.client.renderer.GuestRenderer;
+import com.otherworldinn.client.renderer.MagicianModel;
+import com.otherworldinn.client.renderer.MagicianRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
@@ -43,6 +45,7 @@ public class ModClientEvents {
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.ORDINARY_GUEST.get(), GuestRenderer::new);
         event.registerEntityRenderer(ModEntities.BLACKSMITH.get(), BlacksmithRenderer::new);
+        event.registerEntityRenderer(ModEntities.MAGICIAN.get(), MagicianRenderer::new);
     }
 
     @SubscribeEvent
@@ -50,6 +53,8 @@ public class ModClientEvents {
             EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(
                 BlacksmithModel.LAYER_LOCATION, BlacksmithModel::createBodyLayer);
+        event.registerLayerDefinition(
+                MagicianModel.LAYER_LOCATION, MagicianModel::createBodyLayer);
     }
 
     @SubscribeEvent

@@ -101,7 +101,7 @@ public class ModItems {
                     .rarity(Rarity.EPIC)
                     .stacksTo(1)
                     .lang("Space Sphere", "空间球")
-                    .tooltip("Use to activate map teleport for your team", "使用后为队伍激活地图传送功能");
+                    .tooltip("Use to activate map teleport for your team", "使用后激活地图点传送功能");
     public static final DeferredItem<SpaceSphereItem> SPACE_SPHERE = SPACE_SPHERE_REG.register();
 
     // --- 辅助方法 ---

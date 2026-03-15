@@ -3,6 +3,7 @@ package com.otherworldinn.init;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.entity.guest.OrdinaryGuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
+import com.otherworldinn.entity.store.MagicianEntity;
 import java.util.function.Supplier;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
@@ -37,4 +38,17 @@ public class ModEntities {
                                     .updateInterval(2)
                                     .setShouldReceiveVelocityUpdates(true)
                                     .build("blacksmith"));
+
+    public static final Supplier<EntityType<MagicianEntity>> MAGICIAN =
+            ENTITY_TYPES.register(
+                    "magician",
+                    () ->
+                            EntityType.Builder.of(
+                                            MagicianEntity::new,
+                                            MobCategory.MISC)
+                                    .sized(0.6F, 1.95F)
+                                    .clientTrackingRange(80)
+                                    .updateInterval(2)
+                                    .setShouldReceiveVelocityUpdates(true)
+                                    .build("magician"));
 }
