@@ -33,7 +33,7 @@ public class BlacksmithEntity extends StoreEntity {
     public BlacksmithEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
         this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_INGOT));
-        this.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.IRON_SWORD));
+        this.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.COPPER_INGOT));
         this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
         this.setDropChance(EquipmentSlot.OFFHAND, 0.0F);
         // 初始化商品列表

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "otherworldinn:item/end_space_sphere"
+  }
+}

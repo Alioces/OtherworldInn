@@ -10,7 +10,7 @@ public class MagicianAnimation {
             AnimationDefinition.Builder.withLength(2.4F)
                     .looping()
                     .addAnimation(
-                            "Head",
+                            "head",
                             new AnimationChannel(
                                     AnimationChannel.Targets.ROTATION,
                                     new Keyframe(
@@ -26,7 +26,7 @@ public class MagicianAnimation {
                                             KeyframeAnimations.degreeVec(0.0F, -3.0F, 0.0F),
                                             AnimationChannel.Interpolations.CATMULLROM)))
                     .addAnimation(
-                            "Body",
+                            "body",
                             new AnimationChannel(
                                     AnimationChannel.Targets.ROTATION,
                                     new Keyframe(
@@ -42,7 +42,7 @@ public class MagicianAnimation {
                                             KeyframeAnimations.degreeVec(0.0F, 0.0F, 0.0F),
                                             AnimationChannel.Interpolations.CATMULLROM)))
                     .addAnimation(
-                            "RightArm",
+                            "right_arm",
                             new AnimationChannel(
                                     AnimationChannel.Targets.ROTATION,
                                     new Keyframe(
@@ -58,7 +58,7 @@ public class MagicianAnimation {
                                             KeyframeAnimations.degreeVec(-8.0F, -12.0F, 2.0F),
                                             AnimationChannel.Interpolations.CATMULLROM)))
                     .addAnimation(
-                            "LeftArm",
+                            "left_arm",
                             new AnimationChannel(
                                     AnimationChannel.Targets.ROTATION,
                                     new Keyframe(

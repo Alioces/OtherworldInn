@@ -1,5 +1,6 @@
 package com.otherworldinn.entity.store;
 
+import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.entity.base.StoreEntity;
 import com.otherworldinn.init.ModItems;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.Level;
 public class MagicianEntity extends StoreEntity {
 
     private static final int RANDOM_BOOK_COUNT = 8;
+    private static final int RANDOM_BOOK_BASE_PRICE = 32;
 
     public MagicianEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
@@ -56,12 +58,17 @@ public class MagicianEntity extends StoreEntity {
         for (int i = 0; i < count; i++) {
             int selectedIndex = random.nextInt(offers.size());
             EnchantmentOffer selected = offers.remove(selectedIndex);
-            int price = 12 + selected.level() * 8;
+            int price =
+                    Math.max(
+                            1,
+                            Math.round(
+                                    RANDOM_BOOK_BASE_PRICE
+                                            * (float) Math.pow(1.5D, selected.level() - 1)));
             this.addRandomStoreItem(
                     new ItemStack(Items.ENCHANTED_BOOK),
                     price,
                     price,
-                    2,
+                    1,
                     2,
                     stack -> stack.enchant(selected.enchantment(), selected.level()));
         }
@@ -77,7 +84,10 @@ public class MagicianEntity extends StoreEntity {
                                         .forEach(
                                                 holder -> {
                                                     Enchantment enchantment = holder.value();
-                                                    if (holder.is(EnchantmentTags.TREASURE)) {
+                                                    if (holder.is(EnchantmentTags.TREASURE)
+                                                            || holder.is(Enchantments.MENDING)
+                                                            || holder.is(Enchantments.SWIFT_SNEAK)
+                                                            || holder.is(Enchantments.WIND_BURST)) {
                                                         return;
                                                     }
                                                     for (int level = enchantment.getMinLevel();
@@ -99,19 +109,16 @@ public class MagicianEntity extends StoreEntity {
         this.addStoreItem(new ItemStack(Items.BLAZE_ROD), 16, 32);
         this.addStoreItem(new ItemStack(Items.GLOWSTONE_DUST), 8, 48);
 
-        int insertIndex = Math.min(this.fixedItemsCount, this.storeItems.size());
-        this.storeItems.add(
-                insertIndex,
-                new StoreItem(new ItemStack(ModItems.SPACE_SPHERE.get()), 64, 1, 1, 2, false));
         this.fixedItemsCount++;
 
+        this.addFavorStoreItem(2, new ItemStack(ModItems.SPACE_SPHERE.get()), 64, 4);
         this.addFavorStoreItem(2, new ItemStack(Items.BOOK), 8, 64);
         this.addFavorStoreItem(4, new ItemStack(Items.DIAMOND), 64, 8);
+        this.addFavorStoreItem(4, new ItemStack(Items.ENCHANTED_BOOK), 128, 2, this::applyMendingBook);
         this.addFavorStoreItem(6, new ItemStack(Items.ENDER_PEARL), 64, 16);
-        this.addFavorStoreItem(8, new ItemStack(Items.EXPERIENCE_BOTTLE), 32, 16);
-        this.addFavorStoreItem(4, new ItemStack(Items.ENCHANTED_BOOK), 128, 4, this::applyMendingBook);
         this.addFavorStoreItem(
                 6, new ItemStack(Items.ENCHANTED_BOOK), 256, 2, this::applySwiftSneakBook);
+        this.addFavorStoreItem(8, new ItemStack(Items.EXPERIENCE_BOTTLE), 32, 16);
         this.addFavorStoreItem(
                 8, new ItemStack(Items.ENCHANTED_BOOK), 256, 2, this::applyWindBurstBook);
     }
@@ -135,6 +142,12 @@ public class MagicianEntity extends StoreEntity {
                 .lookup(Registries.ENCHANTMENT)
                 .flatMap(registry -> registry.get(Enchantments.WIND_BURST))
                 .ifPresent(enchantment -> stack.enchant(enchantment, 3));
+    }
+
+    @Override
+    public ResourceLocation getStoreBackground() {
+        return ResourceLocation.fromNamespaceAndPath(
+                OtherworldInn.MODID, "textures/gui/store/magician.png");
     }
 
     @Override

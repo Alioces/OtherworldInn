@@ -33,5 +33,25 @@ public class ModRecipeProvider extends RecipeProvider {
                 .define('G', Items.GOLD_INGOT)
                 .unlockedBy("has_gold_ingot", has(Items.GOLD_INGOT))
                 .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.NETHER_SPACE_SPHERE.get(), 1)
+                .pattern(" N ")
+                .pattern("NSN")
+                .pattern(" N ")
+                .define('N', Items.NETHERRACK)
+                .define('S', ModItems.SPACE_SPHERE.get())
+                .unlockedBy("has_space_sphere", has(ModItems.SPACE_SPHERE.get()))
+                .unlockedBy("has_netherrack", has(Items.NETHERRACK))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.END_SPACE_SPHERE.get(), 1)
+                .pattern(" E ")
+                .pattern("ESE")
+                .pattern(" E ")
+                .define('E', Items.END_STONE)
+                .define('S', ModItems.SPACE_SPHERE.get())
+                .unlockedBy("has_space_sphere", has(ModItems.SPACE_SPHERE.get()))
+                .unlockedBy("has_end_stone", has(Items.END_STONE))
+                .save(recipeOutput);
     }
 }

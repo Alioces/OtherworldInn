@@ -75,6 +75,34 @@ public class TeleportUtils {
         return new BlockPos(baseX, fallbackY, baseZ);
     }
 
+    public static BlockPos findSafeSpawnPosInNether(ServerLevel level, BlockPos basePos) {
+        int baseX = basePos.getX();
+        int baseZ = basePos.getZ();
+        int minY = level.getMinBuildHeight() + 1;
+        int maxY = level.getMaxBuildHeight() - 2;
+        int roofLimitY = 256;
+
+        for (int r = 0; r <= 8; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    int x = baseX + dx * 4;
+                    int z = baseZ + dz * 4;
+                    ensureChunk(level, x, z);
+                    for (int y = minY; y <= roofLimitY; y++) {
+                        BlockPos candidate = new BlockPos(x, y, z);
+                        if (isSafeSpawn(level, candidate)) {
+                            return candidate;
+                        }
+                    }
+                }
+            }
+        }
+
+        ensureChunk(level, baseX, baseZ);
+        int y = Math.min(level.getSeaLevel() + 1, roofLimitY);
+        return new BlockPos(baseX, Math.max(y, minY), baseZ);
+    }
+
     private static boolean isSafeSpawn(ServerLevel level, BlockPos pos) {
         BlockState below = level.getBlockState(pos.below());
         if (below.isAir() || !below.getFluidState().isEmpty()) {

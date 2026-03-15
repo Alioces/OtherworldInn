@@ -264,7 +264,7 @@ public class CameraHandler {
                     (double) Minecraft.getInstance().getWindow().getWidth()
                             / (double) Minecraft.getInstance().getWindow().getHeight();
 
-            double near = -256.0;
+            double near = -16.0;
             double far = 256.0;
 
             Matrix4f ortho = new Matrix4f();

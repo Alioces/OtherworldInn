@@ -10,7 +10,7 @@ public class BlacksmithAnimation {
             AnimationDefinition.Builder.withLength(2.381F)
                     .looping()
                     .addAnimation(
-                            "Head",
+                            "head",
                             new AnimationChannel(
                                     AnimationChannel.Targets.ROTATION,
                                     new Keyframe(
@@ -26,7 +26,7 @@ public class BlacksmithAnimation {
                                             KeyframeAnimations.degreeVec(0.0F, 0.0F, 0.0F),
                                             AnimationChannel.Interpolations.CATMULLROM)))
                     .addAnimation(
-                            "Body",
+                            "body",
                             new AnimationChannel(
                                     AnimationChannel.Targets.ROTATION,
                                     new Keyframe(
@@ -42,7 +42,7 @@ public class BlacksmithAnimation {
                                             KeyframeAnimations.degreeVec(0.0F, 0.0F, 0.0F),
                                             AnimationChannel.Interpolations.CATMULLROM)))
                     .addAnimation(
-                            "RightArm",
+                            "right_arm",
                             new AnimationChannel(
                                     AnimationChannel.Targets.ROTATION,
                                     new Keyframe(
@@ -64,7 +64,7 @@ public class BlacksmithAnimation {
                                             KeyframeAnimations.degreeVec(0.0F, 0.0F, 0.0F),
                                             AnimationChannel.Interpolations.CATMULLROM)))
                     .addAnimation(
-                            "LeftArm",
+                            "left_arm",
                             new AnimationChannel(
                                     AnimationChannel.Targets.ROTATION,
                                     new Keyframe(
@@ -85,7 +85,7 @@ public class BlacksmithAnimation {
                                             KeyframeAnimations.degreeVec(0.0F, 0.0F, 0.0F),
                                             AnimationChannel.Interpolations.CATMULLROM)))
                     .addAnimation(
-                            "RightLeg",
+                            "right_leg",
                             new AnimationChannel(
                                     AnimationChannel.Targets.ROTATION,
                                     new Keyframe(

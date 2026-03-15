@@ -4,9 +4,11 @@ import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ItemDataGenInfo;
 import com.otherworldinn.foundation.ItemReg;
 import com.otherworldinn.item.BedSheetItem;
+import com.otherworldinn.item.EndSpaceSphereItem;
 import com.otherworldinn.item.InnKeyItem;
 import com.otherworldinn.item.LandDeedItem;
 import com.otherworldinn.item.MessyBedSheetItem;
+import com.otherworldinn.item.NetherSpaceSphereItem;
 import com.otherworldinn.item.RecallScrollItem;
 import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.item.RoomRegisterItem;
@@ -103,6 +105,24 @@ public class ModItems {
                     .lang("Space Sphere", "空间球")
                     .tooltip("Use to activate map teleport for your team", "使用后激活地图点传送功能");
     public static final DeferredItem<SpaceSphereItem> SPACE_SPHERE = SPACE_SPHERE_REG.register();
+
+    public static final ItemReg<NetherSpaceSphereItem> NETHER_SPACE_SPHERE_REG =
+            new ItemReg<>("nether_space_sphere", NetherSpaceSphereItem::new)
+                    .rarity(Rarity.EPIC)
+                    .stacksTo(16)
+                    .lang("Nether Space Sphere", "下界空间球")
+                    .tooltip("Use to teleport to Nether", "使用后传送至下界");
+    public static final DeferredItem<NetherSpaceSphereItem> NETHER_SPACE_SPHERE =
+            NETHER_SPACE_SPHERE_REG.register();
+
+    public static final ItemReg<EndSpaceSphereItem> END_SPACE_SPHERE_REG =
+            new ItemReg<>("end_space_sphere", EndSpaceSphereItem::new)
+                    .rarity(Rarity.EPIC)
+                    .stacksTo(16)
+                    .lang("End Space Sphere", "末地空间球")
+                    .tooltip("Use to teleport to End", "使用后传送至末地");
+    public static final DeferredItem<EndSpaceSphereItem> END_SPACE_SPHERE =
+            END_SPACE_SPHERE_REG.register();
 
     // --- 辅助方法 ---
 

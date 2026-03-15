@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_end_stone": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:end_stone"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_space_sphere": {
+      "conditions": {
+        "items": [
+          {
+            "items": "otherworldinn:space_sphere"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "otherworldinn:end_space_sphere"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_space_sphere",
+      "has_end_stone"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "otherworldinn:end_space_sphere"
+    ]
+  }
+}

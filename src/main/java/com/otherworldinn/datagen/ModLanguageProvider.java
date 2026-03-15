@@ -145,6 +145,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("item.otherworldinn.recall_scroll.fail_in_town")
                 .zh("回程卷轴无法在城镇中使用")
                 .en("Recall Scroll cannot be used in Town!");
+        entry("message.otherworldinn.recall_scroll.overlay.use")
+                .zh("长按3秒回到旅社")
+                .en("Hold 3s to return to Inn");
         entry("tooltip.otherworldinn.banned_in_town")
                 .zh("§c当前维度内禁用")
                 .en("§cBanned in this dimension");
@@ -340,6 +343,18 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.space_sphere.teleport_unlocked")
                 .zh("地图传送功能已激活")
                 .en("Map teleport has been activated");
+        entry("message.otherworldinn.space_sphere.overlay.use")
+                .zh("激活地图点传送")
+                .en("Activate map point teleport");
+        entry("message.otherworldinn.space_sphere.target_unavailable")
+                .zh("目标维度当前不可用")
+                .en("Target dimension is currently unavailable");
+        entry("message.otherworldinn.nether_space_sphere.overlay.use")
+                .zh("传送至下界")
+                .en("Teleport to Nether");
+        entry("message.otherworldinn.end_space_sphere.overlay.use")
+                .zh("传送至末地")
+                .en("Teleport to End");
 
         // 床单
         entry("message.otherworldinn.bed_sheet.overlay.replace")

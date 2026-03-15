@@ -1,11 +1,7 @@
 package com.otherworldinn.client.renderer;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.otherworldinn.entity.base.StoreEntity;
-import net.minecraft.client.animation.AnimationDefinition;
-import net.minecraft.client.model.ArmedModel;
-import net.minecraft.client.model.HeadedModel;
-import net.minecraft.client.model.HierarchicalModel;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
@@ -13,99 +9,65 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.world.entity.HumanoidArm;
 
-public abstract class StoreHumanoidModel<T extends StoreEntity> extends HierarchicalModel<T>
-        implements ArmedModel, HeadedModel {
-    protected final ModelPart root;
-    protected final ModelPart waist;
-    protected final ModelPart body;
-    protected final ModelPart head;
-    protected final ModelPart rightArm;
-    protected final ModelPart leftArm;
-
+public abstract class StoreHumanoidModel<T extends StoreEntity> extends HumanoidModel<T> {
     protected StoreHumanoidModel(ModelPart root) {
-        this.root = root;
-        this.waist = root.getChild("Waist");
-        this.body = this.waist.getChild("Body");
-        this.head = this.body.getChild("Head");
-        this.rightArm = this.body.getChild("RightArm");
-        this.leftArm = this.body.getChild("LeftArm");
+        super(root);
     }
 
     public static LayerDefinition createBodyLayer() {
-        MeshDefinition meshdefinition = new MeshDefinition();
+        MeshDefinition meshdefinition = HumanoidModel.createMesh(CubeDeformation.NONE, 0.0F);
         PartDefinition partdefinition = meshdefinition.getRoot();
 
-        PartDefinition waist =
-                partdefinition.addOrReplaceChild(
-                        "Waist", CubeListBuilder.create(), PartPose.offset(0.0F, 12.0F, 0.0F));
-
-        PartDefinition body =
-                waist.addOrReplaceChild(
-                        "Body",
-                        CubeListBuilder.create()
-                                .texOffs(16, 16)
-                                .addBox(
-                                        -4.0F,
-                                        -11.0F,
-                                        -2.0F,
-                                        8.0F,
-                                        12.0F,
-                                        4.0F,
-                                        new CubeDeformation(0.0F))
-                                .texOffs(16, 32)
-                                .addBox(
-                                        -4.0F,
-                                        -11.0F,
-                                        -2.0F,
-                                        8.0F,
-                                        12.0F,
-                                        4.0F,
-                                        new CubeDeformation(0.25F)),
-                        PartPose.offset(0.0F, -1.0F, 0.0F));
-
-        body.addOrReplaceChild(
-                "Head",
+        partdefinition.addOrReplaceChild(
+                "head",
                 CubeListBuilder.create()
                         .texOffs(0, 0)
-                        .addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.0F))
+                        .addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, CubeDeformation.NONE)
                         .texOffs(32, 0)
                         .addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.5F)),
-                PartPose.offset(0.0F, -11.0F, 0.0F));
-
-        body.addOrReplaceChild(
-                "RightArm",
+                PartPose.ZERO);
+        partdefinition.addOrReplaceChild(
+                "hat",
+                CubeListBuilder.create(),
+                PartPose.ZERO);
+        partdefinition.addOrReplaceChild(
+                "body",
+                CubeListBuilder.create()
+                        .texOffs(16, 16)
+                        .addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, CubeDeformation.NONE)
+                        .texOffs(16, 32)
+                        .addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, new CubeDeformation(0.25F)),
+                PartPose.ZERO);
+        partdefinition.addOrReplaceChild(
+                "right_arm",
                 CubeListBuilder.create()
                         .texOffs(40, 16)
-                        .addBox(-2.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, new CubeDeformation(0.0F))
+                        .addBox(-3.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, CubeDeformation.NONE)
                         .texOffs(40, 32)
-                        .addBox(-2.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, new CubeDeformation(0.25F)),
-                PartPose.offset(-5.0F, -9.0F, 0.0F));
-
-        body.addOrReplaceChild(
-                "LeftArm",
+                        .addBox(-3.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, new CubeDeformation(0.25F)),
+                PartPose.offset(-4.0F, 2.0F, 0.0F));
+        partdefinition.addOrReplaceChild(
+                "left_arm",
                 CubeListBuilder.create()
                         .texOffs(32, 48)
-                        .addBox(0.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, new CubeDeformation(0.0F))
+                        .addBox(0.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, CubeDeformation.NONE)
                         .texOffs(48, 48)
                         .addBox(0.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, new CubeDeformation(0.25F)),
-                PartPose.offset(4.0F, -9.0F, 0.0F));
-
+                PartPose.offset(4.0F, 2.0F, 0.0F));
         partdefinition.addOrReplaceChild(
-                "RightLeg",
+                "right_leg",
                 CubeListBuilder.create()
                         .texOffs(0, 16)
-                        .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(0.0F))
+                        .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, CubeDeformation.NONE)
                         .texOffs(0, 32)
                         .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(0.25F)),
                 PartPose.offset(-1.9F, 12.0F, 0.0F));
-
         partdefinition.addOrReplaceChild(
-                "LeftLeg",
+                "left_leg",
                 CubeListBuilder.create()
                         .texOffs(16, 48)
-                        .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(0.0F))
+                        .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, CubeDeformation.NONE)
                         .texOffs(0, 48)
                         .addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(0.25F)),
                 PartPose.offset(1.9F, 12.0F, 0.0F));
@@ -113,34 +75,33 @@ public abstract class StoreHumanoidModel<T extends StoreEntity> extends Hierarch
         return LayerDefinition.create(meshdefinition, 64, 64);
     }
 
-    protected abstract AnimationDefinition getIdleAnimation(T entity);
+    protected abstract void applyIdlePose(T entity, float ageInTicks);
 
     @Override
     public void setupAnim(
             T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        this.root().getAllParts().forEach(ModelPart::resetPose);
-        this.animate(entity.idleAnimationState, this.getIdleAnimation(entity), ageInTicks);
-    }
-
-    @Override
-    public ModelPart root() {
-        return this.root;
-    }
-
-    @Override
-    public ModelPart getHead() {
-        return this.head;
-    }
-
-    @Override
-    public void translateToHand(HumanoidArm arm, PoseStack poseStack) {
-        this.root.translateAndRotate(poseStack);
-        this.waist.translateAndRotate(poseStack);
-        this.body.translateAndRotate(poseStack);
-        if (arm == HumanoidArm.RIGHT) {
-            this.rightArm.translateAndRotate(poseStack);
-        } else {
-            this.leftArm.translateAndRotate(poseStack);
-        }
+        this.head.xRot = headPitch * ((float) Math.PI / 180.0F);
+        this.head.yRot = netHeadYaw * ((float) Math.PI / 180.0F);
+        this.head.zRot = 0.0F;
+        this.body.xRot = 0.0F;
+        this.body.yRot = 0.0F;
+        this.body.zRot = 0.0F;
+        this.rightArm.xRot = 0.0F;
+        this.rightArm.yRot = 0.0F;
+        this.rightArm.zRot = 0.0F;
+        this.leftArm.xRot = 0.0F;
+        this.leftArm.yRot = 0.0F;
+        this.leftArm.zRot = 0.0F;
+        this.rightLeg.xRot = 0.0F;
+        this.rightLeg.yRot = 0.0F;
+        this.rightLeg.zRot = 0.0F;
+        this.leftLeg.xRot = 0.0F;
+        this.leftLeg.yRot = 0.0F;
+        this.leftLeg.zRot = 0.0F;
+        this.applyIdlePose(entity, ageInTicks);
+        this.body.xRot = 0.0F;
+        this.body.yRot = 0.0F;
+        this.body.zRot = 0.0F;
+        this.hat.copyFrom(this.head);
     }
 }

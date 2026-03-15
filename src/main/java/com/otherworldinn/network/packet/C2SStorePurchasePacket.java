@@ -96,8 +96,7 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items)
                                         || request.stack.isEmpty()) {
                                     return;
                                 }
-                                if (request.quantity <= 0
-                                        || request.quantity > request.stack.getMaxStackSize()) {
+                                if (request.quantity <= 0) {
                                     return;
                                 }
                                 // 在商店库存中查找匹配项
@@ -130,9 +129,16 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items)
                                         if (totalPrice <= 0) {
                                             return;
                                         }
-                                        ItemStack stack = stockItem.getItemStack().copy();
-                                        stack.setCount(request.quantity);
-                                        toGive.add(stack);
+                                        int remaining = request.quantity;
+                                        int maxStackSize =
+                                                Math.max(1, stockItem.getItemStack().getMaxStackSize());
+                                        while (remaining > 0) {
+                                            int splitCount = Math.min(remaining, maxStackSize);
+                                            ItemStack stack = stockItem.getItemStack().copy();
+                                            stack.setCount(splitCount);
+                                            toGive.add(stack);
+                                            remaining -= splitCount;
+                                        }
 
                                         toDeductStock.add(stockItem);
                                         deductQuantities.add(request.quantity);

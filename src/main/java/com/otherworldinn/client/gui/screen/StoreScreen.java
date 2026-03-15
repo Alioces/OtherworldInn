@@ -21,6 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
 /** 商店屏幕 */
@@ -155,7 +156,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                                         this.addToCart(this.selectedItem, this.purchaseQuantity);
                                     }
                                 })
-                        .bounds(this.leftPos + 20, this.topPos + 130, 80, 20)
+                        .bounds(this.leftPos + 21, this.topPos + 128, 80, 20)
                         .build();
         this.addRenderableWidget(this.confirmButton);
 
@@ -191,8 +192,8 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                         .bounds(
                                 this.getRightPanelStartX()
                                         + (this.getPanelTotalWidth() - 80) / 2
-                                        - 2,
-                                this.topPos + 130,
+                                        - 1,
+                                this.topPos + 128,
                                 80,
                                 20)
                         .build();
@@ -284,6 +285,17 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
     private int getDisplayPrice(StoreEntity.StoreItem item) {
         return StoreEntity.getDiscountedPriceForFavorLevel(
                 item.getPrice(), this.getCurrentFavorLevel());
+    }
+
+    private Component getSelectedDisplayName(StoreEntity.StoreItem item) {
+        ItemStack stack = item.getItemStack();
+        if (stack.is(Items.ENCHANTED_BOOK) && this.minecraft != null) {
+            List<Component> tooltip = getTooltipFromItem(this.minecraft, stack);
+            if (tooltip.size() > 1) {
+                return tooltip.get(1).copy().withStyle(style -> style.withColor(ModColors.WHITE));
+            }
+        }
+        return stack.getHoverName();
     }
 
     private int getFavorBarX() {
@@ -690,7 +702,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
 
         // 渲染选中物品名称
         if (this.selectedItem != null) {
-            Component name = this.selectedItem.getItemStack().getHoverName();
+            Component name = this.getSelectedDisplayName(this.selectedItem);
             int nameWidth = this.font.width(name);
             int areaWidth = GRID_COLS * (SLOT_SIZE + SLOT_SPACING) - SLOT_SPACING;
             startX = this.getLeftPanelStartX();
@@ -914,6 +926,42 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                 }
                 guiGraphics.renderTooltip(
                         this.font, tooltip, item.getItemStack().getTooltipImage(), mouseX, mouseY);
+                return;
+            }
+        }
+
+        int listX = this.getRightPanelStartX();
+        int listY = this.getPanelStartY();
+        int listWidth = this.getGoodsAreaWidth();
+        int scrollBarHeight = this.getCartAreaHeight();
+        int startIndex = 0;
+        if (this.cart.size() > CART_DISPLAY_ROWS) {
+            startIndex = (int) (this.scrollOffs * (this.cart.size() - CART_DISPLAY_ROWS));
+        }
+        for (int i = startIndex; i < this.cart.size() && i < startIndex + CART_DISPLAY_ROWS; i++) {
+            int y = listY + (i - startIndex) * CART_ITEM_HEIGHT;
+            if (mouseX >= listX
+                    && mouseX < listX + listWidth
+                    && mouseY >= y
+                    && mouseY < y + SLOT_SIZE
+                    && mouseY < listY + scrollBarHeight) {
+                StoreEntity.StoreItem cartItem = this.cart.get(i);
+                List<Component> tooltip = getTooltipFromItem(minecraft, cartItem.getItemStack());
+                tooltip.add(
+                        Component.literal("×" + cartItem.getCurrentStock())
+                                .withStyle(net.minecraft.ChatFormatting.GRAY));
+                tooltip.add(
+                        Component.translatable(
+                                        "gui.otherworldinn.store.price",
+                                        cartItem.getPrice() * cartItem.getCurrentStock())
+                                .withStyle(net.minecraft.ChatFormatting.YELLOW));
+                guiGraphics.renderTooltip(
+                        this.font,
+                        tooltip,
+                        cartItem.getItemStack().getTooltipImage(),
+                        mouseX,
+                        mouseY);
+                return;
             }
         }
     }
