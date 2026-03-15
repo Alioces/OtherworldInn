@@ -24,7 +24,7 @@ import net.minecraft.world.level.Level;
 
 public class MagicianEntity extends StoreEntity {
 
-    private static final int RANDOM_BOOK_COUNT = 8;
+    private static final int RANDOM_BOOK_COUNT = 4;
     private static final int RANDOM_BOOK_BASE_PRICE = 32;
 
     public MagicianEntity(EntityType<? extends PathfinderMob> type, Level level) {
