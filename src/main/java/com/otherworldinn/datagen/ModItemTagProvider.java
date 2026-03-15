@@ -40,6 +40,10 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.ROOM_REGISTER.get())
                 .add(ModItems.LAND_DEED.get())
                 .add(ModItems.INN_KEY.get())
-                .add(ModItems.ROOM_KEY.get());
+                .add(ModItems.ROOM_KEY.get())
+                .add(ModItems.SPACE_SPHERE.get())
+                .add(ModItems.NETHER_SPACE_SPHERE.get())
+                .add(ModItems.END_SPACE_SPHERE.get())
+                ;
     }
 }

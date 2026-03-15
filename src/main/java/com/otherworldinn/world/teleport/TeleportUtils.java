@@ -80,7 +80,7 @@ public class TeleportUtils {
         int baseZ = basePos.getZ();
         int minY = level.getMinBuildHeight() + 1;
         int maxY = level.getMaxBuildHeight() - 2;
-        int roofLimitY = 256;
+        int roofLimitY = 120;
 
         for (int r = 0; r <= 8; r++) {
             for (int dx = -r; dx <= r; dx++) {
