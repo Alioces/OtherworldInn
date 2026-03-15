@@ -68,6 +68,11 @@ public class InnData {
 
     // 下一次生成旅客的时间 (GameTime)
     private long nextGuestSpawnTime = 0;
+    private static final int BASE_GUEST_WAITING_TIMEOUT = 6000;
+    private static final int WAITING_PATIENCE_BONUS_PER_STAR = 1200;
+    private static final int MAX_GUEST_WAITING_TIMEOUT = 12000;
+    private static final double SPAWN_DELAY_REDUCTION_PER_STAR = 0.08D;
+    private static final double MIN_SPAWN_DELAY_MULTIPLIER = 0.60D;
 
     public InnData() {}
 
@@ -641,7 +646,20 @@ public class InnData {
     private int calculateNextSpawnDelay(RandomSource random) {
         double gaussian = random.nextGaussian();
         int delay = (int) (1900 + gaussian * 566);
-        return Math.max(200, Math.min(3600, delay));
+        delay = Math.max(200, Math.min(3600, delay));
+        return (int) Math.round(delay * getSpawnDelayMultiplier());
+    }
+
+    private double getSpawnDelayMultiplier() {
+        int clampedRating = Math.max(0, Math.min(5, this.rating));
+        double multiplier = 1.0D - clampedRating * SPAWN_DELAY_REDUCTION_PER_STAR;
+        return Math.max(MIN_SPAWN_DELAY_MULTIPLIER, multiplier);
+    }
+
+    private int getGuestWaitingTimeoutTicks() {
+        int clampedRating = Math.max(0, Math.min(5, this.rating));
+        int timeout = BASE_GUEST_WAITING_TIMEOUT + clampedRating * WAITING_PATIENCE_BONUS_PER_STAR;
+        return Math.min(MAX_GUEST_WAITING_TIMEOUT, timeout);
     }
 
     /**
@@ -731,14 +749,14 @@ public class InnData {
 
         List<UUID> guestsToDepart = new ArrayList<>();
         List<UUID> guestsToCheckOut = new ArrayList<>();
+        int waitingTimeoutTicks = getGuestWaitingTimeoutTicks();
 
         for (UUID guestId : guestIds) {
             Entity entity = level.getEntity(guestId);
             if (entity instanceof GuestEntity guestEntity) {
                 GuestData guestData = guestEntity.getGuestData();
                 if (guestData.getState() == GuestData.GuestState.WAITING) {
-                    // 检查是否超时 (5分钟 = 6000 ticks)
-                    if (currentTime - guestData.getWaitingSince() > 6000
+                    if (currentTime - guestData.getWaitingSince() > waitingTimeoutTicks
                             || this.state != InnState.OPEN) {
                         guestsToDepart.add(guestId);
                     }
