@@ -25,11 +25,28 @@ public class OrdinaryGuestEntity extends GuestEntity {
     private static final ResourceLocation DEFAULT_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(
                     OtherworldInn.MODID, "textures/entity/guest/ordinary_guest/1.png");
+    private static final ResourceLocation IRON_INGOT_ID =
+            ResourceLocation.fromNamespaceAndPath("minecraft", "iron_ingot");
+    private static final ResourceLocation GOLD_INGOT_ID =
+            ResourceLocation.fromNamespaceAndPath("minecraft", "gold_ingot");
     private static final List<ResourceLocation> TEXTURES = new ArrayList<>();
     private static boolean texturesLoaded = false;
 
     public OrdinaryGuestEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
+    }
+
+    @Override
+    protected void initGuestPreferences() {
+        this.getGuestData().setComfortPreference(10, 90);
+        this.getGuestData().setLightPreference(10, 90);
+        this.getGuestData().setHumidityPreference(10, 90);
+    }
+
+    @Override
+    protected void initRewardItems() {
+        ResourceLocation reward = this.getRandom().nextBoolean() ? IRON_INGOT_ID : GOLD_INGOT_ID;
+        //this.getGuestData().addRewardItem(reward, 1, 2);
     }
 
     @Override

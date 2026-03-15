@@ -203,10 +203,7 @@ public class GuestData {
                                     pos.getY() + 0.5,
                                     pos.getZ() + 0.5,
                                     stack);
-                    itemEntity.setDeltaMovement(
-                            random.nextGaussian() * 0.05,
-                            random.nextGaussian() * 0.05 + 0.2,
-                            random.nextGaussian() * 0.05);
+                    itemEntity.setDeltaMovement(0.0, 0.0, 0.0);
 
                     // 设置特殊属性：发光、无重力、无敌、永不消失
                     itemEntity.setGlowingTag(true);

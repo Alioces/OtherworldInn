@@ -355,6 +355,22 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.space_sphere.teleport_unlocked")
                 .zh("地图传送功能已激活")
                 .en("Map teleport has been activated");
+        entry("message.otherworldinn.guest.tooltip.title").zh("旅客信息").en("Guest Info");
+        entry("message.otherworldinn.guest.tooltip.preference.comfort")
+                .zh("§f\uE002§r舒适偏好: %s-%s")
+                .en("§f\uE002§rComfort Preference: %s-%s");
+        entry("message.otherworldinn.guest.tooltip.preference.light")
+                .zh("§f\uE003§r光照偏好: %s-%s")
+                .en("§f\uE003§rLight Preference: %s-%s");
+        entry("message.otherworldinn.guest.tooltip.preference.humidity")
+                .zh("§f\uE004§r湿度偏好: %s-%s")
+                .en("§f\uE004§rHumidity Preference: %s-%s");
+        entry("message.otherworldinn.guest.tooltip.budget").zh("预算: §f\uE001§r%s").en("Budget: §f\uE001§r%s");
+        entry("message.otherworldinn.guest.tooltip.rewards").zh("可能奖励:").en("Possible Rewards:");
+        entry("message.otherworldinn.guest.tooltip.rewards.none").zh("无").en("None");
+        entry("message.otherworldinn.guest.tooltip.rewards.entry")
+                .zh("- %s x%s-%s")
+                .en("- %s x%s-%s");
         entry("message.otherworldinn.space_sphere.overlay.use")
                 .zh("激活地图点传送")
                 .en("Activate map point teleport");

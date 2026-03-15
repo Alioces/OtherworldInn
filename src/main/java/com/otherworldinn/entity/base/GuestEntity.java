@@ -62,6 +62,8 @@ public abstract class GuestEntity extends PathfinderMob {
             SynchedEntityData.defineId(GuestEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> GUEST_STATE =
             SynchedEntityData.defineId(GuestEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> GUEST_BUDGET =
+            SynchedEntityData.defineId(GuestEntity.class, EntityDataSerializers.INT);
     // 搜索“餐台”的范围：以旅客为中心 32 格
     private static final int DINING_SEARCH_RADIUS = 32;
     // 平均一天触发 3 次：24000 / 3 = 8000 tick
@@ -664,6 +666,9 @@ public abstract class GuestEntity extends PathfinderMob {
             if (this.entityData.get(GUEST_STATE) != currentStateOrdinal) {
                 this.entityData.set(GUEST_STATE, currentStateOrdinal);
             }
+            if (this.entityData.get(GUEST_BUDGET) != this.budget) {
+                this.entityData.set(GUEST_BUDGET, this.budget);
+            }
 
             // 发光逻辑：等待入住时发光
             if (this.guestData.getState() == GuestData.GuestState.WAITING) {
@@ -686,6 +691,7 @@ public abstract class GuestEntity extends PathfinderMob {
                     this.guestData.setState(syncedState);
                 }
             }
+            this.budget = Mth.clamp(this.entityData.get(GUEST_BUDGET), DINING_BUDGET_MIN, DINING_BUDGET_MAX);
 
             // 客户端发光逻辑 (虽然 glowing tag 会自动同步，但这里双重保险或用于其他客户端效果)
             // 注意：setGlowingTag 主要由服务端控制，客户端设置可能只在本地生效
@@ -697,6 +703,7 @@ public abstract class GuestEntity extends PathfinderMob {
         super.defineSynchedData(builder);
         builder.define(SKIN_VARIANT, 0);
         builder.define(GUEST_STATE, GuestData.GuestState.IDLE.ordinal());
+        builder.define(GUEST_BUDGET, DINING_BUDGET_MIN);
     }
 
     @Override
@@ -745,6 +752,9 @@ public abstract class GuestEntity extends PathfinderMob {
 
     protected void setBudget(int budget) {
         this.budget = Mth.clamp(budget, DINING_BUDGET_MIN, DINING_BUDGET_MAX);
+        if (!this.level().isClientSide) {
+            this.entityData.set(GUEST_BUDGET, this.budget);
+        }
     }
 
     @Override
@@ -776,6 +786,7 @@ public abstract class GuestEntity extends PathfinderMob {
         } else {
             this.budget = this.generateInitialBudget();
         }
+        this.entityData.set(GUEST_BUDGET, this.budget);
         this.diningPlanDay =
                 compound.contains("DiningPlanDay")
                         ? compound.getLong("DiningPlanDay")
