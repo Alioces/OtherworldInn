@@ -5,7 +5,9 @@ import com.otherworldinn.network.packet.S2CTeamSyncPacket;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.TeamSavedData;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -23,6 +25,9 @@ import net.minecraft.world.entity.player.Player;
 public class TeamManager {
 
     private static final TeamManager INSTANCE = new TeamManager();
+    private final Map<Long, List<TeamData>> teamChunkIndex = new HashMap<>();
+    private MinecraftServer indexedServer;
+    private boolean teamChunkIndexDirty = true;
 
     public static TeamManager getInstance() {
         return INSTANCE;
@@ -30,6 +35,45 @@ public class TeamManager {
 
     public TeamSavedData getData(MinecraftServer server) {
         return TeamSavedData.get(server.overworld());
+    }
+
+    private static long chunkKey(int chunkX, int chunkZ) {
+        return ((long) chunkX << 32) | (chunkZ & 0xffffffffL);
+    }
+
+    private void invalidateTeamChunkIndex() {
+        teamChunkIndexDirty = true;
+    }
+
+    private void ensureTeamChunkIndex(MinecraftServer server) {
+        if (indexedServer != server) {
+            indexedServer = server;
+            teamChunkIndexDirty = true;
+        }
+        if (!teamChunkIndexDirty) {
+            return;
+        }
+        teamChunkIndex.clear();
+        TeamSavedData data = getData(server);
+        for (TeamData team : data.getTeams().values()) {
+            for (TeamData.InnRegion region : team.getInnRegions()) {
+                int minChunkX = region.minX() >> 4;
+                int maxChunkX = region.maxX() >> 4;
+                int minChunkZ = region.minZ() >> 4;
+                int maxChunkZ = region.maxZ() >> 4;
+                for (int chunkX = minChunkX; chunkX <= maxChunkX; chunkX++) {
+                    for (int chunkZ = minChunkZ; chunkZ <= maxChunkZ; chunkZ++) {
+                        long key = chunkKey(chunkX, chunkZ);
+                        List<TeamData> teamsInChunk =
+                                teamChunkIndex.computeIfAbsent(key, ignored -> new ArrayList<>());
+                        if (!teamsInChunk.contains(team)) {
+                            teamsInChunk.add(team);
+                        }
+                    }
+                }
+            }
+        }
+        teamChunkIndexDirty = false;
     }
 
     /**
@@ -121,6 +165,7 @@ public class TeamManager {
         if (player instanceof ServerPlayer serverPlayer) {
             TeamSavedData data = getData(serverPlayer.getServer());
             data.addTeam(team);
+            invalidateTeamChunkIndex();
         }
 
         return team;
@@ -143,6 +188,7 @@ public class TeamManager {
         leaveTeam(player);
 
         data.addMember(teamId, player.getUUID());
+        invalidateTeamChunkIndex();
         return true;
     }
 
@@ -165,6 +211,7 @@ public class TeamManager {
             if (oldTeam != null && oldTeam.getMembers().isEmpty()) {
                 data.removeTeam(oldTeamId);
             }
+            invalidateTeamChunkIndex();
         }
     }
 
@@ -188,6 +235,7 @@ public class TeamManager {
      */
     public void syncTeam(TeamData team, MinecraftServer server) {
         getData(server).markDirty();
+        invalidateTeamChunkIndex();
 
         // 同步给所有在线成员
         S2CTeamSyncPacket packet = createSyncPacket(team);
@@ -258,8 +306,14 @@ public class TeamManager {
      * @return 包含该坐标的队伍，如果没有则返回 null
      */
     public TeamData getTeamAt(BlockPos pos, MinecraftServer server) {
-        TeamSavedData data = getData(server);
-        for (TeamData team : data.getTeams().values()) {
+        ensureTeamChunkIndex(server);
+        int chunkX = pos.getX() >> 4;
+        int chunkZ = pos.getZ() >> 4;
+        List<TeamData> teamsInChunk = teamChunkIndex.get(chunkKey(chunkX, chunkZ));
+        if (teamsInChunk == null) {
+            return null;
+        }
+        for (TeamData team : teamsInChunk) {
             if (team.isInInnZone(pos)) {
                 return team;
             }
