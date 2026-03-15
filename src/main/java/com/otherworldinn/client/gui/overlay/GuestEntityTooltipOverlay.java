@@ -102,7 +102,8 @@ public class GuestEntityTooltipOverlay {
         Font font = mc.font;
         PoseStack poseStack = event.getPoseStack();
         Vec3 cameraPos = event.getCamera().getPosition();
-        Direction panelSide = getPanelSideFromPlayerView(mc.player, guest);
+        Direction panelFacing = Direction.fromYRot(event.getCamera().getYRot());
+        Direction panelSide = getPanelSidePerpendicular(mc.player, guest, panelFacing);
         double sideDistance = guest.getBbWidth() * 0.5 + SIDE_OFFSET + PANEL_WORLD_Z_OFFSET;
         Vec3 anchorPos =
                 guest.position()
@@ -110,7 +111,7 @@ public class GuestEntityTooltipOverlay {
                                 panelSide.getStepX() * sideDistance,
                                 guest.getBbHeight() * 0.5,
                                 panelSide.getStepZ() * sideDistance);
-        float panelYaw = -Direction.fromYRot(event.getCamera().getYRot()).toYRot();
+        float panelYaw = -panelFacing.toYRot();
         MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
 
         poseStack.pushPose();
@@ -475,17 +476,10 @@ public class GuestEntityTooltipOverlay {
         return ItemStack.EMPTY;
     }
 
-    private static Direction getPanelSideFromPlayerView(Player player, GuestEntity guest) {
-        double viewX = guest.getX() - player.getX();
-        double viewZ = guest.getZ() - player.getZ();
-        if (Math.abs(viewX) + Math.abs(viewZ) < 1.0E-5) {
-            return Direction.fromYRot(player.getYRot()).getClockWise();
-        }
-        double rightX = viewZ;
-        double rightZ = -viewX;
-        Direction rightSide = directionFromVector4(rightX, rightZ);
-        Direction leftSide = rightSide.getOpposite();
-
+    private static Direction getPanelSidePerpendicular(
+            Player player, GuestEntity guest, Direction panelFacing) {
+        Direction rightSide = panelFacing.getClockWise();
+        Direction leftSide = panelFacing.getCounterClockWise();
         double sideDistance = guest.getBbWidth() * 0.5 + SIDE_OFFSET + PANEL_WORLD_Z_OFFSET;
         double anchorY = guest.getY() + guest.getBbHeight() * 0.5;
         double rightXPos = guest.getX() + rightSide.getStepX() * sideDistance;
@@ -496,13 +490,6 @@ public class GuestEntityTooltipOverlay {
         double rightDistSqr = player.distanceToSqr(rightXPos, anchorY, rightZPos);
         double leftDistSqr = player.distanceToSqr(leftXPos, anchorY, leftZPos);
         return rightDistSqr <= leftDistSqr ? rightSide : leftSide;
-    }
-
-    private static Direction directionFromVector4(double x, double z) {
-        if (Math.abs(x) >= Math.abs(z)) {
-            return x >= 0.0 ? Direction.EAST : Direction.WEST;
-        }
-        return z >= 0.0 ? Direction.SOUTH : Direction.NORTH;
     }
 
     private static boolean isHudFallbackRange(Player player, GuestEntity guest) {
