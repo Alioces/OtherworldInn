@@ -72,6 +72,7 @@ public class InnData {
     private static final int MAX_GUEST_WAITING_TIMEOUT = 12000;
     private static final double SPAWN_DELAY_REDUCTION_PER_STAR = 0.08D;
     private static final double MIN_SPAWN_DELAY_MULTIPLIER = 0.60D;
+    private static final int[] REPUTATION_REQUIREMENTS_BY_RATING = {100, 250, 450, 700, 1000, 1350};
 
     public InnData() {}
 
@@ -92,7 +93,8 @@ public class InnData {
      * @return 升级所需声望
      */
     public int getMaxReputation(int rating) {
-        return 100 * (rating + 1);
+        int clamped = Math.max(0, Math.min(5, rating));
+        return REPUTATION_REQUIREMENTS_BY_RATING[clamped];
     }
 
     /**
