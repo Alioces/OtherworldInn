@@ -1,5 +1,6 @@
 package com.otherworldinn.world.team.service;
 
+import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.network.ModMessages;
 import com.otherworldinn.network.packet.S2CTeamSyncPacket;
 import com.otherworldinn.world.team.TeamData;
@@ -16,6 +17,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
  * 队伍管理器
@@ -26,7 +30,10 @@ public class TeamManager {
 
     private static final TeamManager INSTANCE = new TeamManager();
     private final Map<Long, List<TeamData>> teamChunkIndex = new HashMap<>();
+    private final Map<MinecraftServer, Map<UUID, TeamData>> pendingTeamSyncs = new HashMap<>();
+    private final Map<UUID, CompoundTag> lastSyncedTeamState = new HashMap<>();
     private MinecraftServer indexedServer;
+    private MinecraftServer syncStateServer;
     private boolean teamChunkIndexDirty = true;
 
     public static TeamManager getInstance() {
@@ -74,6 +81,46 @@ public class TeamManager {
             }
         }
         teamChunkIndexDirty = false;
+    }
+
+    private void ensureSyncStateServer(MinecraftServer server) {
+        if (syncStateServer != server) {
+            syncStateServer = server;
+            lastSyncedTeamState.clear();
+        }
+    }
+
+    private void enqueueTeamSync(TeamData team, MinecraftServer server) {
+        if (server == null || team == null) return;
+        pendingTeamSyncs.computeIfAbsent(server, ignored -> new HashMap<>()).put(team.getTeamId(), team);
+    }
+
+    private void flushPendingTeamSyncs(MinecraftServer server) {
+        if (server == null) return;
+        Map<UUID, TeamData> pending = pendingTeamSyncs.remove(server);
+        if (pending == null || pending.isEmpty()) return;
+
+        ensureSyncStateServer(server);
+        for (TeamData team : pending.values()) {
+            sendTeamIfChanged(team, server);
+        }
+    }
+
+    private void sendTeamIfChanged(TeamData team, MinecraftServer server) {
+        CompoundTag currentState = team.save(new CompoundTag());
+        CompoundTag lastState = lastSyncedTeamState.get(team.getTeamId());
+        if (lastState != null && lastState.equals(currentState)) {
+            return;
+        }
+        lastSyncedTeamState.put(team.getTeamId(), currentState.copy());
+
+        S2CTeamSyncPacket packet = createSyncPacket(team);
+        for (UUID memberId : team.getMembers()) {
+            ServerPlayer member = server.getPlayerList().getPlayer(memberId);
+            if (member != null) {
+                ModMessages.sendToPlayer(packet, member);
+            }
+        }
     }
 
     /**
@@ -210,6 +257,10 @@ public class TeamManager {
             TeamData oldTeam = data.getTeams().get(oldTeamId);
             if (oldTeam != null && oldTeam.getMembers().isEmpty()) {
                 data.removeTeam(oldTeamId);
+                lastSyncedTeamState.remove(oldTeamId);
+                for (Map<UUID, TeamData> pending : pendingTeamSyncs.values()) {
+                    pending.remove(oldTeamId);
+                }
             }
             invalidateTeamChunkIndex();
         }
@@ -236,16 +287,7 @@ public class TeamManager {
     public void syncTeam(TeamData team, MinecraftServer server) {
         getData(server).markDirty();
         invalidateTeamChunkIndex();
-
-        // 同步给所有在线成员
-        S2CTeamSyncPacket packet = createSyncPacket(team);
-
-        for (UUID memberId : team.getMembers()) {
-            ServerPlayer member = server.getPlayerList().getPlayer(memberId);
-            if (member != null) {
-                ModMessages.sendToPlayer(packet, member);
-            }
-        }
+        enqueueTeamSync(team, server);
     }
 
     /**
@@ -441,6 +483,14 @@ public class TeamManager {
                 clientTeamCache.getInnRegions().add(TeamData.InnRegion.load(regionTag));
             }
             clientTeamCache.optimizeRegions();
+        }
+    }
+
+    @EventBusSubscriber(modid = OtherworldInn.MODID)
+    public static class ServerSyncTickHandler {
+        @SubscribeEvent
+        public static void onServerTick(ServerTickEvent.Post event) {
+            TeamManager.getInstance().flushPendingTeamSyncs(event.getServer());
         }
     }
 }
