@@ -3,7 +3,6 @@ package com.otherworldinn.world.inn;
 import com.otherworldinn.entity.base.GuestEntity;
 import com.otherworldinn.foundation.ModBlockProperties;
 import com.otherworldinn.foundation.ModColors;
-import com.otherworldinn.init.ModEntities;
 import com.otherworldinn.util.EntityUtils;
 import com.otherworldinn.world.inn.service.ClipboardManager;
 import com.otherworldinn.world.inn.service.FurnitureManager;
@@ -628,7 +627,7 @@ public class InnData {
             return;
         }
 
-        GuestEntity guest = ModEntities.ORDINARY_GUEST.get().create(level);
+        GuestEntity guest = GuestSpawnRules.createGuestForRating(this.rating, level.random, level);
         if (guest != null) {
             guest.moveTo(x, y, z, level.random.nextFloat() * 360F, 0.0F);
             guest.finalizeSpawn(

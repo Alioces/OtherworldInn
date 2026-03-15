@@ -93,11 +93,15 @@ public class LandDeedOverlay {
             if (pos2 != null) {
                 TeamData team = TeamManager.getInstance().getClientPlayerTeam();
 
-                // 检查是否超出最大范围
                 if (!LandDeedItem.isWithinBounds(pos1, pos2)) {
                     text =
                             Component.translatable(
                                     "message.otherworldinn.land_deed.fail_out_of_bounds");
+                    color = ModColors.RED;
+                } else if (!LandDeedItem.isWithinRatingAreaLimit(team, pos1, pos2)) {
+                    text =
+                            Component.translatable(
+                                    "message.otherworldinn.land_deed.fail_rating_limit");
                     color = ModColors.RED;
                 } else {
                     int price = LandDeedItem.calculatePrice(team, pos1, pos2);
@@ -134,9 +138,11 @@ public class LandDeedOverlay {
 
             TeamData team = TeamManager.getInstance().getClientPlayerTeam();
 
-            // 检查是否超出最大范围 (双重保险)
             if (!LandDeedItem.isWithinBounds(pos1, pos2)) {
                 text = Component.translatable("message.otherworldinn.land_deed.fail_out_of_bounds");
+                color = ModColors.RED;
+            } else if (!LandDeedItem.isWithinRatingAreaLimit(team, pos1, pos2)) {
+                text = Component.translatable("message.otherworldinn.land_deed.fail_rating_limit");
                 color = ModColors.RED;
             } else {
                 int price = LandDeedItem.calculatePrice(team, pos1, pos2);

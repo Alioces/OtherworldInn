@@ -17,6 +17,7 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -28,11 +29,21 @@ import net.minecraft.world.level.Level;
  */
 public class LandDeedItem extends Item {
 
-    // 旅社扩展的最大边界
     public static final int MAX_REGION_MIN_X = 30;
     public static final int MAX_REGION_MIN_Z = -28;
     public static final int MAX_REGION_MAX_X = 80;
     public static final int MAX_REGION_MAX_Z = 27;
+    private static final int DEFAULT_INN_MIN_X = 30;
+    private static final int DEFAULT_INN_MIN_Z = -14;
+    private static final int DEFAULT_INN_MAX_X = 51;
+    private static final int DEFAULT_INN_MAX_Z = 14;
+    private static final int MAX_INN_RATING = 5;
+    private static final String RATING_ICON = "§f\uE005§r";
+    private static final int MAX_EXPANDABLE_AREA =
+            (MAX_REGION_MAX_X - MAX_REGION_MIN_X + 1) * (MAX_REGION_MAX_Z - MAX_REGION_MIN_Z + 1);
+    private static final int BASE_INN_AREA =
+            (DEFAULT_INN_MAX_X - DEFAULT_INN_MIN_X + 1)
+                    * (DEFAULT_INN_MAX_Z - DEFAULT_INN_MIN_Z + 1);
 
     public LandDeedItem(Properties properties) {
         super(properties);
@@ -48,6 +59,61 @@ public class LandDeedItem extends Item {
                 && maxX <= MAX_REGION_MAX_X
                 && minZ >= MAX_REGION_MIN_Z
                 && maxZ <= MAX_REGION_MAX_Z;
+    }
+
+    public static int getMaxAllowedAreaByRating(int rating) {
+        int clampedRating = Math.max(0, Math.min(MAX_INN_RATING, rating));
+        int expandableRange = Math.max(0, MAX_EXPANDABLE_AREA - BASE_INN_AREA);
+        double progress = clampedRating / (double) MAX_INN_RATING;
+        return BASE_INN_AREA + (int) Math.round(expandableRange * progress);
+    }
+
+    public static int calculateCurrentInnArea(TeamData team) {
+        if (team == null) {
+            return 0;
+        }
+        int area = 0;
+        for (TeamData.InnRegion region : team.getInnRegions()) {
+            area += (region.maxX() - region.minX() + 1) * (region.maxZ() - region.minZ() + 1);
+        }
+        return area;
+    }
+
+    public static boolean isWithinRatingAreaLimit(TeamData team, BlockPos pos1, BlockPos pos2) {
+        if (team == null) {
+            return true;
+        }
+        if (!isWithinBounds(pos1, pos2)) {
+            return false;
+        }
+        int currentArea = calculateCurrentInnArea(team);
+        int additionalArea = calculatePrice(team, pos1, pos2) / 8;
+        int projectedArea = currentArea + additionalArea;
+        int maxAllowedArea = getMaxAllowedAreaByRating(team.getInnData().getRating());
+        return projectedArea <= maxAllowedArea;
+    }
+
+    public static int getExpandedAreaByTeam(TeamData team) {
+        return Math.max(0, calculateCurrentInnArea(team) - BASE_INN_AREA);
+    }
+
+    public static int getRemainingExpandableAreaByTeam(TeamData team) {
+        if (team == null) {
+            return 0;
+        }
+        int rating = team.getInnData().getRating();
+        int maxAllowedArea = getMaxAllowedAreaByRating(rating);
+        int maxExpandableArea = Math.max(0, maxAllowedArea - BASE_INN_AREA);
+        int expandedArea = getExpandedAreaByTeam(team);
+        return Math.max(0, maxExpandableArea - expandedArea);
+    }
+
+    private static String formatRatingDisplay(int rating) {
+        int clampedRating = Math.max(0, Math.min(MAX_INN_RATING, rating));
+        if (clampedRating == 0) {
+            return "0";
+        }
+        return RATING_ICON.repeat(clampedRating);
     }
 
     /**
@@ -129,7 +195,6 @@ public class LandDeedItem extends Item {
 
                 BlockPos pos1 = BlockPos.of(tag.getLong("Pos1"));
 
-                // 检查是否超出最大范围
                 if (!isWithinBounds(pos1, pos)) {
                     player.displayClientMessage(
                             Component.translatable(
@@ -141,8 +206,17 @@ public class LandDeedItem extends Item {
                     stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
                     return InteractionResult.SUCCESS;
                 }
+                if (!isWithinRatingAreaLimit(team, pos1, pos)) {
+                    player.displayClientMessage(
+                            Component.translatable(
+                                            "message.otherworldinn.land_deed.fail_rating_limit")
+                                    .withStyle(style -> style.withColor(ModColors.ERROR)),
+                            true);
+                    tag.remove("Pos2");
+                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+                    return InteractionResult.SUCCESS;
+                }
 
-                // 计算并显示价格提示
                 int price = calculatePrice(team, pos1, pos);
 
                 if (team.getCoins() >= price) {
@@ -166,7 +240,6 @@ public class LandDeedItem extends Item {
                 BlockPos pos1 = BlockPos.of(tag.getLong("Pos1"));
                 BlockPos pos2 = BlockPos.of(tag.getLong("Pos2"));
 
-                // 检查是否超出最大范围
                 if (!isWithinBounds(pos1, pos2)) {
                     player.displayClientMessage(
                             Component.translatable(
@@ -179,14 +252,23 @@ public class LandDeedItem extends Item {
                     stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
                     return InteractionResult.FAIL;
                 }
+                if (!isWithinRatingAreaLimit(team, pos1, pos2)) {
+                    player.displayClientMessage(
+                            Component.translatable(
+                                            "message.otherworldinn.land_deed.fail_rating_limit")
+                                    .withStyle(style -> style.withColor(ModColors.ERROR)),
+                            true);
+                    tag.remove("Pos1");
+                    tag.remove("Pos2");
+                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+                    return InteractionResult.FAIL;
+                }
 
-                // 计算最小最大坐标
                 int minX = Math.min(pos1.getX(), pos2.getX());
                 int minZ = Math.min(pos1.getZ(), pos2.getZ());
                 int maxX = Math.max(pos1.getX(), pos2.getX());
                 int maxZ = Math.max(pos1.getZ(), pos2.getZ());
 
-                // 计算价格
                 int price = calculatePrice(team, pos1, pos2);
 
                 if (team.removeCoins(price, serverPlayer.getServer())) {
@@ -242,5 +324,31 @@ public class LandDeedItem extends Item {
     public InteractionResultHolder<ItemStack> use(
             Level level, Player player, InteractionHand usedHand) {
         return InteractionResultHolder.pass(player.getItemInHand(usedHand));
+    }
+
+    @Override
+    public void appendHoverText(
+            ItemStack stack,
+            TooltipContext context,
+            List<Component> tooltipComponents,
+            TooltipFlag tooltipFlag) {
+        TeamData team = TeamManager.getInstance().getClientPlayerTeam();
+        if (team != null) {
+            int rating = team.getInnData().getRating();
+            int expandedArea = getExpandedAreaByTeam(team);
+            int remainingArea = getRemainingExpandableAreaByTeam(team);
+            tooltipComponents.add(
+                    Component.translatable(
+                                    "tooltip.otherworldinn.land_deed.rating",
+                                    formatRatingDisplay(rating))
+                            .withStyle(style -> style.withColor(ModColors.INFO)));
+            tooltipComponents.add(
+                    Component.translatable(
+                                    "tooltip.otherworldinn.land_deed.area_status",
+                                    expandedArea,
+                                    remainingArea)
+                            .withStyle(style -> style.withColor(ModColors.LIGHT)));
+        }
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
 }

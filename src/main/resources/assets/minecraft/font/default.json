@@ -35,6 +35,15 @@
       "chars": [
         "\uE004"
       ]
+    },
+    {
+      "type": "bitmap",
+      "file": "otherworldinn:font/rating.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE005"
+      ]
     }
   ]
 }

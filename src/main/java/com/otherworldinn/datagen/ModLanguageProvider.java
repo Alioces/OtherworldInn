@@ -104,6 +104,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("command.otherworldinn.team.coins.get")
                 .zh("队伍 %s 当前余额: §f\uE001§r %d")
                 .en("Team %s current balance: §f\uE001§r %d");
+        entry("command.otherworldinn.team.rating.set")
+                .zh("已将队伍 %s 的旅社星级设置为 %s")
+                .en("Set team %s inn rating to %s");
 
         // 管理员命令
         entry("command.otherworldinn.admin.reset_dimensions.start")
@@ -254,12 +257,21 @@ public class ModLanguageProvider extends LanguageProvider {
                 .zh("确认花费 §f\uE001§r %d 扩展旅社范围")
                 .en("Confirm Expansion (Cost: §f\uE001§r %d)");
         entry("message.otherworldinn.land_deed.fail_out_of_bounds")
-                .zh("无法扩展：超出最大范围！")
+                .zh("无法扩展：超出最大范围")
                 .en("Cannot expand: Exceeds maximum range! ");
+        entry("message.otherworldinn.land_deed.fail_rating_limit")
+                .zh("无法扩展：超出星级允许上限")
+                .en("Cannot expand: Exceeds current star-level land limit");
         entry("message.otherworldinn.land_deed.selection_cleared")
                 .zh("已取消选定范围。")
                 .en("Selection cleared.");
         entry("message.otherworldinn.land_deed.overlay.cancel").zh("取消选定").en("Cancel Selection");
+        entry("tooltip.otherworldinn.land_deed.rating")
+                .zh("当前星级: %s")
+                .en("Current Rating: %s");
+        entry("tooltip.otherworldinn.land_deed.area_status")
+                .zh("已扩展范围: %s / 剩余可用: %s")
+                .en("Expanded Area: %s / Remaining: %s");
 
         // 房间钥匙
         entry("item.otherworldinn.room_key.bound").zh("%d号房间钥匙").en("Room %d Key");

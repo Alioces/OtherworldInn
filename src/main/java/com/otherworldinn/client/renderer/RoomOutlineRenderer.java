@@ -256,8 +256,9 @@ public class RoomOutlineRenderer {
                 int color;
                 if (!LandDeedItem.isWithinBounds(pos1, pos2)) {
                     color = ModColors.RED;
+                } else if (!LandDeedItem.isWithinRatingAreaLimit(team, pos1, pos2)) {
+                    color = ModColors.RED;
                 } else {
-                    // 检查余额，如果不足显示红色
                     int price = LandDeedItem.calculatePrice(team, pos1, pos2);
                     int coins = team != null ? team.getCoins() : 0;
                     color = (coins >= price) ? ModColors.YELLOW : ModColors.RED;

@@ -7,7 +7,7 @@ package com.otherworldinn.foundation;
  */
 public class ModColors {
     public static final int RED = 0xFF6A6A; // #FF6A6A
-    public static final int BLUE = 0x1E90FF; // #1E90FF
+    public static final int BLUE = 0x97FFFF; // #97FFFF
     public static final int YELLOW = 0xFFD700; // #FFD700
     public static final int GREEN = 0x00FF7F; // #00FF7F
 

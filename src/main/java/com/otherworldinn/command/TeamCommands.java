@@ -93,6 +93,29 @@ public class TeamCommands {
                                                                 })
                                                         .executes(TeamCommands::setInnState)))
                         .then(
+                                Commands.literal("rating")
+                                        .requires(s -> s.hasPermission(2))
+                                        .then(
+                                                Commands.argument(
+                                                                "value",
+                                                                IntegerArgumentType.integer(0, 5))
+                                                        .executes(
+                                                                ctx ->
+                                                                        setInnRating(ctx, null))
+                                                        .then(
+                                                                Commands.argument(
+                                                                                "target",
+                                                                                EntityArgument
+                                                                                        .player())
+                                                                        .executes(
+                                                                                ctx ->
+                                                                                        setInnRating(
+                                                                                                ctx,
+                                                                                                EntityArgument
+                                                                                                        .getPlayer(
+                                                                                                                ctx,
+                                                                                                                "target"))))))
+                        .then(
                                 Commands.literal("unlockpoint")
                                         .requires(s -> s.hasPermission(2))
                                         .then(
@@ -493,6 +516,41 @@ public class TeamCommands {
                                             "command.otherworldinn.team.teleport_set", enabled),
                             true);
 
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int setInnRating(
+            CommandContext<CommandSourceStack> context, ServerPlayer target) {
+        try {
+            if (target == null) target = context.getSource().getPlayerOrException();
+            int value = IntegerArgumentType.getInteger(context, "value");
+
+            TeamManager manager = TeamManager.getInstance();
+            TeamData team = manager.getPlayerTeam(target);
+
+            if (team == null) {
+                context.getSource()
+                        .sendFailure(
+                                Component.translatable(
+                                        "command.otherworldinn.team.target_no_team"));
+                return 0;
+            }
+
+            team.getInnData().setRating(value);
+            manager.syncTeam(team, context.getSource().getServer());
+
+            context.getSource()
+                    .sendSuccess(
+                            () ->
+                                    Component.translatable(
+                                            "command.otherworldinn.team.rating.set",
+                                            team.getName(),
+                                            team.getInnData().getRating()),
+                            true);
             return 1;
         } catch (Exception e) {
             context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
