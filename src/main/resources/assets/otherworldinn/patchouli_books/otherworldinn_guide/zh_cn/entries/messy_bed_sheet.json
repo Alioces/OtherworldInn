@@ -1,0 +1,18 @@
+{
+  "name": "物品：脏乱的床单",
+  "category": "otherworldinn:room_tools",
+  "icon": "otherworldinn:messy_bed_sheet",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "用法",
+      "text": "$(bold)用途$()$(br)清洗后变回$(item)床单$()。$(br2)$(bold)操作$()$(br)$(li)手持$(item)脏乱的床单$()$(br)$(li)对水源或含水方块长按右键$(br)$(li)清洗完成后变为$(item)床单$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "合成表",
+      "text": "$(bold)清洗配方$()$(br)$(li)输入：$(item)脏乱的床单$()$(br)$(li)方式：Create 喷溅$(br)$(li)输出：$(item)床单$()"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Item: Land Deed",
+  "category": "otherworldinn:expansion_map",
+  "icon": "otherworldinn:land_deed",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Usage",
+      "text": "$(bold)Purpose$()$(br)Expand inn area.$(br2)$(bold)Steps$()$(br)$(li)Hold $(item)Land Deed$()$(br)$(li)Right click first corner$(br)$(li)Right click second corner$(br)$(li)Expansion completes after validation"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Recipe",
+      "text": "$(bold)Crafting$()$(br)$(#ff5555)No recipe available$()"
+    }
+  ]
+}

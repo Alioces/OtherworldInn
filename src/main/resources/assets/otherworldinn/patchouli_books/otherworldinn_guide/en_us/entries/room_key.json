@@ -1,0 +1,19 @@
+{
+  "name": "Item: Room Key",
+  "category": "otherworldinn:room_tools",
+  "icon": "otherworldinn:room_key",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Usage",
+      "text": "$(bold)Purpose$()$(br)Bind room and check in guest.$(br2)$(bold)Steps$()$(br)$(li)Right click room to bind$(br)$(li)Left click to unbind$(br)$(li)Right click waiting guest to check in$(br)$(li)Consumes 1 key on use"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "otherworldinn:room_key",
+      "title": "Recipe",
+      "text": "$(item)Room Key$() recipe."
+    }
+  ]
+}

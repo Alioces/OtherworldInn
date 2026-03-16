@@ -1,0 +1,19 @@
+{
+  "name": "物品：旅社钥匙",
+  "category": "otherworldinn:frontdesk_keys",
+  "icon": "otherworldinn:inn_key",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "用法",
+      "text": "$(bold)用途$()$(br)切换旅社状态。$(br2)$(bold)操作$()$(br)$(li)手持$(item)旅社钥匙$()$(br)$(li)$(n)潜行右键$()$(thing)前台铃铛$()$(br)$(li)按提示切换旅社状态"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "otherworldinn:inn_key",
+      "title": "合成表",
+      "text": "$(item)旅社钥匙$()合成。"
+    }
+  ]
+}

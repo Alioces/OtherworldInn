@@ -1,0 +1,18 @@
+{
+  "name": "物品：地契",
+  "category": "otherworldinn:expansion_map",
+  "icon": "otherworldinn:land_deed",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "用法",
+      "text": "$(bold)用途$()$(br)扩展旅社可用区域。$(br2)$(bold)操作$()$(br)$(li)手持$(item)地契$()$(br)$(li)右键第一个角点$(br)$(li)右键第二个角点$(br)$(li)满足范围规则后完成扩展"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "合成表",
+      "text": "$(bold)合成方式$()$(br)$(#ff5555)暂无合成表$()"
+    }
+  ]
+}

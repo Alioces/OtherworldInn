@@ -1,0 +1,18 @@
+{
+  "name": "物品：末地空间球",
+  "category": "otherworldinn:dimension_teleport",
+  "icon": "otherworldinn:end_space_sphere",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "用法",
+      "text": "$(bold)用途$()$(br)传送至末地。$(br2)$(bold)操作$()$(br)$(li)手持$(item)末地空间球$()$(br)$(li)右键使用$(br)$(li)冷却结束后可再次使用"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "合成表",
+      "text": "$(bold)合成方式$()$(br)$(li)配方ID：$(item)otherworldinn:end_space_sphere$()"
+    }
+  ]
+}

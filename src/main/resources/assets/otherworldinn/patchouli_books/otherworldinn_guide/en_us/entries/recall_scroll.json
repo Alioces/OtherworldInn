@@ -1,0 +1,18 @@
+{
+  "name": "Item: Recall Scroll",
+  "category": "otherworldinn:room_tools",
+  "icon": "otherworldinn:recall_scroll",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Usage",
+      "text": "$(bold)Purpose$()$(br)Teleport back to inn position.$(br2)$(bold)Steps$()$(br)$(li)Hold $(item)Recall Scroll$()$(br)$(li)Use continuously for 3 seconds$(br)$(li)Teleport after completion$(br)$(li)$(n)Unavailable in town dimension$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Recipe",
+      "text": "$(bold)Crafting$()$(br)$(#ff5555)No recipe available$()"
+    }
+  ]
+}

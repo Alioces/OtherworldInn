@@ -1,0 +1,18 @@
+{
+  "name": "物品：空间球",
+  "category": "otherworldinn:expansion_map",
+  "icon": "otherworldinn:space_sphere",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "用法",
+      "text": "$(bold)用途$()$(br)激活队伍地图点传送功能。$(br2)$(bold)操作$()$(br)$(li)手持$(item)空间球$()$(br)$(li)右键使用$(br)$(li)激活后队伍可使用地图传送"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "合成表",
+      "text": "$(bold)合成方式$()$(br)$(#ff5555)暂无合成表$()"
+    }
+  ]
+}
