@@ -1,5 +1,6 @@
 package com.otherworldinn.entity.base;
 
+import com.github.tartaricacid.touhoulittlemaid.init.InitItems;
 import com.otherworldinn.util.BlockEntitySearchUtils;
 import com.otherworldinn.util.service.GuestNameManager;
 import com.otherworldinn.world.economy.service.ItemSellPriceManager;
@@ -22,6 +23,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
@@ -563,6 +565,7 @@ public abstract class GuestEntity extends PathfinderMob {
 
         int totalCost = paidUnitPrice * purchased.getCount();
         team.addCoins(totalCost, level.getServer());
+        team.getInnData().recordDiningIncome(totalCost, level);
         TeamManager.getInstance().syncTeam(team, level.getServer());
         this.dailySpentCoins += totalCost;
         this.dailyPurchaseCount += 1;
@@ -709,6 +712,27 @@ public abstract class GuestEntity extends PathfinderMob {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        if (!this.level().isClientSide
+                && stack.is(InitItems.BROOM.get())
+                && this.guestData.getState() == GuestData.GuestState.WAITING
+                && this.level() instanceof ServerLevel serverLevel) {
+            TeamData innTeam =
+                    TeamManager.getInstance().getTeamAt(this.blockPosition(), serverLevel.getServer());
+            if (innTeam == null) {
+                return InteractionResult.PASS;
+            }
+            if (player instanceof ServerPlayer serverPlayer) {
+                TeamData playerTeam = TeamManager.getInstance().getPlayerTeam(serverPlayer);
+                if (playerTeam == null || !playerTeam.getTeamId().equals(innTeam.getTeamId())) {
+                    return InteractionResult.FAIL;
+                }
+            }
+            InnData innData = innTeam.getInnData();
+            innData.handleGuestDeparture(this.getUUID(), true, serverLevel, innTeam);
+            innData.removeGuest(this.getUUID());
+            TeamManager.getInstance().syncTeam(innTeam, serverLevel.getServer());
+            return InteractionResult.SUCCESS;
+        }
         if (stack.isEmpty()
                 && player.isShiftKeyDown()
                 && !this.level().isClientSide

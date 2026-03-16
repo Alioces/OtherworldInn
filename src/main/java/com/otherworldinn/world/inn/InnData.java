@@ -51,6 +51,27 @@ public class InnData {
     private int reputation = 0; // 旅社声望
 
     @Setter(AccessLevel.NONE)
+    private int totalLodgingIncome = 0;
+
+    @Setter(AccessLevel.NONE)
+    private int totalDiningIncome = 0;
+
+    @Setter(AccessLevel.NONE)
+    private int todayLodgingIncome = 0;
+
+    @Setter(AccessLevel.NONE)
+    private int todayDiningIncome = 0;
+
+    @Setter(AccessLevel.NONE)
+    private int yesterdayLodgingIncome = 0;
+
+    @Setter(AccessLevel.NONE)
+    private int yesterdayDiningIncome = 0;
+
+    @Setter(AccessLevel.NONE)
+    private long incomeStatDay = -1L;
+
+    @Setter(AccessLevel.NONE)
     private InnState state = InnState.CLOSED; // 默认为歇业
 
     public enum InnState {
@@ -107,6 +128,53 @@ public class InnData {
         if (this.reputation < 0) {
             this.reputation = 0;
         }
+    }
+
+    public int getTotalIncome() {
+        return totalLodgingIncome + totalDiningIncome;
+    }
+
+    public int getYesterdayIncome() {
+        return yesterdayLodgingIncome + yesterdayDiningIncome;
+    }
+
+    public void recordLodgingIncome(int amount, ServerLevel level) {
+        if (amount <= 0) {
+            return;
+        }
+        syncIncomeStatDay(level);
+        totalLodgingIncome += amount;
+        todayLodgingIncome += amount;
+    }
+
+    public void recordDiningIncome(int amount, ServerLevel level) {
+        if (amount <= 0) {
+            return;
+        }
+        syncIncomeStatDay(level);
+        totalDiningIncome += amount;
+        todayDiningIncome += amount;
+    }
+
+    private void syncIncomeStatDay(ServerLevel level) {
+        long currentDay = level.getDayTime() / 24000L;
+        if (incomeStatDay < 0L) {
+            incomeStatDay = currentDay;
+            return;
+        }
+        if (currentDay <= incomeStatDay) {
+            return;
+        }
+        if (currentDay == incomeStatDay + 1L) {
+            yesterdayLodgingIncome = todayLodgingIncome;
+            yesterdayDiningIncome = todayDiningIncome;
+        } else {
+            yesterdayLodgingIncome = 0;
+            yesterdayDiningIncome = 0;
+        }
+        todayLodgingIncome = 0;
+        todayDiningIncome = 0;
+        incomeStatDay = currentDay;
     }
 
     /**
@@ -812,26 +880,20 @@ public class InnData {
         }
 
         if (isAngry) {
-            // 生气离开逻辑
-            // 1. 扣除声望 (2-6点)
             int reputationLoss = 2 + level.random.nextInt(5);
             this.addReputation(-reputationLoss);
-
-            // 2. 播放特效
             if (entity != null) {
-                // 生气粒子
+                level.broadcastEntityEvent(entity, (byte) 13);
                 level.sendParticles(
                         net.minecraft.core.particles.ParticleTypes.ANGRY_VILLAGER,
                         entity.getX(),
                         entity.getY() + entity.getEyeHeight() + 0.5,
                         entity.getZ(),
-                        5,
-                        0.5,
-                        0.5,
-                        0.5,
+                        10,
+                        0.25,
+                        0.25,
+                        0.25,
                         0.02);
-
-                // 生气音效
                 level.playSound(
                         null,
                         entity.getX(),
@@ -916,6 +978,7 @@ public class InnData {
             if (isNormalCheckout && team != null) {
                 int price = targetRoom.getBedPrice(this.rating);
                 team.addCoins(price, level.getServer());
+                this.recordLodgingIncome(price, level);
                 if (bedMessy) {
                     String todoText =
                             Component.translatable(
@@ -1044,6 +1107,13 @@ public class InnData {
         tag.putString("Name", name);
         tag.putInt("Rating", rating);
         tag.putInt("Reputation", reputation);
+        tag.putInt("TotalLodgingIncome", totalLodgingIncome);
+        tag.putInt("TotalDiningIncome", totalDiningIncome);
+        tag.putInt("TodayLodgingIncome", todayLodgingIncome);
+        tag.putInt("TodayDiningIncome", todayDiningIncome);
+        tag.putInt("YesterdayLodgingIncome", yesterdayLodgingIncome);
+        tag.putInt("YesterdayDiningIncome", yesterdayDiningIncome);
+        tag.putLong("IncomeStatDay", incomeStatDay);
         tag.putString("State", state.name());
 
         ListTag guestsTag = new ListTag();
@@ -1086,6 +1156,41 @@ public class InnData {
         }
         if (tag.contains("Reputation")) {
             reputation = tag.getInt("Reputation");
+        }
+        if (tag.contains("TotalLodgingIncome")) {
+            totalLodgingIncome = tag.getInt("TotalLodgingIncome");
+        } else {
+            totalLodgingIncome = 0;
+        }
+        if (tag.contains("TotalDiningIncome")) {
+            totalDiningIncome = tag.getInt("TotalDiningIncome");
+        } else {
+            totalDiningIncome = 0;
+        }
+        if (tag.contains("TodayLodgingIncome")) {
+            todayLodgingIncome = tag.getInt("TodayLodgingIncome");
+        } else {
+            todayLodgingIncome = 0;
+        }
+        if (tag.contains("TodayDiningIncome")) {
+            todayDiningIncome = tag.getInt("TodayDiningIncome");
+        } else {
+            todayDiningIncome = 0;
+        }
+        if (tag.contains("YesterdayLodgingIncome")) {
+            yesterdayLodgingIncome = tag.getInt("YesterdayLodgingIncome");
+        } else {
+            yesterdayLodgingIncome = 0;
+        }
+        if (tag.contains("YesterdayDiningIncome")) {
+            yesterdayDiningIncome = tag.getInt("YesterdayDiningIncome");
+        } else {
+            yesterdayDiningIncome = 0;
+        }
+        if (tag.contains("IncomeStatDay")) {
+            incomeStatDay = tag.getLong("IncomeStatDay");
+        } else {
+            incomeStatDay = -1L;
         }
 
         if (tag.contains("State")) {

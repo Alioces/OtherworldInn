@@ -325,6 +325,28 @@ public class ModLanguageProvider extends LanguageProvider {
                 .zh("旅社装修中")
                 .en("The Inn is under RENOVATION");
         entry("message.otherworldinn.store.overlay.open").zh("打开商店").en("Open Store");
+        entry("message.otherworldinn.broom.overlay.expel").zh("驱逐旅客（降低声望）").en("Expel Guest");
+        entry("message.otherworldinn.inventory.overlay.coins")
+                .zh("§f\uE001§r%s")
+                .en("§f\uE001§r%s");
+        entry("message.otherworldinn.inventory.overlay.reputation_detail")
+                .zh("声望：%s/%s")
+                .en("Reputation: %s/%s");
+        entry("message.otherworldinn.inventory.overlay.income.title")
+                .zh("收入统计")
+                .en("Income Breakdown");
+        entry("message.otherworldinn.inventory.overlay.income.total")
+                .zh("总收入")
+                .en("Total Income");
+        entry("message.otherworldinn.inventory.overlay.income.yesterday")
+                .zh("昨日收入")
+                .en("Yesterday Income");
+        entry("message.otherworldinn.inventory.overlay.income.lodging")
+                .zh("住宿：§f\uE001§r%s")
+                .en("Lodging: §f\uE001§r%s");
+        entry("message.otherworldinn.inventory.overlay.income.dining")
+                .zh("餐饮：§f\uE001§r%s")
+                .en("Dining: §f\uE001§r%s");
 
         // 旅社钥匙
         entry("message.otherworldinn.inn_key.no_permission")
