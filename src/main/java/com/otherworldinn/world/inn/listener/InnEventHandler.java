@@ -435,6 +435,7 @@ public class InnEventHandler {
 
                         if (innData.setState(newState)) {
                             TeamManager.getInstance().syncTeam(team, serverLevel.getServer());
+                            player.swing(event.getHand(), true);
 
                             // 发送反馈消息
                             Component message;

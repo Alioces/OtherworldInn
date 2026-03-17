@@ -99,9 +99,6 @@ public abstract class StoreHumanoidModel<T extends StoreEntity> extends Humanoid
         this.leftLeg.yRot = 0.0F;
         this.leftLeg.zRot = 0.0F;
         this.applyIdlePose(entity, ageInTicks);
-        this.body.xRot = 0.0F;
-        this.body.yRot = 0.0F;
-        this.body.zRot = 0.0F;
         this.hat.copyFrom(this.head);
     }
 }

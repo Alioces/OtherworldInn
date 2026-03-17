@@ -23,11 +23,24 @@ public class MagicianModel extends StoreHumanoidModel<MagicianEntity> {
     @Override
     protected void applyIdlePose(MagicianEntity entity, float ageInTicks) {
         float t = ageInTicks * 0.1F;
-        this.head.yRot += (float) Math.sin(t * 0.7F) * 0.06F;
-        this.rightArm.xRot = -0.25F + (float) Math.sin(t * 1.6F) * 0.22F;
-        this.rightArm.yRot = -0.22F + (float) Math.sin(t * 1.2F) * 0.10F;
-        this.leftArm.xRot = -0.35F + (float) Math.cos(t * 1.4F) * 0.24F;
-        this.leftArm.yRot = 0.20F + (float) Math.cos(t * 1.1F) * 0.08F;
-        this.leftArm.zRot = -0.03F + (float) Math.sin(t * 1.3F) * 0.08F;
+        float stir = (float) Math.sin(t * 2.2F);
+        float micro = (float) Math.sin(t * 0.7F);
+
+        this.body.xRot = 0.0F;
+        this.body.yRot = 0.0F;
+
+        this.head.xRot += 0.42F + micro * 0.05F;
+        this.head.yRot += stir * 0.08F;
+
+        this.rightArm.xRot = -1.60F + stir * 0.34F;
+        this.rightArm.yRot = -0.52F + stir * 0.18F;
+        this.rightArm.zRot = 0.28F + stir * 0.14F;
+
+        this.leftArm.xRot = -1.18F - stir * 0.14F;
+        this.leftArm.yRot = 0.36F;
+        this.leftArm.zRot = -0.20F;
+
+        this.rightLeg.xRot = 0.12F;
+        this.leftLeg.xRot = 0.10F;
     }
 }

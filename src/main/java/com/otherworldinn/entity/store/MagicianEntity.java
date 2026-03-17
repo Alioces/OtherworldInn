@@ -29,7 +29,7 @@ public class MagicianEntity extends StoreEntity {
 
     public MagicianEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
-        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOOK));
+        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BLAZE_ROD));
         BuiltInRegistries.ITEM
                 .getOptional(ResourceLocation.parse("majobroom:majo_hat"))
                 .ifPresent(item -> this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(item)));

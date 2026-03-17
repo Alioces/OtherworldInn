@@ -2,6 +2,8 @@ package com.otherworldinn.world.event.listener;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ModColors;
+import com.otherworldinn.foundation.ModBlockProperties;
+import com.otherworldinn.init.ModItems;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
@@ -104,6 +106,19 @@ public class TownProtectionHandler {
                 || state.is(net.minecraft.tags.BlockTags.MAINTAINS_FARMLAND);
     }
 
+    private static boolean isBedSheetCleaningUpdate(Player player, BlockState state) {
+        if (!(state.getBlock() instanceof net.minecraft.world.level.block.BedBlock)
+                || !state.hasProperty(ModBlockProperties.MESSY)) {
+            return false;
+        }
+        ItemStack main = player.getMainHandItem();
+        ItemStack off = player.getOffhandItem();
+        return main.is(ModItems.BED_SHEET.get())
+                || off.is(ModItems.BED_SHEET.get())
+                || main.is(ModItems.MESSY_BED_SHEET.get())
+                || off.is(ModItems.MESSY_BED_SHEET.get());
+    }
+
     /** 客户端事件处理器 专门用于在客户端预测阶段就拦截交互 */
     @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT)
     public static class ClientHandler {
@@ -183,6 +198,9 @@ public class TownProtectionHandler {
         }
 
         if (event.getEntity() instanceof Player player) {
+            if (isBedSheetCleaningUpdate(player, event.getState())) {
+                return;
+            }
             // 如果是真实玩家
             if (player instanceof ServerPlayer serverPlayer && !(player instanceof FakePlayer)) {
                 Component denyReason =
