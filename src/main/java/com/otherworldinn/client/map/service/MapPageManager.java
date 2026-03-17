@@ -1,6 +1,8 @@
 package com.otherworldinn.client.map.service;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.world.inn.facility.FacilityRegistry;
+import com.otherworldinn.world.map.TownDataProvider;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +60,16 @@ public class MapPageManager {
         registerPoint(1, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn"));
         registerPoint(
                 1, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "blacksmith"));
+
+        syncFacilityPointsToPages();
+    }
+
+    private void syncFacilityPointsToPages() {
+        TownDataProvider.getPoints();
+        for (FacilityRegistry.FacilityDefinition facility : FacilityRegistry.getAll()) {
+            FacilityRegistry.FacilityMapPointConfig config = facility.mapPointConfig();
+            registerPoint(config.pageX(), config.pageZ(), facility.mapPointId());
+        }
     }
 
     /**
@@ -97,6 +109,7 @@ public class MapPageManager {
      * @return 包含地图点 ID 的不可变集合，如果页面不存在则返回空集合
      */
     public Set<ResourceLocation> getPointsForPage(int gridX, int gridZ) {
+        syncFacilityPointsToPages();
         PagePos pos = new PagePos(gridX, gridZ);
         return pagePoints.getOrDefault(pos, Collections.emptySet());
     }

@@ -95,6 +95,10 @@ public final class FacilityUpgradeService {
         }
 
         team.getInnData().setFacilityLevel(context.facility().id(), next.level());
+        if (context.currentLevel() == 0) {
+            TeamManager.getInstance()
+                    .unlockMapPoint(team, context.facility().mapPointId(), player.getServer());
+        }
         TeamManager.getInstance().syncTeam(team, player.getServer());
         String resultKey =
                 context.currentLevel() == 0

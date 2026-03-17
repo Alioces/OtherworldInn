@@ -1,8 +1,11 @@
 package com.otherworldinn.world.map;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.world.inn.facility.FacilityRegistry;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -17,13 +20,14 @@ import net.minecraft.world.phys.Vec3;
 public class TownDataProvider {
 
     private static final List<MapPoint> POINTS = new ArrayList<>();
+    private static final Map<ResourceLocation, MapPoint> POINT_INDEX = new LinkedHashMap<>();
 
     static {
         // 初始化城镇关键点
         // 坐标和屏幕偏移为当前配置值
 
         // 旅社 (Inn)
-        POINTS.add(
+        registerPoint(
                 new MapPoint(
                         ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn"),
                         new Vec3(27, 71, 0),
@@ -36,7 +40,7 @@ public class TownDataProvider {
                         ));
 
         // 铁匠铺 (Blacksmith)
-        POINTS.add(
+        registerPoint(
                 new MapPoint(
                         ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "blacksmith"),
                         new Vec3(17, 71, 3),
@@ -49,7 +53,7 @@ public class TownDataProvider {
                         ));
 
         // 城镇大门 (Exit Gate)
-        POINTS.add(
+        registerPoint(
                 new MapPoint(
                         ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "town_gate"),
                         new Vec3(-30, 71, 0),
@@ -60,6 +64,38 @@ public class TownDataProvider {
                         MapPoint.MapPointType.EXIT_GATE,
                         null // 默认解锁
                         ));
+
+        syncFacilityPoints();
+    }
+
+    private static void registerPoint(MapPoint point) {
+        if (point == null || point.id() == null) {
+            return;
+        }
+        if (POINT_INDEX.containsKey(point.id())) {
+            return;
+        }
+        POINT_INDEX.put(point.id(), point);
+        POINTS.add(point);
+    }
+
+    private static void syncFacilityPoints() {
+        for (FacilityRegistry.FacilityDefinition facility : FacilityRegistry.getAll()) {
+            ResourceLocation pointId = facility.mapPointId();
+            if (POINT_INDEX.containsKey(pointId)) {
+                continue;
+            }
+            FacilityRegistry.FacilityMapPointConfig config = facility.mapPointConfig();
+            registerPoint(
+                    new MapPoint(
+                            pointId,
+                            config.worldPosition(),
+                            config.screenOffset(),
+                            config.iconTexture(),
+                            Component.translatable(facility.translationKey()),
+                            config.type(),
+                            "facility_locked"));
+        }
     }
 
     /**
@@ -68,6 +104,7 @@ public class TownDataProvider {
      * @return 地图点列表
      */
     public static List<MapPoint> getPoints() {
+        syncFacilityPoints();
         return POINTS;
     }
 
@@ -78,6 +115,7 @@ public class TownDataProvider {
      * @return Optional 地图点
      */
     public static Optional<MapPoint> getPoint(ResourceLocation id) {
-        return POINTS.stream().filter(p -> p.id().equals(id)).findFirst();
+        syncFacilityPoints();
+        return Optional.ofNullable(POINT_INDEX.get(id));
     }
 }

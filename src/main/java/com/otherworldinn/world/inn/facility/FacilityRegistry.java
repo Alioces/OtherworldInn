@@ -1,6 +1,7 @@
 package com.otherworldinn.world.inn.facility;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.world.map.MapPoint;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -15,6 +16,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 
 public final class FacilityRegistry {
     private static final Map<String, FacilityDefinition> FACILITIES = new LinkedHashMap<>();
@@ -35,7 +38,8 @@ public final class FacilityRegistry {
             String zhName,
             int maxLevel,
             BlockPos centerPos,
-            List<LevelUpgradeCost> levelUpgradeCosts) {
+            List<LevelUpgradeCost> levelUpgradeCosts,
+            FacilityMapPointConfig mapPointConfig) {
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("Facility id cannot be blank.");
         }
@@ -82,6 +86,7 @@ public final class FacilityRegistry {
                         maxLevel,
                         centerPos.immutable(),
                         "facility." + OtherworldInn.MODID + "." + id,
+                        normalizeMapPointConfig(id, centerPos, mapPointConfig),
                         Map.copyOf(levels));
         FACILITIES.put(id, definition);
         return definition;
@@ -134,6 +139,10 @@ public final class FacilityRegistry {
                 OtherworldInn.MODID, "facility/" + facilityId + "/level_" + level);
     }
 
+    public static ResourceLocation buildMapPointId(String facilityId) {
+        return ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, facilityId);
+    }
+
     private static List<ItemStack> copyItemStacks(List<ItemStack> stacks) {
         if (stacks == null || stacks.isEmpty()) {
             return List.of();
@@ -174,7 +183,40 @@ public final class FacilityRegistry {
                                 List.of(
                                         new ItemStack(Items.GOLD_INGOT, 16),
                                         new ItemStack(Items.BLAZE_ROD, 8)),
-                                3200)));
+                                3200)),
+                new FacilityMapPointConfig(
+                        new Vec3(9, 71, -3),
+                        new Vec2(12, -10),
+                        ResourceLocation.fromNamespaceAndPath(
+                                OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
+                        MapPoint.MapPointType.SHOP,
+                        0,
+                        0));
+    }
+
+    private static FacilityMapPointConfig normalizeMapPointConfig(
+            String facilityId, BlockPos centerPos, FacilityMapPointConfig config) {
+        if (config == null) {
+            return new FacilityMapPointConfig(
+                    Vec3.atCenterOf(centerPos),
+                    Vec2.ZERO,
+                    ResourceLocation.fromNamespaceAndPath(
+                            OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
+                    MapPoint.MapPointType.SHOP,
+                    0,
+                    0);
+        }
+        Vec3 worldPosition = config.worldPosition() == null ? Vec3.atCenterOf(centerPos) : config.worldPosition();
+        Vec2 screenOffset = config.screenOffset() == null ? Vec2.ZERO : config.screenOffset();
+        ResourceLocation iconTexture =
+                config.iconTexture() == null
+                        ? ResourceLocation.fromNamespaceAndPath(
+                                OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png")
+                        : config.iconTexture();
+        MapPoint.MapPointType type =
+                config.type() == null ? MapPoint.MapPointType.SHOP : config.type();
+        return new FacilityMapPointConfig(
+                worldPosition, screenOffset, iconTexture, type, config.pageX(), config.pageZ());
     }
 
     public record FacilityDefinition(
@@ -184,10 +226,15 @@ public final class FacilityRegistry {
             int maxLevel,
             BlockPos centerPos,
             String translationKey,
+            FacilityMapPointConfig mapPointConfig,
             Map<Integer, FacilityLevelDefinition> levels) {
         public FacilityLevelDefinition getLevel(int level) {
             int clamped = Math.max(0, Math.min(level, maxLevel));
             return levels.get(clamped);
+        }
+
+        public ResourceLocation mapPointId() {
+            return buildMapPointId(id);
         }
     }
 
@@ -196,6 +243,14 @@ public final class FacilityRegistry {
             List<ItemStack> requiredItems,
             int requiredCoins,
             ResourceLocation structureId) {}
+
+    public record FacilityMapPointConfig(
+            Vec3 worldPosition,
+            Vec2 screenOffset,
+            ResourceLocation iconTexture,
+            MapPoint.MapPointType type,
+            int pageX,
+            int pageZ) {}
 
     public record LevelUpgradeCost(List<ItemStack> requiredItems, int requiredCoins) {}
 }
