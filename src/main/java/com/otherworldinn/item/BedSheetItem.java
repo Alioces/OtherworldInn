@@ -47,61 +47,16 @@ public class BedSheetItem extends Item {
                 && state.getValue(ModBlockProperties.MESSY)) {
 
             if (!level.isClientSide) {
-                // 1. 清理床铺
-                level.setBlock(pos, state.setValue(ModBlockProperties.MESSY, false), 3);
-
-                // 同步清理床的另一半
-                BedPart part = state.getValue(BedBlock.PART);
-                BlockPos otherPos =
-                        pos.relative(
-                                part == BedPart.HEAD
-                                        ? state.getValue(BedBlock.FACING).getOpposite()
-                                        : state.getValue(BedBlock.FACING));
-                BlockState otherState = level.getBlockState(otherPos);
-                if (otherState.getBlock() instanceof BedBlock
-                        && otherState.hasProperty(ModBlockProperties.MESSY)
-                        && otherState.getValue(ModBlockProperties.MESSY)) {
-                    level.setBlock(
-                            otherPos, otherState.setValue(ModBlockProperties.MESSY, false), 3);
-                }
-
-                // 更新房间数据（最大入住人数 +1）并同步
-                if (level instanceof ServerLevel serverLevel) {
-                    TeamData team =
-                            TeamManager.getInstance().getTeamAt(pos, serverLevel.getServer());
-                    if (team != null) {
-                        InnData innData = team.getInnData();
-                        RoomData room = innData.getRoomAt(pos);
-                        if (room != null) {
-                            room.setMaxGuests(room.getMaxGuests() + 1);
-                            TeamManager.getInstance().syncTeam(team, serverLevel.getServer());
-
-                            // 移除相关的待办事项
-                            String todoText =
-                                    Component.translatable(
-                                                    "todo.otherworldinn.room_cleaning",
-                                                    room.getId())
-                                            .getString();
-                            innData.removeTodo(serverLevel, team, todoText);
+                if (level instanceof ServerLevel serverLevel && cleanMessyBed(serverLevel, pos)) {
+                    ItemStack dirtySheet = createDirtySheet(stack, 1);
+                    if (stack.getCount() > 1) {
+                        stack.shrink(1);
+                        if (!player.getInventory().add(dirtySheet)) {
+                            player.drop(dirtySheet, false);
                         }
+                    } else {
+                        player.setItemInHand(context.getHand(), dirtySheet);
                     }
-                }
-
-                // 2. 处理物品消耗与获得新物品
-                ItemStack dirtySheet = new ItemStack(ModItems.MESSY_BED_SHEET.get());
-                // 继承耐久度损失 + 1
-                dirtySheet.setDamageValue(
-                        Math.min(dirtySheet.getMaxDamage(), stack.getDamageValue() + 1));
-
-                if (stack.getCount() > 1) {
-                    // 堆叠情况：分离出一个
-                    stack.shrink(1);
-                    if (!player.getInventory().add(dirtySheet)) {
-                        player.drop(dirtySheet, false);
-                    }
-                } else {
-                    // 单个情况：直接替换
-                    player.setItemInHand(context.getHand(), dirtySheet);
                 }
             } else {
                 // 客户端效果
@@ -123,5 +78,48 @@ public class BedSheetItem extends Item {
         }
 
         return InteractionResult.PASS;
+    }
+
+    public static boolean cleanMessyBed(ServerLevel level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof BedBlock)
+                || !state.hasProperty(ModBlockProperties.MESSY)
+                || !state.getValue(ModBlockProperties.MESSY)) {
+            return false;
+        }
+        level.setBlock(pos, state.setValue(ModBlockProperties.MESSY, false), 3);
+        BedPart part = state.getValue(BedBlock.PART);
+        BlockPos otherPos =
+                pos.relative(
+                        part == BedPart.HEAD
+                                ? state.getValue(BedBlock.FACING).getOpposite()
+                                : state.getValue(BedBlock.FACING));
+        BlockState otherState = level.getBlockState(otherPos);
+        if (otherState.getBlock() instanceof BedBlock
+                && otherState.hasProperty(ModBlockProperties.MESSY)
+                && otherState.getValue(ModBlockProperties.MESSY)) {
+            level.setBlock(otherPos, otherState.setValue(ModBlockProperties.MESSY, false), 3);
+        }
+        TeamData team = TeamManager.getInstance().getTeamAt(pos, level.getServer());
+        if (team != null) {
+            InnData innData = team.getInnData();
+            RoomData room = innData.getRoomAt(pos);
+            if (room != null) {
+                room.setMaxGuests(room.getMaxGuests() + 1);
+                TeamManager.getInstance().syncTeam(team, level.getServer());
+                String todoText =
+                        Component.translatable("todo.otherworldinn.room_cleaning", room.getId())
+                                .getString();
+                innData.removeTodo(level, team, todoText);
+            }
+        }
+        return true;
+    }
+
+    public static ItemStack createDirtySheet(ItemStack source, int extraDamage) {
+        ItemStack dirtySheet = new ItemStack(ModItems.MESSY_BED_SHEET.get());
+        int damage = Math.max(0, source.getDamageValue() + Math.max(0, extraDamage));
+        dirtySheet.setDamageValue(Math.min(dirtySheet.getMaxDamage(), damage));
+        return dirtySheet;
     }
 }

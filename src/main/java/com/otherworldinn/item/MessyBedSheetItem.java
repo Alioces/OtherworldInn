@@ -13,7 +13,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -41,12 +43,7 @@ public class MessyBedSheetItem extends Item {
         if (hitResult.getType() == HitResult.Type.BLOCK) {
             BlockPos pos = hitResult.getBlockPos();
             BlockState state = level.getBlockState(pos);
-
-            // 检查是否为水或含水方块
-            boolean isWater = state.getBlock() == Blocks.WATER;
-            boolean isWaterlogged = state.getFluidState().is(net.minecraft.tags.FluidTags.WATER);
-
-            if (isWater || isWaterlogged) {
+            if (isWashTarget(state)) {
                 player.startUsingItem(hand);
                 return InteractionResultHolder.consume(stack);
             }
@@ -94,16 +91,22 @@ public class MessyBedSheetItem extends Item {
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity livingEntity) {
         if (!level.isClientSide && livingEntity instanceof Player player) {
-            // 消耗耐久
-            stack.hurtAndBreak(1, player, Player.getSlotForHand(player.getUsedItemHand()));
+            BlockHitResult hitResult =
+                    getPlayerPOVHitResult(level, player, net.minecraft.world.level.ClipContext.Fluid.ANY);
+            BlockState washState =
+                    hitResult.getType() == HitResult.Type.BLOCK
+                            ? level.getBlockState(hitResult.getBlockPos())
+                            : Blocks.AIR.defaultBlockState();
+            if (isWaterCauldron(washState)) {
+                consumeCauldronWater(level, hitResult.getBlockPos(), washState);
+            }
+            boolean skipDurability = isWaterCauldron(washState) && level.random.nextFloat() < 0.5F;
+            if (!skipDurability) {
+                stack.hurtAndBreak(1, player, Player.getSlotForHand(player.getUsedItemHand()));
+            }
 
-            // 如果物品没损坏，转换回干净的床单
             if (!stack.isEmpty()) {
-                ItemStack cleanSheet = new ItemStack(ModItems.BED_SHEET.get());
-                // 继承耐久度
-                cleanSheet.setDamageValue(stack.getDamageValue());
-
-                // 播放声音
+                ItemStack cleanSheet = createCleanSheet(stack, false);
                 level.playSound(
                         null,
                         player.getX(),
@@ -120,9 +123,63 @@ public class MessyBedSheetItem extends Item {
         return stack;
     }
 
+    public static boolean isWashTarget(BlockState state) {
+        boolean isWater = state.getBlock() == Blocks.WATER;
+        boolean isWaterlogged = state.getFluidState().is(net.minecraft.tags.FluidTags.WATER);
+        boolean isWaterCauldron = isWaterCauldron(state);
+        return isWater || isWaterlogged || isWaterCauldron;
+    }
+
+    private static BlockState getCurrentWashState(Level level, Player player) {
+        BlockHitResult hitResult =
+                getPlayerPOVHitResult(level, player, net.minecraft.world.level.ClipContext.Fluid.ANY);
+        if (hitResult.getType() != HitResult.Type.BLOCK) {
+            return Blocks.AIR.defaultBlockState();
+        }
+        return level.getBlockState(hitResult.getBlockPos());
+    }
+
+    public static ItemStack createCleanSheet(ItemStack source, boolean consumeDurability) {
+        ItemStack cleanSheet = new ItemStack(ModItems.BED_SHEET.get());
+        int damage = source.getDamageValue() + (consumeDurability ? 1 : 0);
+        cleanSheet.setDamageValue(Math.min(cleanSheet.getMaxDamage(), Math.max(0, damage)));
+        return cleanSheet;
+    }
+
+    public static boolean consumeCauldronWaterIfNeeded(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        if (!isWaterCauldron(state)) {
+            return false;
+        }
+        consumeCauldronWater(level, pos, state);
+        return true;
+    }
+
+    public static boolean isWaterCauldron(BlockState state) {
+        return state.is(Blocks.WATER_CAULDRON)
+                && state.hasProperty(LayeredCauldronBlock.LEVEL)
+                && state.getValue(LayeredCauldronBlock.LEVEL) > 0;
+    }
+
+    private static void consumeCauldronWater(Level level, BlockPos pos, BlockState state) {
+        int waterLevel = state.getValue(LayeredCauldronBlock.LEVEL);
+        if (waterLevel <= 1) {
+            level.setBlock(pos, Blocks.CAULDRON.defaultBlockState(), Block.UPDATE_ALL);
+        } else {
+            level.setBlock(
+                    pos, state.setValue(LayeredCauldronBlock.LEVEL, waterLevel - 1), Block.UPDATE_ALL);
+        }
+    }
+
     @Override
     public int getUseDuration(ItemStack stack, LivingEntity entity) {
-        return 200; // 10秒 = 200 ticks
+        if (entity instanceof Player player) {
+            BlockState state = getCurrentWashState(entity.level(), player);
+            if (isWaterCauldron(state)) {
+                return 120;
+            }
+        }
+        return 200;
     }
 
     @Override

@@ -13,6 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -91,8 +92,12 @@ public class BedSheetOverlay {
 
                 boolean isWater = fluidState.getBlock() == Blocks.WATER;
                 boolean isWaterlogged = fluidState.getFluidState().is(FluidTags.WATER);
+                boolean isWaterCauldron =
+                        fluidState.is(Blocks.WATER_CAULDRON)
+                                && fluidState.hasProperty(LayeredCauldronBlock.LEVEL)
+                                && fluidState.getValue(LayeredCauldronBlock.LEVEL) > 0;
 
-                if (isWater || isWaterlogged) {
+                if (isWater || isWaterlogged || isWaterCauldron) {
                     ItemHudOverlay.renderMouseActions(
                             guiGraphics,
                             new ItemHudOverlay.MouseAction(
