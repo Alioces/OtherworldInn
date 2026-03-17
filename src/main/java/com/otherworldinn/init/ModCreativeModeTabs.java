@@ -39,6 +39,7 @@ public class ModCreativeModeTabs {
                                                 output.accept(ModItems.SPACE_SPHERE.get());
                                                 output.accept(ModItems.NETHER_SPACE_SPHERE.get());
                                                 output.accept(ModItems.END_SPACE_SPHERE.get());
+                                                output.accept(ModItems.FACILITY_UPGRADE_TEMPLATE.get());
                                                 BuiltInRegistries.ITEM
                                                         .getOptional(
                                                                 ResourceLocation.parse(

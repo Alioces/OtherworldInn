@@ -6,6 +6,7 @@ import com.otherworldinn.foundation.ItemDataGenInfo;
 import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModEntities;
 import com.otherworldinn.init.ModItems;
+import com.otherworldinn.world.inn.facility.FacilityRegistry;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.data.PackOutput;
@@ -46,6 +47,42 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("map_point.otherworldinn.town_gate").zh("城镇大门").en("Town Gate");
         entry("map_point.otherworldinn.locked").zh("未解锁").en("Locked");
         entry("map_point.otherworldinn.cant_teleport").zh("无法传送至").en("Cannot teleport to");
+        entry("facility.otherworldinn.overlay.title").zh("设施状态").en("Facility Status");
+        entry("facility.otherworldinn.overlay.name").zh("名称: %s").en("Name: %s");
+        entry("facility.otherworldinn.overlay.level").zh("等级: %s/%s").en("Level: %s/%s");
+        entry("facility.otherworldinn.overlay.repair_cost")
+                .zh("维修金币: §f\uE001§r%s")
+                .en("Repair Coins: §f\uE001§r %s");
+        entry("facility.otherworldinn.overlay.upgrade_cost")
+                .zh("升级金币: §f\uE001§r%s")
+                .en("Upgrade Coins: §f\uE001§r %s");
+        entry("facility.otherworldinn.overlay.repair_items")
+                .zh("维修材料: %s")
+                .en("Repair Materials: %s");
+        entry("facility.otherworldinn.overlay.upgrade_items")
+                .zh("升级材料: %s")
+                .en("Upgrade Materials: %s");
+        entry("facility.otherworldinn.overlay.repair").zh("维修设施").en("Repair Facility");
+        entry("facility.otherworldinn.overlay.upgrade").zh("升级设施").en("Upgrade Facility");
+        entry("facility.otherworldinn.overlay.no_items").zh("无").en("None");
+        entry("facility.otherworldinn.upgrade_max_level")
+                .zh("该设施已达到最高等级")
+                .en("This facility is already at max level");
+        entry("facility.otherworldinn.upgrade_fail_coins")
+                .zh("金币不足，需要§f\uE001§r%s，当前§f\uE001§r%s")
+                .en("Not enough coins, need %s, have %s");
+        entry("facility.otherworldinn.upgrade_fail_items")
+                .zh("材料不足，无法进行维修/升级")
+                .en("Missing required materials for repair/upgrade");
+        entry("facility.otherworldinn.upgrade_fail_structure")
+                .zh("结构放置失败，请检查结构模板文件")
+                .en("Failed to place structure template");
+        entry("facility.otherworldinn.repair_success")
+                .zh("%s 已修复")
+                .en("%s has been repaired to level %s");
+        entry("facility.otherworldinn.upgrade_success")
+                .zh("%s 已升级至 %s 级")
+                .en("%s has been upgraded to level %s");
 
         // 字幕
         entry("subtitles.otherworldinn.payment").zh("金币：叮铃").en("Coins: Clink");
@@ -513,6 +550,10 @@ public class ModLanguageProvider extends LanguageProvider {
             for (int i = 0; i < tooltips.size(); i++) {
                 add(item.get().getDescriptionId() + ".tooltip." + i, tooltips.get(i));
             }
+        }
+
+        for (FacilityRegistry.FacilityDefinition facility : FacilityRegistry.getAll()) {
+            add(facility.translationKey(), isZh ? facility.zhName() : facility.enName());
         }
     }
 

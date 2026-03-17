@@ -98,6 +98,17 @@ public class ModItems {
                     .tooltip("Right click Desk Bell to toggle Inn state", "潜行右键前台铃铛以切换旅社状态");
     public static final DeferredItem<InnKeyItem> INN_KEY = INN_KEY_REG.register();
 
+    public static final ItemReg<Item> FACILITY_UPGRADE_TEMPLATE_REG =
+            register("facility_upgrade_template")
+                    .rarity(Rarity.UNCOMMON)
+                    .stacksTo(16)
+                    .lang("Facility Upgrade Template", "设施升级模板")
+                    .tooltip(
+                            "Use in town to repair or upgrade nearby facilities",
+                            "在城镇内使用以维修或升级附近设施");
+    public static final DeferredItem<Item> FACILITY_UPGRADE_TEMPLATE =
+            FACILITY_UPGRADE_TEMPLATE_REG.register();
+
     public static final ItemReg<SpaceSphereItem> SPACE_SPHERE_REG =
             new ItemReg<>("space_sphere", SpaceSphereItem::new)
                     .rarity(Rarity.EPIC)

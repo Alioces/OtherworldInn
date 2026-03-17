@@ -42,8 +42,10 @@ public class MapPageManager {
         // 注册第 0 页
         registerPage(0, 0);
 
-        // 注册东方的第 1 页
+        // 注册地图页面
         addPage(0, 0, Direction.EAST);
+        addPage(0, 0, Direction.SOUTH);
+        addPage(0, 1, Direction.EAST);
 
         // 为第 0 页添加初始点
         registerPoint(0, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn"));

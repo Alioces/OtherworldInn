@@ -82,6 +82,7 @@ public class InnData {
 
     private final Set<UUID> guestIds = new HashSet<>();
     private final Map<Integer, RoomData> rooms = new HashMap<>();
+    private final Map<String, Integer> facilityLevels = new HashMap<>();
 
     // 待办事项缓存列表
     private final List<String> todoList = new ArrayList<>();
@@ -453,6 +454,20 @@ public class InnData {
         }
 
         return totalComfort / rooms.size();
+    }
+
+    public int getFacilityLevel(String facilityId) {
+        if (facilityId == null || facilityId.isBlank()) {
+            return 0;
+        }
+        return Math.max(0, facilityLevels.getOrDefault(facilityId, 0));
+    }
+
+    public void setFacilityLevel(String facilityId, int level) {
+        if (facilityId == null || facilityId.isBlank()) {
+            return;
+        }
+        facilityLevels.put(facilityId, Math.max(0, level));
     }
 
     /**
@@ -1138,6 +1153,11 @@ public class InnData {
         tag.put("TodoList", todosTag);
 
         tag.putLong("NextGuestSpawnTime", nextGuestSpawnTime);
+        CompoundTag facilityLevelsTag = new CompoundTag();
+        for (Map.Entry<String, Integer> entry : facilityLevels.entrySet()) {
+            facilityLevelsTag.putInt(entry.getKey(), Math.max(0, entry.getValue()));
+        }
+        tag.put("FacilityLevels", facilityLevelsTag);
 
         return tag;
     }
@@ -1243,6 +1263,14 @@ public class InnData {
             ListTag todosTag = tag.getList("TodoList", Tag.TAG_STRING);
             for (Tag t : todosTag) {
                 todoList.add(t.getAsString());
+            }
+        }
+
+        facilityLevels.clear();
+        if (tag.contains("FacilityLevels", Tag.TAG_COMPOUND)) {
+            CompoundTag facilityLevelsTag = tag.getCompound("FacilityLevels");
+            for (String key : facilityLevelsTag.getAllKeys()) {
+                facilityLevels.put(key, Math.max(0, facilityLevelsTag.getInt(key)));
             }
         }
     }

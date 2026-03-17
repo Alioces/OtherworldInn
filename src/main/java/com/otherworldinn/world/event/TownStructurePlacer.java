@@ -101,4 +101,22 @@ public class TownStructurePlacer {
             }
         }
     }
+
+    public static boolean placeStructureTemplate(
+            ServerLevel level, ResourceLocation structureId, BlockPos origin) {
+        StructureTemplateManager manager = level.getStructureManager();
+        Optional<StructureTemplate> templateOptional = manager.get(structureId);
+        if (templateOptional.isEmpty()) {
+            OtherworldInn.LOGGER.warn("Facility structure not found: {}", structureId);
+            return false;
+        }
+
+        StructureTemplate template = templateOptional.get();
+        StructurePlaceSettings settings =
+                new StructurePlaceSettings()
+                        .setRotation(Rotation.NONE)
+                        .setMirror(Mirror.NONE)
+                        .setIgnoreEntities(false);
+        return template.placeInWorld(level, origin, BlockPos.ZERO, settings, level.getRandom(), 2);
+    }
 }
