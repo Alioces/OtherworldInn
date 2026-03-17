@@ -906,12 +906,20 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                                 .withStyle(net.minecraft.ChatFormatting.YELLOW));
 
                 if (item.getMaxStock() != -1) {
-                    tooltip.add(
-                            Component.translatable(
-                                            "gui.otherworldinn.store.stock",
-                                            item.getCurrentStock(),
-                                            item.getMaxStock())
-                                    .withStyle(net.minecraft.ChatFormatting.GRAY));
+                    if (!item.isRestockable()) {
+                        tooltip.add(
+                                Component.translatable(
+                                                "gui.otherworldinn.store.limit_purchase",
+                                                item.getMaxStock())
+                                        .withStyle(net.minecraft.ChatFormatting.GRAY));
+                    } else {
+                        tooltip.add(
+                                Component.translatable(
+                                                "gui.otherworldinn.store.stock",
+                                                item.getCurrentStock(),
+                                                item.getMaxStock())
+                                        .withStyle(net.minecraft.ChatFormatting.GRAY));
+                    }
                 } else {
                     tooltip.add(
                             Component.translatable("gui.otherworldinn.store.stock.infinite")

@@ -506,6 +506,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("gui.otherworldinn.store.purchase").zh("§f\uE001§r%s购买").en("§f\uE001§r%sBuy");
         entry("gui.otherworldinn.store.price").zh("价格: §f\uE001§r%s").en("Price: §f\uE001§r%s");
         entry("gui.otherworldinn.store.stock").zh("库存: %s/%s").en("Stock: %s/%s");
+        entry("gui.otherworldinn.store.limit_purchase").zh("限购%s个").en("Limit %s");
         entry("gui.otherworldinn.store.stock.infinite").zh("库存: ∞").en("Stock: ∞");
         entry("gui.otherworldinn.store.favor_unlock")
                 .zh("%s级好感度解锁")

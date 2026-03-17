@@ -89,6 +89,7 @@
   "gui.otherworldinn.store.favor.level": "Favor Level: %s",
   "gui.otherworldinn.store.favor.progress": "Progress: §f§r%s/%s",
   "gui.otherworldinn.store.favor_unlock": "Unlocks at Favor Level %s",
+  "gui.otherworldinn.store.limit_purchase": "Limit %s",
   "gui.otherworldinn.store.price": "Price: §f§r%s",
   "gui.otherworldinn.store.purchase": "§f§r%sBuy",
   "gui.otherworldinn.store.stock": "Stock: %s/%s",
