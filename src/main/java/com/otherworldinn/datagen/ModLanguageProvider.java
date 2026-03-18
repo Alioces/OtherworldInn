@@ -473,6 +473,26 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("guest.name.first.18").zh("罗伊纳").en("Rowena");
         entry("guest.name.first.19").zh("塞拉斯").en("Silas");
         entry("guest.name.first.20").zh("塔莉亚").en("Thalia");
+        entry("guest.name.first.21").zh("奥利弗").en("Oliver");
+        entry("guest.name.first.22").zh("乔治").en("George");
+        entry("guest.name.first.23").zh("哈利").en("Harry");
+        entry("guest.name.first.24").zh("诺亚").en("Noah");
+        entry("guest.name.first.25").zh("杰克").en("Jack");
+        entry("guest.name.first.26").zh("查理").en("Charlie");
+        entry("guest.name.first.27").zh("阿尔菲").en("Alfie");
+        entry("guest.name.first.28").zh("利奥").en("Leo");
+        entry("guest.name.first.29").zh("奥斯卡").en("Oscar");
+        entry("guest.name.first.30").zh("亚齐").en("Archie");
+        entry("guest.name.first.31").zh("艾拉").en("Isla");
+        entry("guest.name.first.32").zh("奥利维娅").en("Olivia");
+        entry("guest.name.first.33").zh("阿米莉亚").en("Amelia");
+        entry("guest.name.first.34").zh("艾娃").en("Ava");
+        entry("guest.name.first.35").zh("艾米莉").en("Emily");
+        entry("guest.name.first.36").zh("伊莎贝拉").en("Isabella");
+        entry("guest.name.first.37").zh("格蕾丝").en("Grace");
+        entry("guest.name.first.38").zh("芙蕾娅").en("Freya");
+        entry("guest.name.first.39").zh("杰西卡").en("Jessica");
+        entry("guest.name.first.40").zh("索菲").en("Sophie");
 
         // Last Names
         entry("guest.name.last.1").zh("阿什福德").en("Ashford");
@@ -495,11 +515,32 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("guest.name.last.18").zh("斯托姆").en("Storm");
         entry("guest.name.last.19").zh("索恩").en("Thorne");
         entry("guest.name.last.20").zh("温特").en("Winter");
+        entry("guest.name.last.21").zh("史密斯").en("Smith");
+        entry("guest.name.last.22").zh("琼斯").en("Jones");
+        entry("guest.name.last.23").zh("威廉姆斯").en("Williams");
+        entry("guest.name.last.24").zh("泰勒").en("Taylor");
+        entry("guest.name.last.25").zh("布朗").en("Brown");
+        entry("guest.name.last.26").zh("戴维斯").en("Davies");
+        entry("guest.name.last.27").zh("埃文斯").en("Evans");
+        entry("guest.name.last.28").zh("威尔逊").en("Wilson");
+        entry("guest.name.last.29").zh("托马斯").en("Thomas");
+        entry("guest.name.last.30").zh("罗伯茨").en("Roberts");
+        entry("guest.name.last.31").zh("约翰逊").en("Johnson");
+        entry("guest.name.last.32").zh("刘易斯").en("Lewis");
+        entry("guest.name.last.33").zh("沃克").en("Walker");
+        entry("guest.name.last.34").zh("赖特").en("Wright");
+        entry("guest.name.last.35").zh("罗宾逊").en("Robinson");
+        entry("guest.name.last.36").zh("汤普森").en("Thompson");
+        entry("guest.name.last.37").zh("怀特").en("White");
+        entry("guest.name.last.38").zh("休斯").en("Hughes");
+        entry("guest.name.last.39").zh("爱德华兹").en("Edwards");
+        entry("guest.name.last.40").zh("格林").en("Green");
 
         // 实体
         entry(ModEntities.ORDINARY_GUEST.get()).zh("普通旅客").en("Ordinary Guest");
         entry(ModEntities.RICH_GUEST.get()).zh("富有的旅客").en("Wealthy Guest");
         entry(ModEntities.HEAVY_PACK_GUEST.get()).zh("行囊多的旅客").en("Heavy-Pack Guest");
+        entry(ModEntities.ULTRA_RICH_GUEST.get()).zh("非常富有的顾客").en("Ultra-Wealthy Customer");
         entry(ModEntities.BLACKSMITH.get()).zh("铁匠").en("Blacksmith");
         entry(ModEntities.MAGICIAN.get()).zh("魔法使").en("Magician");
 

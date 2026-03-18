@@ -10,8 +10,8 @@ import net.minecraft.util.RandomSource;
  */
 public class GuestNameManager {
 
-    public static final int FIRST_NAME_COUNT = 20;
-    public static final int LAST_NAME_COUNT = 20;
+    public static final int FIRST_NAME_COUNT = 40;
+    public static final int LAST_NAME_COUNT = 40;
 
     /**
      * 获取一个随机姓名组件
