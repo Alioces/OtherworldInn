@@ -16,6 +16,7 @@ public class ModEventBusEvents {
     public static void onAttributeCreation(EntityAttributeCreationEvent event) {
         event.put(ModEntities.ORDINARY_GUEST.get(), GuestEntity.createAttributes().build());
         event.put(ModEntities.RICH_GUEST.get(), GuestEntity.createAttributes().build());
+        event.put(ModEntities.HEAVY_PACK_GUEST.get(), GuestEntity.createAttributes().build());
         event.put(ModEntities.BLACKSMITH.get(), BlacksmithEntity.createAttributes().build());
         event.put(ModEntities.MAGICIAN.get(), MagicianEntity.createAttributes().build());
     }

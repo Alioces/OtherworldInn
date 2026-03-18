@@ -1,6 +1,7 @@
 package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.entity.guest.HeavyPackGuestEntity;
 import com.otherworldinn.entity.guest.OrdinaryGuestEntity;
 import com.otherworldinn.entity.guest.RichGuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
@@ -37,6 +38,17 @@ public class ModEntities {
                                     .updateInterval(2)
                                     .setShouldReceiveVelocityUpdates(true)
                                     .build("rich_guest"));
+
+    public static final Supplier<EntityType<HeavyPackGuestEntity>> HEAVY_PACK_GUEST =
+            ENTITY_TYPES.register(
+                    "heavy_pack_guest",
+                    () ->
+                            EntityType.Builder.of(HeavyPackGuestEntity::new, MobCategory.CREATURE)
+                                    .sized(0.6F, 1.8F)
+                                    .clientTrackingRange(80)
+                                    .updateInterval(2)
+                                    .setShouldReceiveVelocityUpdates(true)
+                                    .build("heavy_pack_guest"));
 
     public static final Supplier<EntityType<BlacksmithEntity>> BLACKSMITH =
             ENTITY_TYPES.register(

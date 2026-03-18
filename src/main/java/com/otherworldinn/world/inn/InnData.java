@@ -92,8 +92,11 @@ public class InnData {
     private static final int BASE_GUEST_WAITING_TIMEOUT = 6000;
     private static final int WAITING_PATIENCE_BONUS_PER_STAR = 1200;
     private static final int MAX_GUEST_WAITING_TIMEOUT = 12000;
-    private static final double SPAWN_DELAY_REDUCTION_PER_STAR = 0.08D;
-    private static final double MIN_SPAWN_DELAY_MULTIPLIER = 0.60D;
+    private static final int MIN_AVERAGE_SPAWN_DELAY_TICKS = 1200;
+    private static final int MAX_AVERAGE_SPAWN_DELAY_TICKS = 4800;
+    private static final double SPAWN_DELAY_JITTER_RATIO = 0.20D;
+    private static final int MIN_SPAWN_DELAY_TICKS = 600;
+    private static final int MAX_SPAWN_DELAY_TICKS = 7200;
     private static final int[] REPUTATION_REQUIREMENTS_BY_RATING = {100, 250, 450, 700, 1000, 1350};
 
     public InnData() {}
@@ -728,16 +731,15 @@ public class InnData {
 
     // 修改 scheduleNextSpawn 为返回 delay
     private int calculateNextSpawnDelay(RandomSource random) {
-        double gaussian = random.nextGaussian();
-        int delay = (int) (1900 + gaussian * 566);
-        delay = Math.max(200, Math.min(3600, delay));
-        return (int) Math.round(delay * getSpawnDelayMultiplier());
-    }
-
-    private double getSpawnDelayMultiplier() {
         int clampedRating = Math.max(0, Math.min(5, this.rating));
-        double multiplier = 1.0D - clampedRating * SPAWN_DELAY_REDUCTION_PER_STAR;
-        return Math.max(MIN_SPAWN_DELAY_MULTIPLIER, multiplier);
+        double progress = clampedRating / 5.0D;
+        double averageDelay =
+                MAX_AVERAGE_SPAWN_DELAY_TICKS
+                        - (MAX_AVERAGE_SPAWN_DELAY_TICKS - MIN_AVERAGE_SPAWN_DELAY_TICKS)
+                                * progress;
+        double jitter = averageDelay * SPAWN_DELAY_JITTER_RATIO;
+        int delay = (int) Math.round(averageDelay + random.nextGaussian() * jitter);
+        return Math.max(MIN_SPAWN_DELAY_TICKS, Math.min(MAX_SPAWN_DELAY_TICKS, delay));
     }
 
     private int getGuestWaitingTimeoutTicks() {
