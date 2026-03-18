@@ -12,6 +12,7 @@ import com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
@@ -70,8 +71,6 @@ public abstract class GuestEntity extends PathfinderMob {
     private static final int DINING_SEARCH_RADIUS = 32;
     // 平均一天触发 3 次：24000 / 3 = 8000 tick
     private static final int DINING_AVERAGE_INTERVAL = 8000;
-    private static final int DINING_BUDGET_MIN = 6;
-    private static final int DINING_BUDGET_MAX = 42;
     private static final int MIN_DAILY_DINING_ATTEMPTS = 3;
     private static final int NAVIGATION_STUCK_TIMEOUT_TICKS = 200;
     private static final double NAVIGATION_PROGRESS_THRESHOLD_SQR = 0.0625D;
@@ -256,9 +255,18 @@ public abstract class GuestEntity extends PathfinderMob {
      * <p>子类可覆盖此方法以设定特定的房间偏好。 默认所有属性偏好均为 0-100 (无限制)。
      */
     protected void initGuestPreferences() {
-        this.guestData.setComfortPreference(0, 100);
-        this.guestData.setLightPreference(0, 100);
-        this.guestData.setHumidityPreference(0, 100);
+        GuestProfile profile = this.getGuestProfile();
+        applyPreferenceRange(profile.comfortRange(), this.guestData::setComfortPreference);
+        applyPreferenceRange(profile.lightRange(), this.guestData::setLightPreference);
+        applyPreferenceRange(profile.humidityRange(), this.guestData::setHumidityPreference);
+    }
+
+    protected GuestProfile getGuestProfile() {
+        return new GuestProfile(
+                new PreferenceRangeProfile(new GuestData.IntRange(0, 0), new GuestData.IntRange(100, 100)),
+                new PreferenceRangeProfile(new GuestData.IntRange(0, 0), new GuestData.IntRange(100, 100)),
+                new PreferenceRangeProfile(new GuestData.IntRange(0, 0), new GuestData.IntRange(100, 100)),
+                new GuestData.IntRange(6, 42));
     }
 
     /**
@@ -694,7 +702,8 @@ public abstract class GuestEntity extends PathfinderMob {
                     this.guestData.setState(syncedState);
                 }
             }
-            this.budget = Mth.clamp(this.entityData.get(GUEST_BUDGET), DINING_BUDGET_MIN, DINING_BUDGET_MAX);
+            GuestData.IntRange budgetRange = getBudgetRange();
+            this.budget = Mth.clamp(this.entityData.get(GUEST_BUDGET), budgetRange.min(), budgetRange.max());
 
             // 客户端发光逻辑 (虽然 glowing tag 会自动同步，但这里双重保险或用于其他客户端效果)
             // 注意：setGlowingTag 主要由服务端控制，客户端设置可能只在本地生效
@@ -706,7 +715,7 @@ public abstract class GuestEntity extends PathfinderMob {
         super.defineSynchedData(builder);
         builder.define(SKIN_VARIANT, 0);
         builder.define(GUEST_STATE, GuestData.GuestState.IDLE.ordinal());
-        builder.define(GUEST_BUDGET, DINING_BUDGET_MIN);
+        builder.define(GUEST_BUDGET, getBudgetRange().min());
     }
 
     @Override
@@ -775,7 +784,8 @@ public abstract class GuestEntity extends PathfinderMob {
     }
 
     protected void setBudget(int budget) {
-        this.budget = Mth.clamp(budget, DINING_BUDGET_MIN, DINING_BUDGET_MAX);
+        GuestData.IntRange budgetRange = getBudgetRange();
+        this.budget = Mth.clamp(budget, budgetRange.min(), budgetRange.max());
         if (!this.level().isClientSide) {
             this.entityData.set(GUEST_BUDGET, this.budget);
         }
@@ -805,8 +815,9 @@ public abstract class GuestEntity extends PathfinderMob {
             this.setSkinVariant(compound.getInt("SkinVariant"));
         }
         if (compound.contains("Budget")) {
+            GuestData.IntRange budgetRange = getBudgetRange();
             this.budget =
-                    Mth.clamp(compound.getInt("Budget"), DINING_BUDGET_MIN, DINING_BUDGET_MAX);
+                    Mth.clamp(compound.getInt("Budget"), budgetRange.min(), budgetRange.max());
         } else {
             this.budget = this.generateInitialBudget();
         }
@@ -830,8 +841,7 @@ public abstract class GuestEntity extends PathfinderMob {
     }
 
     private int generateInitialBudget() {
-        return DINING_BUDGET_MIN
-                + this.getRandom().nextInt(DINING_BUDGET_MAX - DINING_BUDGET_MIN + 1);
+        return randomInRange(getBudgetRange());
     }
 
     private int getBudgetBasedDiningInterval() {
@@ -856,7 +866,8 @@ public abstract class GuestEntity extends PathfinderMob {
             return true;
         }
         float normalized =
-                (this.budget - DINING_BUDGET_MIN) / (float) (DINING_BUDGET_MAX - DINING_BUDGET_MIN);
+                (this.budget - getBudgetRange().min())
+                        / (float) Math.max(1, getBudgetRange().max() - getBudgetRange().min());
         float spendProgress =
                 this.dailySpendTarget <= 0
                         ? 0.0f
@@ -882,7 +893,8 @@ public abstract class GuestEntity extends PathfinderMob {
         this.dailySpendTarget = Math.max(1, Math.round(this.budget * spendRatio));
 
         float normalized =
-                (this.budget - DINING_BUDGET_MIN) / (float) (DINING_BUDGET_MAX - DINING_BUDGET_MIN);
+                (this.budget - getBudgetRange().min())
+                        / (float) Math.max(1, getBudgetRange().max() - getBudgetRange().min());
         float meanCount = 1.2f + normalized * 3.2f;
         int sampledCount =
                 Math.max(
@@ -901,10 +913,55 @@ public abstract class GuestEntity extends PathfinderMob {
 
     private int getInitialDiningAttemptDelay() {
         float normalized =
-                (this.budget - DINING_BUDGET_MIN) / (float) (DINING_BUDGET_MAX - DINING_BUDGET_MIN);
+                (this.budget - getBudgetRange().min())
+                        / (float) Math.max(1, getBudgetRange().max() - getBudgetRange().min());
         int base = Mth.floor(Mth.lerp(1.0f - normalized, 200.0f, 900.0f));
         return base + this.getRandom().nextInt(161);
     }
+
+    private void applyPreferenceRange(
+            PreferenceRangeProfile profile, BiConsumer<Integer, Integer> rangeSetter) {
+        GuestData.IntRange minRange = normalizeRange(profile.minRange(), 0, 100);
+        GuestData.IntRange maxRange = normalizeRange(profile.maxRange(), 0, 100);
+        int min = randomInRange(minRange);
+        int max = randomInRange(maxRange);
+        if (min > max) {
+            int temp = min;
+            min = max;
+            max = temp;
+        }
+        rangeSetter.accept(min, max);
+    }
+
+    private GuestData.IntRange getBudgetRange() {
+        return normalizeRange(this.getGuestProfile().budgetRange(), 1, Integer.MAX_VALUE);
+    }
+
+    private GuestData.IntRange normalizeRange(GuestData.IntRange range, int floor, int ceiling) {
+        int normalizedMin = Mth.clamp(range.min(), floor, ceiling);
+        int normalizedMax = Mth.clamp(range.max(), floor, ceiling);
+        if (normalizedMin > normalizedMax) {
+            int temp = normalizedMin;
+            normalizedMin = normalizedMax;
+            normalizedMax = temp;
+        }
+        return new GuestData.IntRange(normalizedMin, normalizedMax);
+    }
+
+    private int randomInRange(GuestData.IntRange range) {
+        if (range.min() >= range.max()) {
+            return range.min();
+        }
+        return range.min() + this.getRandom().nextInt(range.max() - range.min() + 1);
+    }
+
+    public record GuestProfile(
+            PreferenceRangeProfile comfortRange,
+            PreferenceRangeProfile lightRange,
+            PreferenceRangeProfile humidityRange,
+            GuestData.IntRange budgetRange) {}
+
+    public record PreferenceRangeProfile(GuestData.IntRange minRange, GuestData.IntRange maxRange) {}
 
     @Nullable
     private BlockPos findNearestDeskBellInInn(ServerLevel level, TeamData team) {

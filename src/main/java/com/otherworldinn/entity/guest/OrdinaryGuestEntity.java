@@ -3,6 +3,7 @@ package com.otherworldinn.entity.guest;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.client.util.TextureUtils;
 import com.otherworldinn.entity.base.GuestEntity;
+import com.otherworldinn.world.inn.GuestData;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -37,10 +38,15 @@ public class OrdinaryGuestEntity extends GuestEntity {
     }
 
     @Override
-    protected void initGuestPreferences() {
-        this.getGuestData().setComfortPreference(10, 90);
-        this.getGuestData().setLightPreference(10, 90);
-        this.getGuestData().setHumidityPreference(10, 90);
+    protected GuestProfile getGuestProfile() {
+        return new GuestProfile(
+                // 舒适度偏好范围（min 的范围, max 的范围）
+                new PreferenceRangeProfile(new GuestData.IntRange(8, 20), new GuestData.IntRange(80, 90)),
+                // 光照偏好范围（min 的范围, max 的范围）
+                new PreferenceRangeProfile(new GuestData.IntRange(8, 20), new GuestData.IntRange(80, 90)),
+                // 湿度偏好范围（min 的范围, max 的范围）
+                new PreferenceRangeProfile(new GuestData.IntRange(8, 20), new GuestData.IntRange(80, 90)),
+                new GuestData.IntRange(8, 16));
     }
 
     /*
@@ -91,7 +97,6 @@ public class OrdinaryGuestEntity extends GuestEntity {
             @Nullable SpawnGroupData spawnData) {
         spawnData = super.finalizeSpawn(level, difficulty, reason, spawnData);
         this.setSkinVariant(this.getRandom().nextInt(10000));
-        this.setBudget(12);
         return spawnData;
     }
 }
