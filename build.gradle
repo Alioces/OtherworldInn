@@ -195,6 +195,8 @@ dependencies {
     runtimeOnly("mezz.jei:jei-${jei_minecraft_version}-neoforge:${jei_version}")
     compileOnly("maven.modrinth:touhou-little-maid:${touhou_little_maid_version}")
     localRuntime("maven.modrinth:touhou-little-maid:${touhou_little_maid_version}")
+    compileOnly("maven.modrinth:glitchcore:${glitchcore_version}")
+    localRuntime("maven.modrinth:glitchcore:${glitchcore_version}")
     compileOnly("maven.modrinth:serene-seasons:${serene_seasons_version}")
     localRuntime("maven.modrinth:serene-seasons:${serene_seasons_version}")
 

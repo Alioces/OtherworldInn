@@ -11,7 +11,8 @@ import net.minecraft.world.entity.EntityType;
 
 final class GuestSpawnRules {
     private static final List<Rule> RULES = List.of(
-        new Rule(ModEntities.ORDINARY_GUEST, 0, 2, 1));
+        new Rule(ModEntities.ORDINARY_GUEST, 0, 3, 4),
+        new Rule(ModEntities.RICH_GUEST, 1, 4, 1));
 
     private GuestSpawnRules() {}
 

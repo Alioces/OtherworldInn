@@ -488,8 +488,8 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("guest.name.last.11").zh("奈特").en("Knight");
         entry("guest.name.last.12").zh("洛夫莱斯").en("Lovelace");
         entry("guest.name.last.13").zh("穆恩").en("Moon");
-        entry("guest.name.last.14").zh("夜影").en("Nightshade");
-        entry("guest.name.last.15").zh("橡心").en("Oakheart");
+        entry("guest.name.last.14").zh("霍洛韦").en("Holloway");
+        entry("guest.name.last.15").zh("哈特").en("Hatter");
         entry("guest.name.last.16").zh("潘德加斯特").en("Pendergast");
         entry("guest.name.last.17").zh("雷文斯克罗夫特").en("Ravenscroft");
         entry("guest.name.last.18").zh("斯托姆").en("Storm");
@@ -498,6 +498,7 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // 实体
         entry(ModEntities.ORDINARY_GUEST.get()).zh("普通旅客").en("Ordinary Guest");
+        entry(ModEntities.RICH_GUEST.get()).zh("富有的旅客").en("Wealthy Guest");
         entry(ModEntities.BLACKSMITH.get()).zh("铁匠").en("Blacksmith");
         entry(ModEntities.MAGICIAN.get()).zh("魔法使").en("Magician");
 

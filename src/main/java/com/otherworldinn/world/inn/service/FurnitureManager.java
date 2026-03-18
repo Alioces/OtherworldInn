@@ -12,6 +12,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -26,6 +27,7 @@ public class FurnitureManager {
 
     private static final Map<Block, FurnitureStats> BLOCK_STATS = new HashMap<>();
     private static final Map<TagKey<Block>, FurnitureStats> TAG_STATS = new HashMap<>();
+    private static final Map<Block, Integer> BLOCK_LIGHT_LEVEL_CACHE = new HashMap<>();
 
     static {
         initDefaultFurniture();
@@ -33,13 +35,51 @@ public class FurnitureManager {
 
     /** 初始化默认家具配置 */
     private static void initDefaultFurniture() {
-        // 配置原版床：舒适度 +15
+
         FurnitureStats bedStats = new FurnitureStats(15, 0, 0);
         TagKey<Block> bedsTag =
                 TagKey.create(
                         BuiltInRegistries.BLOCK.key(),
                         ResourceLocation.withDefaultNamespace("beds"));
         registerTag(bedsTag, bedStats);
+
+        FurnitureStats cushionStats = new FurnitureStats(10, 0, 0);
+        TagKey<Block> createSeatsTag =
+                TagKey.create(
+                        BuiltInRegistries.BLOCK.key(),
+                        ResourceLocation.fromNamespaceAndPath("create", "seats"));
+        registerTag(createSeatsTag, cushionStats);
+
+        FurnitureStats storageStats = new FurnitureStats(7, 0, 0);
+        registerBlock(Blocks.CHEST, storageStats);
+        registerBlock(Blocks.BARREL, storageStats);
+
+        FurnitureStats flowerPotStats = new FurnitureStats(5, 0, 8);
+        TagKey<Block> flowerPotsTag =
+                TagKey.create(
+                        BuiltInRegistries.BLOCK.key(),
+                        ResourceLocation.withDefaultNamespace("flower_pots"));
+        TagKey<Block> commonFlowerPotsTag =
+                TagKey.create(
+                        BuiltInRegistries.BLOCK.key(),
+                        ResourceLocation.fromNamespaceAndPath("c", "flower_pots"));
+        registerTag(flowerPotsTag, flowerPotStats);
+        registerTag(commonFlowerPotsTag, flowerPotStats);
+
+        registerBlock(Blocks.FURNACE, new FurnitureStats(5, 0, -5));
+        registerBlock(Blocks.BLAST_FURNACE, new FurnitureStats(3, 0, -7));
+        registerBlock(Blocks.SMOKER, new FurnitureStats(-3, 0, -6));
+        registerBlock(Blocks.CAMPFIRE, new FurnitureStats(5, 0, -9));
+        registerBlock(Blocks.SOUL_CAMPFIRE, new FurnitureStats(-5, 0, -5));
+
+        FurnitureStats uncomfortableStats = new FurnitureStats(-12, -10, 0);
+        registerBlock(Blocks.COBWEB, uncomfortableStats);
+        registerBlock(Blocks.SCULK, uncomfortableStats);
+        registerBlock(Blocks.SCULK_VEIN, uncomfortableStats);
+        registerBlock(Blocks.SCULK_CATALYST, uncomfortableStats);
+        registerBlock(Blocks.SCULK_SENSOR, uncomfortableStats);
+        registerBlock(Blocks.CALIBRATED_SCULK_SENSOR, uncomfortableStats);
+        registerBlock(Blocks.SCULK_SHRIEKER, uncomfortableStats);
     }
 
     /**
@@ -71,6 +111,19 @@ public class FurnitureManager {
      * @return 对应的家具属性，如果未配置则返回空
      */
     public static Optional<FurnitureStats> getStats(Block block) {
+        Optional<FurnitureStats> baseStats = getBaseStats(block);
+        int lightLevel = getMaxLightLevel(block);
+        if (lightLevel > 0) {
+            if (baseStats.isPresent()) {
+                FurnitureStats stats = baseStats.get();
+                return Optional.of(new FurnitureStats(stats.comfort(), lightLevel, stats.humidity()));
+            }
+            return Optional.of(new FurnitureStats(0, lightLevel, 0));
+        }
+        return baseStats;
+    }
+
+    private static Optional<FurnitureStats> getBaseStats(Block block) {
         if (BLOCK_STATS.containsKey(block)) {
             return Optional.of(BLOCK_STATS.get(block));
         }
@@ -86,6 +139,19 @@ public class FurnitureManager {
         }
 
         return Optional.empty();
+    }
+
+    private static int getMaxLightLevel(Block block) {
+        if (BLOCK_LIGHT_LEVEL_CACHE.containsKey(block)) {
+            return BLOCK_LIGHT_LEVEL_CACHE.get(block);
+        }
+        int max =
+                block.getStateDefinition().getPossibleStates().stream()
+                        .mapToInt(state -> state.getLightEmission())
+                        .max()
+                        .orElse(0);
+        BLOCK_LIGHT_LEVEL_CACHE.put(block, max);
+        return max;
     }
 
     /**

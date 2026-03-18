@@ -17,8 +17,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AttachedStemBlock;
@@ -158,6 +161,20 @@ public class TownProtectionHandler {
                 message.copy().withStyle(style -> style.withColor(ModColors.RED)), true);
     }
 
+    private static void spawnFallingBlockDrop(
+            ServerLevel level, FallingBlockEntity fallingBlock, BlockState state, BlockPos pos) {
+        Item item = state.getBlock().asItem();
+        if (item == net.minecraft.world.item.Items.AIR) {
+            return;
+        }
+        ItemStack drop = new ItemStack(item);
+        ItemEntity itemEntity =
+                new ItemEntity(
+                        level, fallingBlock.getX(), fallingBlock.getY(), fallingBlock.getZ(), drop);
+        itemEntity.setDeltaMovement(fallingBlock.getDeltaMovement());
+        level.addFreshEntity(itemEntity);
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         Player player = event.getPlayer();
@@ -192,6 +209,17 @@ public class TownProtectionHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
+        if (event.getLevel() instanceof ServerLevel serverLevel
+                && serverLevel.dimension() == TownDimensions.TOWN_LEVEL
+                && event.getEntity() instanceof FallingBlockEntity fallingBlock
+                && TeamManager.getInstance().getTeamAt(event.getPos(), serverLevel.getServer())
+                        == null) {
+            event.setCanceled(true);
+            spawnFallingBlockDrop(serverLevel, fallingBlock, event.getState(), event.getPos());
+            fallingBlock.discard();
+            return;
+        }
+
         // 允许种植农作物
         if (isFarmingBlock(event.getState())) {
             return;

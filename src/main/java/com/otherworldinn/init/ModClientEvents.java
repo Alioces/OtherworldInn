@@ -44,6 +44,7 @@ public class ModClientEvents {
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.ORDINARY_GUEST.get(), GuestRenderer::new);
+        event.registerEntityRenderer(ModEntities.RICH_GUEST.get(), GuestRenderer::new);
         event.registerEntityRenderer(ModEntities.BLACKSMITH.get(), BlacksmithRenderer::new);
         event.registerEntityRenderer(ModEntities.MAGICIAN.get(), MagicianRenderer::new);
     }

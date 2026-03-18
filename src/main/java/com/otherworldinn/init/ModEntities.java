@@ -2,6 +2,7 @@ package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.entity.guest.OrdinaryGuestEntity;
+import com.otherworldinn.entity.guest.RichGuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
 import com.otherworldinn.entity.store.MagicianEntity;
 import java.util.function.Supplier;
@@ -25,6 +26,17 @@ public class ModEntities {
                                     .updateInterval(2)
                                     .setShouldReceiveVelocityUpdates(true)
                                     .build("ordinary_guest"));
+
+    public static final Supplier<EntityType<RichGuestEntity>> RICH_GUEST =
+            ENTITY_TYPES.register(
+                    "rich_guest",
+                    () ->
+                            EntityType.Builder.of(RichGuestEntity::new, MobCategory.CREATURE)
+                                    .sized(0.6F, 1.8F)
+                                    .clientTrackingRange(80)
+                                    .updateInterval(2)
+                                    .setShouldReceiveVelocityUpdates(true)
+                                    .build("rich_guest"));
 
     public static final Supplier<EntityType<BlacksmithEntity>> BLACKSMITH =
             ENTITY_TYPES.register(
