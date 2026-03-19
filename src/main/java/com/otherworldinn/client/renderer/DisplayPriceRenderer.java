@@ -6,7 +6,6 @@ import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.economy.service.ItemSellPriceManager;
 import com.simibubi.create.content.logistics.depot.DepotBlockEntity;
-import com.simibubi.create.content.logistics.depot.EjectorBlockEntity;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,16 +28,6 @@ public class DisplayPriceRenderer {
 
     public static void render(
             DepotBlockEntity blockEntity,
-            float partialTicks,
-            PoseStack poseStack,
-            MultiBufferSource bufferSource,
-            int light,
-            int overlay) {
-        renderPriceLabel(blockEntity, poseStack, bufferSource);
-    }
-
-    public static void render(
-            EjectorBlockEntity blockEntity,
             float partialTicks,
             PoseStack poseStack,
             MultiBufferSource bufferSource,

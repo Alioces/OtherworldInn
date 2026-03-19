@@ -76,8 +76,6 @@ public abstract class GuestEntity extends PathfinderMob {
     private static final double NAVIGATION_PROGRESS_THRESHOLD_SQR = 0.0625D;
     private static final ResourceLocation CREATE_DEPOT_ID =
             ResourceLocation.fromNamespaceAndPath("create", "depot");
-    private static final ResourceLocation CREATE_WEIGHTED_EJECTOR_ID =
-            ResourceLocation.fromNamespaceAndPath("create", "weighted_ejector");
 
     /** 旅客数据 */
     @Getter private GuestData guestData;
@@ -450,7 +448,7 @@ public abstract class GuestEntity extends PathfinderMob {
 
     private boolean isDiningDisplay(BlockState state) {
         ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-        return CREATE_DEPOT_ID.equals(id) || CREATE_WEIGHTED_EJECTOR_ID.equals(id);
+        return CREATE_DEPOT_ID.equals(id);
     }
 
     @Nullable

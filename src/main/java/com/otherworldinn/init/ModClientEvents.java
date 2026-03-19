@@ -8,12 +8,14 @@ import com.otherworldinn.client.renderer.GuestRenderer;
 import com.otherworldinn.client.renderer.MagicianModel;
 import com.otherworldinn.client.renderer.MagicianRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 /**
@@ -26,6 +28,10 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
         value = Dist.CLIENT,
         bus = EventBusSubscriber.Bus.MOD)
 public class ModClientEvents {
+    private static final ModelResourceLocation COLD_CUT_HAM_SLICES_FORCED_MODEL_PATH =
+            ModelResourceLocation.standalone(
+                    ResourceLocation.fromNamespaceAndPath(
+                            "kaleidoscope_cookery", "item/cold_cut_ham_slices_block"));
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
@@ -69,5 +75,10 @@ public class ModClientEvents {
     public static void onRegisterKeyMappings(
             net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent event) {
         event.register(ModKeyBindings.TOGGLE_MAP_MODE);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
+        event.register(COLD_CUT_HAM_SLICES_FORCED_MODEL_PATH);
     }
 }

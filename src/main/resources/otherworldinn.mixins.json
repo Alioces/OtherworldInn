@@ -10,7 +10,7 @@
     "MixinDeskBellBlockEntity",
     "MixinFanProcessing",
     "MixinDepotRenderer",
-    "MixinEjectorRenderer"
+    "MixinTransportedItemStack"
   ],
   "injectors": {
     "defaultRequire": 1
