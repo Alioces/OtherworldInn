@@ -37,7 +37,12 @@ public class FurnitureManager {
             new KeywordRule("table", new FurnitureStats(4, 0, 0)),
             new KeywordRule("drawer", new FurnitureStats(3, 0, 0)),
             new KeywordRule("carpet", new FurnitureStats(3, 0, 0)),
-            new KeywordRule("chair", new FurnitureStats(2, 0, 0)));
+            new KeywordRule("chair", new FurnitureStats(2, 0, 0)),
+            new KeywordRule("wardrobe", new FurnitureStats(5, 0, 0)),
+            new KeywordRule("sink", new FurnitureStats(2, 0, 5)),
+            new KeywordRule("couch", new FurnitureStats(3, 0, 0)),
+            new KeywordRule("chaise", new FurnitureStats(3, 0, 0))
+        );
 
     static {
         initDefaultFurniture();
