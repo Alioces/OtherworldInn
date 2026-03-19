@@ -3,6 +3,7 @@ package com.otherworldinn.world.inn.service;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ModColors;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -28,6 +29,15 @@ public class FurnitureManager {
     private static final Map<Block, FurnitureStats> BLOCK_STATS = new HashMap<>();
     private static final Map<TagKey<Block>, FurnitureStats> TAG_STATS = new HashMap<>();
     private static final Map<Block, Integer> BLOCK_LIGHT_LEVEL_CACHE = new HashMap<>();
+    private static final List<KeywordRule> KEYWORD_RULES = List.of(
+            new KeywordRule("fish_tank", new FurnitureStats(2, 0, 10)),
+            new KeywordRule("potted", new FurnitureStats(3, 0, 7)),
+            new KeywordRule("bookshelf", new FurnitureStats(5, 0, 0)),
+            new KeywordRule("desk", new FurnitureStats(4, 0, 0)),
+            new KeywordRule("table", new FurnitureStats(4, 0, 0)),
+            new KeywordRule("drawer", new FurnitureStats(3, 0, 0)),
+            new KeywordRule("carpet", new FurnitureStats(3, 0, 0)),
+            new KeywordRule("chair", new FurnitureStats(2, 0, 0)));
 
     static {
         initDefaultFurniture();
@@ -138,6 +148,16 @@ public class FurnitureManager {
             }
         }
 
+        ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(block);
+        if (blockId != null) {
+            String key = blockId.toString();
+            for (KeywordRule rule : KEYWORD_RULES) {
+                if (key.contains(rule.keyword())) {
+                    return Optional.of(rule.stats());
+                }
+            }
+        }
+
         return Optional.empty();
     }
 
@@ -164,6 +184,8 @@ public class FurnitureManager {
      * @param humidity 湿度 (-20 ~ 20)
      */
     public record FurnitureStats(int comfort, int light, int humidity) {}
+
+    private record KeywordRule(String keyword, FurnitureStats stats) {}
 
     /** 客户端事件处理器 */
     @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT)
