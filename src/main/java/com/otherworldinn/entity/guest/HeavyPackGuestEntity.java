@@ -74,7 +74,7 @@ public class HeavyPackGuestEntity extends GuestEntity {
         return new GuestProfile(
                 new PreferenceRangeProfile(new GuestData.IntRange(18, 42), new GuestData.IntRange(62, 88)),
                 new PreferenceRangeProfile(new GuestData.IntRange(20, 45), new GuestData.IntRange(54, 90)),
-                new PreferenceRangeProfile(new GuestData.IntRange(15, 40), new GuestData.IntRange(50, 86)),
+                new PreferenceRangeProfile(new GuestData.IntRange(15, 30), new GuestData.IntRange(50, 66)),
                 new GuestData.IntRange(12, 55));
     }
 
