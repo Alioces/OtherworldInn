@@ -46,7 +46,7 @@ public class OrdinaryGuestEntity extends GuestEntity {
                 new PreferenceRangeProfile(new GuestData.IntRange(8, 20), new GuestData.IntRange(80, 90)),
                 // 湿度偏好范围（min 的范围, max 的范围）
                 new PreferenceRangeProfile(new GuestData.IntRange(8, 20), new GuestData.IntRange(80, 90)),
-                new GuestData.IntRange(8, 16));
+                new GuestData.IntRange(8, 26));
     }
 
     /*

@@ -286,7 +286,8 @@ public class CameraHandler {
     @SubscribeEvent
     public static void onRenderGuiLayer(RenderGuiLayerEvent.Pre event) {
         if (isMapMode) {
-            if (event.getName().getPath().equals("crosshair")) {
+            String layerName = event.getName().getPath();
+            if (layerName.equals("crosshair") || layerName.equals("experience_bar")) {
                 event.setCanceled(true);
             }
         }
