@@ -261,6 +261,8 @@
   "message.otherworldinn.space_sphere.teleport_unlocked": "Map teleport has been activated",
   "message.otherworldinn.store.overlay.open": "Open Store",
   "message.otherworldinn.todo.new_task": "New Task: %s",
+  "skill.fishing": "Fishing",
+  "skill.magic": "Fishing",
   "subtitles.otherworldinn.payment": "Coins: Clink",
   "task.otherworldinn.clean_room": "Room Cleaning",
   "task.otherworldinn.clean_room.desc": "Automatically replaces messy bed sheets and washes dirty sheets when needed.",

@@ -203,6 +203,8 @@ dependencies {
     localRuntime("maven.modrinth:glitchcore:${glitchcore_version}")
     compileOnly("maven.modrinth:serene-seasons:${serene_seasons_version}")
     localRuntime("maven.modrinth:serene-seasons:${serene_seasons_version}")
+    compileOnly("curse.maven:reskillable-reimagined-1170464:${reskillable_reimagined_version}")
+    localRuntime("curse.maven:reskillable-reimagined-1170464:${reskillable_reimagined_version}")
 
     implementation(jarJar("io.github.llamalad7:mixinextras-neoforge:${mixin_extras_version}"))
 

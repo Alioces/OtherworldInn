@@ -10,7 +10,8 @@
     "MixinDeskBellBlockEntity",
     "MixinFanProcessing",
     "MixinDepotRenderer",
-    "MixinTransportedItemStack"
+    "MixinTransportedItemStack",
+    "MixinFishingHook"
   ],
   "injectors": {
     "defaultRequire": 1

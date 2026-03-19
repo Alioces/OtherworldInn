@@ -3,6 +3,7 @@ package com.otherworldinn;
 import com.mojang.logging.LogUtils;
 import com.otherworldinn.compat.CreateCompat;
 import com.otherworldinn.compat.KaleidoscopeCompat;
+import com.otherworldinn.compat.ReskillableCompat;
 import com.otherworldinn.foundation.ClientConfig;
 import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModCreativeModeTabs;
@@ -66,5 +67,6 @@ public class OtherworldInn {
             event.enqueueWork(CreateCompat::init);
         }
         event.enqueueWork(KaleidoscopeCompat::init);
+        event.enqueueWork(ReskillableCompat::init);
     }
 }

@@ -40,6 +40,8 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("key.categories.otherworldinn").zh("旅社物语").en("Otherworld Inn");
 
         entry("key.otherworldinn.map_mode").zh("地图视图").en("Map View");
+        entry("skill.fishing").zh("钓鱼").en("Fishing");
+        entry("skill.magic").zh("钓鱼").en("Fishing");
 
         // 地图点名称
         entry("map_point.otherworldinn.inn").zh("旅社").en("The Inn");
