@@ -79,7 +79,7 @@ public class MixinDepotRenderer {
             if (KaleidoscopeRenderTargets.isColdCutHamSlicesBlock(blockItem.getBlock())) {
                 float scale = 0.33f;
                 poseStack.pushPose();
-                poseStack.translate(-0.0f, 0.03f, -0.0f);
+                poseStack.translate(-0.0f, 0.04f, -0.0f);
                 poseStack.scale(scale, scale, scale);
                 Minecraft mc = Minecraft.getInstance();
                 BakedModel bakedModel = resolveColdCutHamSlicesModel(mc);
@@ -119,7 +119,7 @@ public class MixinDepotRenderer {
                 return;
             }
             poseStack.pushPose();
-            poseStack.translate(-0.5f * scale, -0.1f, -0.5f * scale);
+            poseStack.translate(-0.5f * scale, -0.12f, -0.5f * scale);
             poseStack.scale(scale, scale, scale);
             blockRenderer.renderSingleBlock(blockState, poseStack, bufferSource, light, overlay);
             poseStack.popPose();
@@ -151,7 +151,7 @@ public class MixinDepotRenderer {
             float offsetX = offsets[i][0];
             float offsetZ = offsets[i][1];
             poseStack.pushPose();
-            poseStack.translate(-0.35f + offsetX, -0.1f, -0.35f + offsetZ);
+            poseStack.translate(-0.35f + offsetX, -0.12f, -0.35f + offsetZ);
             poseStack.scale(0.7f, 0.7f, 0.7f);
             blockRenderer.renderSingleBlock(blockState, poseStack, bufferSource, light, overlay);
             poseStack.popPose();

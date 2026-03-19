@@ -70,7 +70,7 @@ public class DisplayPriceRenderer {
         float yaw = mc.gameRenderer.getMainCamera().getYRot();
 
         poseStack.pushPose();
-        poseStack.translate(0.5D, 1.5D, 0.5D);
+        poseStack.translate(0.5D, 1.8D, 0.5D);
         poseStack.mulPose(Axis.YP.rotationDegrees(-yaw));
         poseStack.scale(-0.025F, -0.025F, 0.025F);
         mc.font.drawInBatch(

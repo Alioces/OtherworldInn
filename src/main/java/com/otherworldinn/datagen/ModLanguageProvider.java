@@ -180,8 +180,8 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // 物品提示
         entry("tooltip.otherworldinn.sell_price")
-                .zh("售价: §f\uE001§r %s")
-                .en("Sell Price: §f\uE001§r %s");
+                .zh("售价: §f\uE001§r%s")
+                .en("Sell Price: §f\uE001§r%s");
         entry("item.otherworldinn.recall_scroll.fail_in_town")
                 .zh("回程卷轴无法在城镇中使用")
                 .en("Recall Scroll cannot be used in Town!");
