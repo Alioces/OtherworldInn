@@ -1,6 +1,7 @@
 package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.entity.guest.AdvancedVipGuestEntity;
 import com.otherworldinn.entity.guest.HeavyPackGuestEntity;
 import com.otherworldinn.entity.guest.OrdinaryGuestEntity;
 import com.otherworldinn.entity.guest.OrdinaryVipGuestEntity;
@@ -73,6 +74,17 @@ public class ModEntities {
                                     .updateInterval(2)
                                     .setShouldReceiveVelocityUpdates(true)
                                     .build("ordinary_vip_guest"));
+
+    public static final Supplier<EntityType<AdvancedVipGuestEntity>> ADVANCED_VIP_GUEST =
+            ENTITY_TYPES.register(
+                    "advanced_vip_guest",
+                    () ->
+                            EntityType.Builder.of(AdvancedVipGuestEntity::new, MobCategory.CREATURE)
+                                    .sized(0.6F, 1.8F)
+                                    .clientTrackingRange(80)
+                                    .updateInterval(2)
+                                    .setShouldReceiveVelocityUpdates(true)
+                                    .build("advanced_vip_guest"));
 
     public static final Supplier<EntityType<BlacksmithEntity>> BLACKSMITH =
             ENTITY_TYPES.register(
