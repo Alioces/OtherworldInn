@@ -174,6 +174,18 @@ public abstract class VipGuestEntity extends GuestEntity {
                 inn.recordDiningIncome(payout, level);
                 inn.addReputation(reputationGain);
                 TeamManager.getInstance().syncTeam(team, level.getServer());
+                level.sendParticles(
+                        ParticleTypes.HAPPY_VILLAGER,
+                        this.getX(),
+                        this.getY() + this.getBbHeight() + 0.6D,
+                        this.getZ(),
+                        12,
+                        0.35D,
+                        0.25D,
+                        0.35D,
+                        0.02D);
+                level.playSound(
+                        null, this.blockPosition(), SoundEvents.VILLAGER_YES, SoundSource.NEUTRAL, 1.0F, 1.1F);
                 clearVipWaitingState(level, true);
                 scheduleNextVipOrder(level);
                 return InteractionResult.SUCCESS;
