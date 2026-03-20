@@ -41,7 +41,7 @@ public class FarmerEntity extends StoreEntity {
         this.addStoreItem(new ItemStack(Items.POTATO), 2, 64);
         this.addStoreItem(new ItemStack(Items.BEETROOT), 2, 64);
         this.addStoreItem(new ItemStack(Items.PUMPKIN), 4, 32);
-        this.addStoreItem(new ItemStack(Items.MELON_SLICE), 1, 64);
+        this.addStoreItem(new ItemStack(Items.MELON_SEEDS), 1, 64);
         this.addStoreItem(new ItemStack(Items.SUGAR_CANE), 2, 64);
         this.addStoreItem(new ItemStack(ModItems.TOMATO_SEED.get()), 2, 64);
         this.addStoreItem(new ItemStack(ModItems.CHILI_SEED.get()), 2, 64);
