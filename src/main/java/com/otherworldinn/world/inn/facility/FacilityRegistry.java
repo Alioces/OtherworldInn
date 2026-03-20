@@ -38,6 +38,7 @@ public final class FacilityRegistry {
             String zhName,
             int maxLevel,
             BlockPos centerPos,
+            FacilityRange facilityRange,
             List<LevelUpgradeCost> levelUpgradeCosts,
             FacilityMapPointConfig mapPointConfig) {
         if (id == null || id.isBlank()) {
@@ -55,6 +56,9 @@ public final class FacilityRegistry {
         }
         if (centerPos == null) {
             throw new IllegalArgumentException("Facility centerPos cannot be null.");
+        }
+        if (facilityRange == null) {
+            throw new IllegalArgumentException("Facility facilityRange cannot be null.");
         }
 
         Map<Integer, FacilityLevelDefinition> levels = new LinkedHashMap<>();
@@ -85,6 +89,7 @@ public final class FacilityRegistry {
                         zhName == null || zhName.isBlank() ? enName : zhName,
                         maxLevel,
                         centerPos.immutable(),
+                        facilityRange.normalize(),
                         "facility." + OtherworldInn.MODID + "." + id,
                         normalizeMapPointConfig(id, centerPos, mapPointConfig),
                         Map.copyOf(levels));
@@ -101,11 +106,14 @@ public final class FacilityRegistry {
     }
 
     public static Optional<FacilityDefinition> findNearbyFacility(BlockPos pos, double radius) {
-        if (pos == null || radius <= 0) {
+        if (pos == null) {
             return Optional.empty();
         }
-        double radiusSq = radius * radius;
+        double radiusSq = Math.max(0.0D, radius) * Math.max(0.0D, radius);
         for (FacilityDefinition facility : FACILITIES.values()) {
+            if (facility.facilityRange().contains(pos)) {
+                return Optional.of(facility);
+            }
             if (facility.centerPos().distSqr(pos) <= radiusSq) {
                 return Optional.of(facility);
             }
@@ -163,6 +171,7 @@ public final class FacilityRegistry {
                 "锅炉房",
                 4,
                 new BlockPos(12, 71, -8),
+                new FacilityRange(new BlockPos(6, 65, -14), new BlockPos(18, 78, -2)),
                 List.of(
                         new LevelUpgradeCost(
                                 List.of(
@@ -186,6 +195,38 @@ public final class FacilityRegistry {
                                 3200)),
                 new FacilityMapPointConfig(
                         new Vec3(9, 71, -3),
+                        new Vec2(12, -10),
+                        ResourceLocation.fromNamespaceAndPath(
+                                OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
+                        MapPoint.MapPointType.SHOP,
+                        0,
+                        0));
+
+        registerFacility(
+                "greenhouse",
+                "Greenhouse",
+                "温室",
+                3,
+                new BlockPos(25, 71, -8),
+                new FacilityRange(new BlockPos(18, 66, -14), new BlockPos(32, 78, -2)),
+                List.of(
+                        new LevelUpgradeCost(
+                                List.of(
+                                        new ItemStack(Items.GLASS, 24),
+                                        new ItemStack(Items.OAK_PLANKS, 16)),
+                                500),
+                        new LevelUpgradeCost(
+                                List.of(
+                                        new ItemStack(Items.GLASS_PANE, 32),
+                                        new ItemStack(Items.IRON_INGOT, 12)),
+                                1200),
+                        new LevelUpgradeCost(
+                                List.of(
+                                        new ItemStack(Items.LANTERN, 8),
+                                        new ItemStack(Items.BONE_MEAL, 32)),
+                                2600)),
+                new FacilityMapPointConfig(
+                        new Vec3(25, 71, -8),
                         new Vec2(12, -10),
                         ResourceLocation.fromNamespaceAndPath(
                                 OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
@@ -225,6 +266,7 @@ public final class FacilityRegistry {
             String zhName,
             int maxLevel,
             BlockPos centerPos,
+            FacilityRange facilityRange,
             String translationKey,
             FacilityMapPointConfig mapPointConfig,
             Map<Integer, FacilityLevelDefinition> levels) {
@@ -251,6 +293,33 @@ public final class FacilityRegistry {
             MapPoint.MapPointType type,
             int pageX,
             int pageZ) {}
+
+    public record FacilityRange(BlockPos from, BlockPos to) {
+        public FacilityRange {
+            if (from == null || to == null) {
+                throw new IllegalArgumentException("Facility range points cannot be null.");
+            }
+            from = from.immutable();
+            to = to.immutable();
+        }
+
+        public FacilityRange normalize() {
+            return new FacilityRange(
+                    new BlockPos(Math.min(from.getX(), to.getX()), from.getY(), Math.min(from.getZ(), to.getZ())),
+                    new BlockPos(Math.max(from.getX(), to.getX()), to.getY(), Math.max(from.getZ(), to.getZ())));
+        }
+
+        public boolean contains(BlockPos pos) {
+            if (pos == null) {
+                return false;
+            }
+            FacilityRange normalized = this.normalize();
+            return pos.getX() >= normalized.from().getX()
+                    && pos.getX() <= normalized.to().getX()
+                    && pos.getZ() >= normalized.from().getZ()
+                    && pos.getZ() <= normalized.to().getZ();
+        }
+    }
 
     public record LevelUpgradeCost(List<ItemStack> requiredItems, int requiredCoins) {}
 }

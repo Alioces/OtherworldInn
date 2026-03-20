@@ -6,6 +6,7 @@ import com.otherworldinn.foundation.ModBlockProperties;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.inn.InnData;
+import com.otherworldinn.world.inn.facility.FacilityRegistry;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -29,6 +31,7 @@ import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.NetherWartBlock;
+import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.piston.PistonStructureResolver;
@@ -41,9 +44,11 @@ import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.level.BlockGrowFeatureEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.level.PistonEvent;
+import net.neoforged.neoforge.event.level.block.CropGrowEvent;
 
 /**
  * 城镇保护处理器
@@ -52,6 +57,9 @@ import net.neoforged.neoforge.event.level.PistonEvent;
  */
 @EventBusSubscriber(modid = OtherworldInn.MODID)
 public class TownProtectionHandler {
+    private static final double TOWN_CROP_GROWTH_MULTIPLIER = 0.3D;
+    private static final double GREENHOUSE_CROP_GROWTH_MULTIPLIER = 1.5D;
+    private static final String GREENHOUSE_FACILITY_ID = "greenhouse";
 
     /**
      * 检查是否可以在指定位置建筑（针对玩家），如果不可以则返回拒绝原因
@@ -122,6 +130,174 @@ public class TownProtectionHandler {
                 || off.is(ModItems.MESSY_BED_SHEET.get());
     }
 
+    private static boolean isTownDimension(Level level) {
+        return level.dimension() == TownDimensions.TOWN_LEVEL;
+    }
+
+    private static boolean isInnZonePos(ServerLevel level, BlockPos pos) {
+        return TeamManager.getInstance().getTeamAt(pos, level.getServer()) != null;
+    }
+
+    private static int getGreenhouseLevelAtPos(Level level, BlockPos pos) {
+        if (!(level instanceof ServerLevel serverLevel) || pos == null || !isTownDimension(level)) {
+            return 0;
+        }
+        FacilityRegistry.FacilityDefinition greenhouse = FacilityRegistry.get(GREENHOUSE_FACILITY_ID);
+        if (greenhouse == null || !greenhouse.facilityRange().contains(pos)) {
+            return 0;
+        }
+        TeamData team = TeamManager.getInstance().getTeamAt(pos, serverLevel.getServer());
+        if (team == null) {
+            return 0;
+        }
+        return Math.max(0, team.getInnData().getFacilityLevel(GREENHOUSE_FACILITY_ID));
+    }
+
+    private static boolean isGreenhousePos(Level level, BlockPos pos) {
+        if (level == null || pos == null) {
+            return false;
+        }
+        FacilityRegistry.FacilityDefinition greenhouse = FacilityRegistry.get(GREENHOUSE_FACILITY_ID);
+        return greenhouse != null && greenhouse.facilityRange().contains(pos);
+    }
+
+    private static boolean isActiveGreenhousePos(Level level, BlockPos pos) {
+        return getGreenhouseLevelAtPos(level, pos) > 0;
+    }
+
+    private static double getCropGrowthMultiplier(Level level, BlockPos pos, BlockState state) {
+        if (!isTownDimension(level)) {
+            return 1.0D;
+        }
+        if (state != null
+                && (state.getBlock() instanceof SaplingBlock
+                        || state.is(net.minecraft.tags.BlockTags.SAPLINGS))) {
+            return 0.0D;
+        }
+        int greenhouseLevel = getGreenhouseLevelAtPos(level, pos);
+        if (greenhouseLevel > 0) {
+            return 1.0D + (0.5D * greenhouseLevel);
+        }
+        return TOWN_CROP_GROWTH_MULTIPLIER;
+    }
+
+    private static boolean shouldRestrictNaturalGrowthBlock(BlockState state) {
+        if (state == null) {
+            return false;
+        }
+        if (isFarmingBlock(state)) {
+            return true;
+        }
+        return state.is(net.minecraft.world.level.block.Blocks.PUMPKIN)
+                || state.is(net.minecraft.world.level.block.Blocks.MELON)
+                || state.is(net.minecraft.world.level.block.Blocks.SUGAR_CANE)
+                || state.is(net.minecraft.world.level.block.Blocks.BAMBOO)
+                || state.is(net.minecraft.world.level.block.Blocks.CACTUS)
+                || state.is(net.minecraft.world.level.block.Blocks.COCOA)
+                || state.is(net.minecraft.world.level.block.Blocks.SWEET_BERRY_BUSH);
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onBlockGrowFeature(BlockGrowFeatureEvent event) {
+        if (!(event.getLevel() instanceof ServerLevel level) || !isTownDimension(level)) {
+            return;
+        }
+        BlockState stateAtPos = level.getBlockState(event.getPos());
+        if (stateAtPos.getBlock() instanceof SaplingBlock || stateAtPos.is(net.minecraft.tags.BlockTags.SAPLINGS)) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onCropGrowPre(CropGrowEvent.Pre event) {
+        if (!(event.getLevel() instanceof ServerLevel serverLevel) || !isTownDimension(serverLevel)) {
+            return;
+        }
+        double multiplier = getCropGrowthMultiplier(serverLevel, event.getPos(), event.getState());
+        if (multiplier <= 0.0D) {
+            event.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW);
+            return;
+        }
+        if (multiplier < 1.0D && serverLevel.random.nextDouble() >= multiplier) {
+            event.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onCropGrowPost(CropGrowEvent.Post event) {
+        if (!(event.getLevel() instanceof ServerLevel serverLevel) || !isTownDimension(serverLevel)) {
+            return;
+        }
+        BlockPos pos = event.getPos();
+        BlockState state = serverLevel.getBlockState(pos);
+        if (state.getBlock() instanceof SaplingBlock || state.is(net.minecraft.tags.BlockTags.SAPLINGS)) {
+            return;
+        }
+        if (!isGreenhousePos(serverLevel, pos)) {
+            return;
+        }
+        double multiplier = getCropGrowthMultiplier(serverLevel, pos, state);
+        if (multiplier <= 1.0D) {
+            return;
+        }
+        double extraGrowth = multiplier - 1.0D;
+        int guaranteedExtraSteps = (int) Math.floor(extraGrowth);
+        double fractionalChance = extraGrowth - guaranteedExtraSteps;
+        int extraSteps = guaranteedExtraSteps;
+        if (fractionalChance > 0.0D && serverLevel.random.nextDouble() < fractionalChance) {
+            extraSteps++;
+        }
+        for (int i = 0; i < extraSteps; i++) {
+            BlockState current = serverLevel.getBlockState(pos);
+            if (!tryApplyExtraGrowth(serverLevel, pos, current)) {
+                break;
+            }
+        }
+    }
+
+    private static boolean tryApplyExtraGrowth(ServerLevel level, BlockPos pos, BlockState state) {
+        if (state.getBlock() instanceof CropBlock crop) {
+            if (!crop.isMaxAge(state)) {
+                level.setBlockAndUpdate(pos, crop.getStateForAge(crop.getAge(state) + 1));
+                return true;
+            }
+            return false;
+        }
+        if (state.getBlock() instanceof StemBlock && state.hasProperty(StemBlock.AGE)) {
+            int age = state.getValue(StemBlock.AGE);
+            if (age < 7) {
+                level.setBlockAndUpdate(pos, state.setValue(StemBlock.AGE, age + 1));
+                return true;
+            }
+            return false;
+        }
+        if (state.getBlock() instanceof NetherWartBlock && state.hasProperty(NetherWartBlock.AGE)) {
+            int age = state.getValue(NetherWartBlock.AGE);
+            if (age < 3) {
+                level.setBlockAndUpdate(pos, state.setValue(NetherWartBlock.AGE, age + 1));
+                return true;
+            }
+            return false;
+        }
+        if (state.getBlock() instanceof CocoaBlock && state.hasProperty(CocoaBlock.AGE)) {
+            int age = state.getValue(CocoaBlock.AGE);
+            if (age < 2) {
+                level.setBlockAndUpdate(pos, state.setValue(CocoaBlock.AGE, age + 1));
+                return true;
+            }
+            return false;
+        }
+        if (state.getBlock() instanceof SweetBerryBushBlock
+                && state.hasProperty(SweetBerryBushBlock.AGE)) {
+            int age = state.getValue(SweetBerryBushBlock.AGE);
+            if (age < 3) {
+                level.setBlockAndUpdate(pos, state.setValue(SweetBerryBushBlock.AGE, age + 1));
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** 客户端事件处理器 专门用于在客户端预测阶段就拦截交互 */
     @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT)
     public static class ClientHandler {
@@ -182,6 +358,21 @@ public class TownProtectionHandler {
 
         // 允许破坏农作物
         if (isFarmingBlock(event.getState())) {
+            if (!isTownDimension(level)) {
+                return;
+            }
+            if (player instanceof ServerPlayer serverPlayer && !(player instanceof FakePlayer)) {
+                if (isActiveGreenhousePos(level, event.getPos())) {
+                    return;
+                }
+                Component denyReason = getBuildDenyReason(player, event.getPos(), level);
+                if (denyReason != null) {
+                    event.setCanceled(true);
+                    sendDenyMessage(player, denyReason);
+                    serverPlayer.inventoryMenu.sendAllDataToRemote();
+                }
+                return;
+            }
             return;
         }
 
@@ -209,6 +400,26 @@ public class TownProtectionHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
+        if (event.getEntity() == null
+                && event.getLevel() instanceof ServerLevel serverLevel
+                && isTownDimension(serverLevel)
+                && shouldRestrictNaturalGrowthBlock(event.getState())) {
+            double multiplier = getCropGrowthMultiplier(serverLevel, event.getPos(), event.getState());
+            if (multiplier <= 0.0D) {
+                event.setCanceled(true);
+                return;
+            }
+            if (!isActiveGreenhousePos(serverLevel, event.getPos())
+                    && !isInnZonePos(serverLevel, event.getPos())) {
+                event.setCanceled(true);
+                return;
+            }
+            if (multiplier < 1.0D && serverLevel.random.nextDouble() >= multiplier) {
+                event.setCanceled(true);
+                return;
+            }
+        }
+
         if (event.getLevel() instanceof ServerLevel serverLevel
                 && serverLevel.dimension() == TownDimensions.TOWN_LEVEL
                 && event.getEntity() instanceof FallingBlockEntity fallingBlock
@@ -222,6 +433,22 @@ public class TownProtectionHandler {
 
         // 允许种植农作物
         if (isFarmingBlock(event.getState())) {
+            if (!(event.getEntity() instanceof Player player)
+                    || !(event.getLevel() instanceof Level level)
+                    || !isTownDimension(level)) {
+                return;
+            }
+            if (isActiveGreenhousePos(level, event.getPos())) {
+                return;
+            }
+            Component denyReason = getBuildDenyReason(player, event.getPos(), level);
+            if (denyReason != null) {
+                event.setCanceled(true);
+                if (player instanceof ServerPlayer serverPlayer) {
+                    sendDenyMessage(player, denyReason);
+                    serverPlayer.inventoryMenu.sendAllDataToRemote();
+                }
+            }
             return;
         }
 
@@ -350,6 +577,20 @@ public class TownProtectionHandler {
                 && stack.getItem() instanceof BlockItem blockItem) {
             // 允许种植农作物 (例如种子)
             if (isFarmingBlock(blockItem.getBlock().defaultBlockState())) {
+                if (isActiveGreenhousePos(level, pos)) {
+                    return;
+                }
+                Component denyReason = getBuildDenyReason(player, pos, level);
+                if (denyReason != null) {
+                    event.setCanceled(true);
+                    event.setUseItem(TriState.FALSE);
+                    event.setUseBlock(TriState.FALSE);
+                    event.setCancellationResult(InteractionResult.FAIL);
+                    if (player instanceof ServerPlayer serverPlayer) {
+                        sendDenyMessage(player, denyReason);
+                        serverPlayer.inventoryMenu.sendAllDataToRemote();
+                    }
+                }
                 return;
             }
 
@@ -367,6 +608,23 @@ public class TownProtectionHandler {
                 if (player instanceof ServerPlayer serverPlayer) {
                     sendDenyMessage(player, denyReason);
                     // 关键：同步背包数据，防止客户端显示物品被消耗
+                    serverPlayer.inventoryMenu.sendAllDataToRemote();
+                }
+            }
+        }
+
+        if (!player.isCreative() && stack.getItem() instanceof HoeItem) {
+            if (isActiveGreenhousePos(level, pos)) {
+                return;
+            }
+            Component denyReason = getBuildDenyReason(player, pos, level);
+            if (denyReason != null) {
+                event.setCanceled(true);
+                event.setUseItem(TriState.FALSE);
+                event.setUseBlock(TriState.FALSE);
+                event.setCancellationResult(InteractionResult.FAIL);
+                if (player instanceof ServerPlayer serverPlayer) {
+                    sendDenyMessage(player, denyReason);
                     serverPlayer.inventoryMenu.sendAllDataToRemote();
                 }
             }
