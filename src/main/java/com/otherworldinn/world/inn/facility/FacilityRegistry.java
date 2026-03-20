@@ -105,16 +105,12 @@ public final class FacilityRegistry {
         return FACILITIES.values();
     }
 
-    public static Optional<FacilityDefinition> findNearbyFacility(BlockPos pos, double radius) {
+    public static Optional<FacilityDefinition> findFacilityInRange(BlockPos pos) {
         if (pos == null) {
             return Optional.empty();
         }
-        double radiusSq = Math.max(0.0D, radius) * Math.max(0.0D, radius);
         for (FacilityDefinition facility : FACILITIES.values()) {
             if (facility.facilityRange().contains(pos)) {
-                return Optional.of(facility);
-            }
-            if (facility.centerPos().distSqr(pos) <= radiusSq) {
                 return Optional.of(facility);
             }
         }
@@ -169,7 +165,7 @@ public final class FacilityRegistry {
                 "boiler_room",
                 "Boiler Room",
                 "锅炉房",
-                4,
+                3,
                 new BlockPos(12, 71, -8),
                 new FacilityRange(new BlockPos(6, 65, -14), new BlockPos(18, 78, -2)),
                 List.of(

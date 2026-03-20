@@ -12,8 +12,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 public final class FacilityUpgradeService {
-    public static final double INTERACTION_RADIUS = 7.0D;
-
     private FacilityUpgradeService() {}
 
     public static FacilityContext findContext(ServerPlayer player) {
@@ -25,7 +23,7 @@ public final class FacilityUpgradeService {
             return null;
         }
         FacilityRegistry.FacilityDefinition facility =
-                FacilityRegistry.findNearbyFacility(player.blockPosition(), INTERACTION_RADIUS).orElse(null);
+                FacilityRegistry.findFacilityInRange(player.blockPosition()).orElse(null);
         if (facility == null) {
             return null;
         }

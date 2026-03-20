@@ -4,7 +4,6 @@ import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.inn.facility.FacilityRegistry;
-import com.otherworldinn.world.inn.facility.FacilityUpgradeService;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import java.util.List;
@@ -51,8 +50,7 @@ public class FacilityUpgradeOverlay {
         if (!FacilityRegistry.isHoldingFacilityTool(player)) {
             return false;
         }
-        return FacilityRegistry.findNearbyFacility(player.blockPosition(), FacilityUpgradeService.INTERACTION_RADIUS)
-                .isPresent();
+        return FacilityRegistry.findFacilityInRange(player.blockPosition()).isPresent();
     }
 
     private static void render(
@@ -64,9 +62,7 @@ public class FacilityUpgradeOverlay {
         }
         TeamData team = TeamManager.getInstance().getClientPlayerTeam();
         FacilityRegistry.FacilityDefinition facility =
-                FacilityRegistry.findNearbyFacility(
-                                player.blockPosition(), FacilityUpgradeService.INTERACTION_RADIUS)
-                        .orElse(null);
+                FacilityRegistry.findFacilityInRange(player.blockPosition()).orElse(null);
         if (facility == null) {
             return;
         }
