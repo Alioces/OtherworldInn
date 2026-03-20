@@ -6,6 +6,7 @@ import com.otherworldinn.entity.guest.HeavyPackGuestEntity;
 import com.otherworldinn.entity.guest.OrdinaryGuestEntity;
 import com.otherworldinn.entity.guest.OrdinaryVipGuestEntity;
 import com.otherworldinn.entity.guest.RichGuestEntity;
+import com.otherworldinn.entity.guest.SponsorGuestEntity;
 import com.otherworldinn.entity.guest.UltraRichGuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
 import com.otherworldinn.entity.store.MagicianEntity;
@@ -85,6 +86,17 @@ public class ModEntities {
                                     .updateInterval(2)
                                     .setShouldReceiveVelocityUpdates(true)
                                     .build("advanced_vip_guest"));
+
+    public static final Supplier<EntityType<SponsorGuestEntity>> SPONSOR_GUEST =
+            ENTITY_TYPES.register(
+                    "sponsor_guest",
+                    () ->
+                            EntityType.Builder.of(SponsorGuestEntity::new, MobCategory.CREATURE)
+                                    .sized(0.6F, 1.8F)
+                                    .clientTrackingRange(80)
+                                    .updateInterval(2)
+                                    .setShouldReceiveVelocityUpdates(true)
+                                    .build("sponsor_guest"));
 
     public static final Supplier<EntityType<BlacksmithEntity>> BLACKSMITH =
             ENTITY_TYPES.register(

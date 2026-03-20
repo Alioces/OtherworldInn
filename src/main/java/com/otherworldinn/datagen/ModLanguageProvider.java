@@ -550,6 +550,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry(ModEntities.ULTRA_RICH_GUEST.get()).zh("非常富有的顾客").en("Ultra-Wealthy Customer");
         entry(ModEntities.ORDINARY_VIP_GUEST.get()).zh("普通贵宾").en("Ordinary VIP Guest");
         entry(ModEntities.ADVANCED_VIP_GUEST.get()).zh("进阶VIP旅客").en("Advanced VIP Guest");
+        entry(ModEntities.SPONSOR_GUEST.get()).zh("赞助者旅客").en("Sponsor Guest");
         entry(ModEntities.BLACKSMITH.get()).zh("铁匠").en("Blacksmith");
         entry(ModEntities.MAGICIAN.get()).zh("魔法使").en("Magician");
 

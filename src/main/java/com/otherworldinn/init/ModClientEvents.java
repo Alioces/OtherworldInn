@@ -55,6 +55,7 @@ public class ModClientEvents {
         event.registerEntityRenderer(ModEntities.ULTRA_RICH_GUEST.get(), GuestRenderer::new);
         event.registerEntityRenderer(ModEntities.ORDINARY_VIP_GUEST.get(), GuestRenderer::new);
         event.registerEntityRenderer(ModEntities.ADVANCED_VIP_GUEST.get(), GuestRenderer::new);
+        event.registerEntityRenderer(ModEntities.SPONSOR_GUEST.get(), GuestRenderer::new);
         event.registerEntityRenderer(ModEntities.BLACKSMITH.get(), BlacksmithRenderer::new);
         event.registerEntityRenderer(ModEntities.MAGICIAN.get(), MagicianRenderer::new);
     }

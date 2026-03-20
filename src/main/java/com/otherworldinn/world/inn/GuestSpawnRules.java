@@ -26,6 +26,7 @@ final class GuestSpawnRules {
                     new Rule(ModEntities.RICH_GUEST, 4),
                     new Rule(ModEntities.HEAVY_PACK_GUEST, 6),
                     new Rule(ModEntities.ORDINARY_VIP_GUEST, 1),
+                    new Rule(ModEntities.SPONSOR_GUEST, 1),
                     new Rule(ModEntities.ULTRA_RICH_GUEST, 3)),
             List.of(//4
                     new Rule(ModEntities.ORDINARY_GUEST, 3),
@@ -33,13 +34,15 @@ final class GuestSpawnRules {
                     new Rule(ModEntities.HEAVY_PACK_GUEST, 6),
                     new Rule(ModEntities.ORDINARY_VIP_GUEST, 2),
                     new Rule(ModEntities.ADVANCED_VIP_GUEST, 1),
+                    new Rule(ModEntities.SPONSOR_GUEST, 1),
                     new Rule(ModEntities.ULTRA_RICH_GUEST, 3)),
             List.of(//5
-                    new Rule(ModEntities.ORDINARY_GUEST, 4),
-                    new Rule(ModEntities.RICH_GUEST, 3),
+                    new Rule(ModEntities.ORDINARY_GUEST, 2),
+                    new Rule(ModEntities.RICH_GUEST, 5),
                     new Rule(ModEntities.HEAVY_PACK_GUEST, 6),
                     new Rule(ModEntities.ORDINARY_VIP_GUEST, 3),
                     new Rule(ModEntities.ADVANCED_VIP_GUEST, 2),
+                    new Rule(ModEntities.SPONSOR_GUEST, 1),
                     new Rule(ModEntities.ULTRA_RICH_GUEST, 3)));
 
     private GuestSpawnRules() {}
