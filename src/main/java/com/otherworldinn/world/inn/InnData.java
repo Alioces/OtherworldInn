@@ -848,7 +848,8 @@ public class InnData {
                     }
                 } else if (guestData.getState() == GuestData.GuestState.CHECKED_IN) {
                     // 检查是否到达退房时间
-                    if (currentTime >= guestData.getCheckoutTime()) {
+                    if (currentTime >= guestData.getCheckoutTime()
+                            && guestEntity.canCheckOutNow(currentTime)) {
                         guestsToCheckOut.add(guestId);
                     }
                 }

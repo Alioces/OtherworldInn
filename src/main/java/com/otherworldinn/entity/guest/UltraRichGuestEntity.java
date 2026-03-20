@@ -3,6 +3,7 @@ package com.otherworldinn.entity.guest;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.client.util.TextureUtils;
 import com.otherworldinn.entity.base.GuestEntity;
+import com.otherworldinn.entity.base.VipGuestEntity;
 import com.otherworldinn.world.inn.GuestData;
 import java.util.ArrayList;
 import java.util.List;

@@ -257,6 +257,7 @@ public class ModLanguageProvider extends LanguageProvider {
         // 待办事项
         entry("todo.otherworldinn.room_cleaning").zh("%s 号房间需要打扫").en("Room %s needs cleaning");
         entry("todo.otherworldinn.guest_waiting").zh("%s 正在等待办理入住").en("%s is waiting to check in");
+        entry("todo.otherworldinn.vip_meal_order").zh("贵宾 %s 选订了餐品 %s").en("VIP %s ordered meal %s");
 
         // 生物群系
         entry("biome.otherworldinn.town").zh("城镇").en("Town");
@@ -417,6 +418,7 @@ public class ModLanguageProvider extends LanguageProvider {
                 .zh("地图传送功能已激活")
                 .en("Map teleport has been activated");
         entry("message.otherworldinn.guest.tooltip.title").zh("旅客信息").en("Guest Info");
+        entry("message.otherworldinn.guest.tooltip.vip").zh("[贵宾]").en("[VIP]");
         entry("message.otherworldinn.guest.tooltip.preference.comfort")
                 .zh("§f\uE002§r舒适偏好: %s-%s")
                 .en("§f\uE002§rComfort Preference: %s-%s");

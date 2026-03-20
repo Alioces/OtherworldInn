@@ -666,7 +666,7 @@ public abstract class GuestEntity extends PathfinderMob {
                 }
             }
 
-            if (this.level() instanceof ServerLevel serverLevel) {
+            if (this.level() instanceof ServerLevel serverLevel && shouldRunBudgetDiningBehavior()) {
                 handleDiningPurchase(serverLevel);
             }
 
@@ -680,7 +680,7 @@ public abstract class GuestEntity extends PathfinderMob {
             }
 
             // 发光逻辑：等待入住时发光
-            if (this.guestData.getState() == GuestData.GuestState.WAITING) {
+            if (this.shouldGuestGlow()) {
                 if (!this.hasGlowingTag()) {
                     this.setGlowingTag(true);
                 }
@@ -915,6 +915,22 @@ public abstract class GuestEntity extends PathfinderMob {
                         / (float) Math.max(1, getBudgetRange().max() - getBudgetRange().min());
         int base = Mth.floor(Mth.lerp(1.0f - normalized, 200.0f, 900.0f));
         return base + this.getRandom().nextInt(161);
+    }
+
+    protected boolean shouldRunBudgetDiningBehavior() {
+        return true;
+    }
+
+    protected boolean shouldGuestGlow() {
+        return this.guestData.getState() == GuestData.GuestState.WAITING;
+    }
+
+    public ItemStack getHeadDisplayItem() {
+        return ItemStack.EMPTY;
+    }
+
+    public boolean canCheckOutNow(long currentTime) {
+        return true;
     }
 
     private void applyPreferenceRange(

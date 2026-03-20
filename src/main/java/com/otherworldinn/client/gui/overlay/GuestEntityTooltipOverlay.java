@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.entity.base.GuestEntity;
+import com.otherworldinn.entity.base.VipGuestEntity;
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.world.inn.GuestData;
@@ -29,6 +30,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -209,8 +211,7 @@ public class GuestEntityTooltipOverlay {
         }
 
         return new PanelData(
-                Component.translatable("message.otherworldinn.guest.tooltip.title")
-                        .withStyle(style -> style.withColor(ModColors.INFO)),
+                buildGuestTitle(guest),
                 Component.literal("  ")
                         .append(
                                 Component.translatable(
@@ -236,7 +237,7 @@ public class GuestEntityTooltipOverlay {
                         .append(
                                 Component.translatable(
                                                 "message.otherworldinn.guest.tooltip.budget",
-                                                guest.getBudget())
+                                                guest instanceof VipGuestEntity ? "∞" : guest.getBudget())
                                         .withStyle(style -> style.withColor(ModColors.YELLOW))),
                 Component.translatable("message.otherworldinn.guest.tooltip.rewards")
                         .withStyle(style -> style.withColor(ModColors.SUCCESS)),
@@ -254,6 +255,21 @@ public class GuestEntityTooltipOverlay {
                 roomAttributes != null ? roomAttributes.light() : null,
                 roomAttributes != null ? roomAttributes.humidity() : null,
                 rewardIcons);
+    }
+
+    private static Component buildGuestTitle(GuestEntity guest) {
+        Component base =
+                Component.translatable("message.otherworldinn.guest.tooltip.title")
+                        .withStyle(style -> style.withColor(ModColors.INFO));
+        if (!(guest instanceof VipGuestEntity)) {
+            return base;
+        }
+        return Component.empty()
+                .append(base)
+                .append(Component.literal("-"))
+                .append(
+                        Component.translatable("message.otherworldinn.guest.tooltip.vip")
+                                .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
     }
 
     private static void renderUnifiedPanel(

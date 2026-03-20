@@ -2,7 +2,9 @@ package com.otherworldinn.world.economy.service;
 
 import com.github.ysbbbbbb.kaleidoscopetavern.item.BottleBlockItem;
 import com.github.ysbbbbbb.kaleidoscopetavern.item.DrinkBlockItem;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -179,5 +181,22 @@ public class ItemSellPriceManager {
             price = (int) Math.floor(price * 1.4d);
         }
         return price;
+    }
+
+    public static int getConfiguredPrice(ResourceLocation itemId) {
+        if (itemId == null) {
+            return 0;
+        }
+        return PRICES.getOrDefault(itemId, 0);
+    }
+
+    public static List<ResourceLocation> getConfiguredItemsAbovePrice(int minPriceExclusive) {
+        List<ResourceLocation> result = new ArrayList<>();
+        for (Map.Entry<ResourceLocation, Integer> entry : PRICES.entrySet()) {
+            if (entry.getValue() != null && entry.getValue() > minPriceExclusive) {
+                result.add(entry.getKey());
+            }
+        }
+        return result;
     }
 }
