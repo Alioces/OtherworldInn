@@ -12,7 +12,9 @@ import com.otherworldinn.world.team.service.TeamManager;
 import java.util.Map;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -32,6 +34,8 @@ import net.neoforged.neoforge.registries.DeferredItem;
  */
 @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT)
 public class ModTooltips {
+    private static final ResourceLocation CREATE_CLIPBOARD_ID =
+            ResourceLocation.fromNamespaceAndPath("create", "clipboard");
 
     @SubscribeEvent
     public static void onItemTooltip(ItemTooltipEvent event) {
@@ -46,6 +50,13 @@ public class ModTooltips {
                     .add(
                             Component.translatable("tooltip.otherworldinn.sell_price", sellPrice)
                                     .withStyle(ChatFormatting.YELLOW));
+        }
+
+        if (BuiltInRegistries.ITEM.getKey(item).equals(CREATE_CLIPBOARD_ID)) {
+            event.getToolTip()
+                    .add(
+                            Component.translatable("tooltip.otherworldinn.create_clipboard_hint")
+                                    .withStyle(style -> style.withColor(ModColors.INFO)));
         }
 
         // 检查是否在城镇维度且物品被禁用

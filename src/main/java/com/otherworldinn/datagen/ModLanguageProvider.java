@@ -196,6 +196,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("tooltip.otherworldinn.only_in_town")
                 .zh("§c仅限城镇维度使用")
                 .en("§cOnly usable in Town dimension");
+        entry("tooltip.otherworldinn.create_clipboard_hint")
+                .zh("放置在旅社范围内时，会自动添加并提醒重要的待办事项")
+                .en("When placed inside inn bounds, it automatically adds and reminds important todos.");
 
         // 房间登记册
         entry("message.otherworldinn.room_register.not_edit_mode")
