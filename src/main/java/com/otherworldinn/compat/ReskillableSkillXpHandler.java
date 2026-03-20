@@ -19,7 +19,8 @@ public final class ReskillableSkillXpHandler {
     private static final int MINING_XP_DENOMINATOR = 50;
     private static final int FARMING_XP_PER_CROP_ACTION = 2;
     private static final int FISHING_XP_PER_CATCH = 3;
-    private static final double FISHING_DOUBLE_DROP_MAX_CHANCE = 0.8D;
+    private static final double FISHING_TRIPLE_DROP_MAX_CHANCE = 0.5D;
+    private static final double FISHING_DOUBLE_DROP_MAX_CHANCE = 0.9D;
 
     private ReskillableSkillXpHandler() {}
 
@@ -66,7 +67,7 @@ public final class ReskillableSkillXpHandler {
         if (!(rawPlayer instanceof ServerPlayer player)) {
             return;
         }
-        tryApplyDoubleFishingDrops(player, event);
+        tryApplyFishingDropMultiplier(player, event);
         ReskillableCompat.addSkillExperience(player, "magic", FISHING_XP_PER_CATCH);
     }
 
@@ -90,16 +91,23 @@ public final class ReskillableSkillXpHandler {
         }
     }
 
-    private static void tryApplyDoubleFishingDrops(ServerPlayer player, ItemFishedEvent event) {
+    private static void tryApplyFishingDropMultiplier(ServerPlayer player, ItemFishedEvent event) {
         int maxLevel = Math.max(1, ReskillableCompat.getMaxLevel());
         int skillLevel = Math.max(0, ReskillableCompat.getSkillLevel(player, "magic"));
-        double chance =
+        double tripleChance =
+                Math.min(
+                        FISHING_TRIPLE_DROP_MAX_CHANCE,
+                        (skillLevel / (double) maxLevel) * FISHING_TRIPLE_DROP_MAX_CHANCE);
+        if (tripleChance > 0.0D && player.getRandom().nextDouble() < tripleChance) {
+            event.getDrops().forEach(drop -> drop.setCount(drop.getCount() * 3));
+            return;
+        }
+        double doubleChance =
                 Math.min(
                         FISHING_DOUBLE_DROP_MAX_CHANCE,
                         (skillLevel / (double) maxLevel) * FISHING_DOUBLE_DROP_MAX_CHANCE);
-        if (chance <= 0.0D || player.getRandom().nextDouble() >= chance) {
-            return;
+        if (doubleChance > 0.0D && player.getRandom().nextDouble() < doubleChance) {
+            event.getDrops().forEach(drop -> drop.setCount(drop.getCount() * 2));
         }
-        event.getDrops().forEach(drop -> drop.setCount(drop.getCount() * 2));
     }
 }
