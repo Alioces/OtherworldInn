@@ -83,7 +83,7 @@ public class InventoryTeamOverlay {
                 coinsX,
                 y,
                 ModColors.WHITE,
-                false);
+                true);
 
         int mouseX = (int) event.getMouseX();
         int mouseY = (int) event.getMouseY();

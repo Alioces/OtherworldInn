@@ -9,6 +9,7 @@ import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModCreativeModeTabs;
 import com.otherworldinn.init.ModDimensions;
 import com.otherworldinn.init.ModEntities;
+import com.otherworldinn.init.ModGameRules;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.init.ModMenuTypes;
 import com.otherworldinn.init.ModSounds;
@@ -53,6 +54,7 @@ public class OtherworldInn {
         ModCreativeModeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         ModDimensions.register(modEventBus);
         ModSounds.SOUND_EVENTS.register(modEventBus);
+        ModGameRules.init();
 
         // 注册配置
         modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);

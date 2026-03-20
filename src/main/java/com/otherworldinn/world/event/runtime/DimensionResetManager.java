@@ -1,6 +1,7 @@
 package com.otherworldinn.world.event.runtime;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.init.ModGameRules;
 import com.otherworldinn.world.dimension.TownDimensions;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -56,6 +57,13 @@ public class DimensionResetManager {
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
         MinecraftServer server = event.getServer();
+        if (!server.getGameRules()
+                .getBoolean(ModGameRules.RULE_EXTERNAL_DIMENSION_SCHEDULED_RESET)) {
+            hasWarned10Min = false;
+            hasWarned5Min = false;
+            hasWarned2Min = false;
+            return;
+        }
         // 使用资源主世界作为时间基准，或者默认主世界
         ServerLevel timeLevel = server.getLevel(Level.OVERWORLD);
         if (timeLevel == null) return;

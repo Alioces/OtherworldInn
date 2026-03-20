@@ -183,6 +183,15 @@ configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 
+def createUtilitiesModuleJar = tasks.register("createUtilitiesModuleJar", Jar) {
+    from(zipTree(layout.projectDirectory.file("libs/createutilities-0.3.2+1.21.1.jar")))
+    destinationDirectory.set(layout.buildDirectory.dir("tmp/jarjar-libs"))
+    archiveFileName.set("createutilities-0.3.2+1.21.1-module.jar")
+    manifest {
+        attributes("Automatic-Module-Name": "com.duqueeee.createutilities")
+    }
+}
+
 dependencies {
     implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
     implementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}")
@@ -205,7 +214,7 @@ dependencies {
     localRuntime("maven.modrinth:serene-seasons:${serene_seasons_version}")
     compileOnly("curse.maven:reskillable-reimagined-1170464:${reskillable_reimagined_version}")
     localRuntime("curse.maven:reskillable-reimagined-1170464:${reskillable_reimagined_version}")
-    implementation(jarJar(files("libs/createutilities-0.3.2+1.21.1.jar")))
+    implementation(jarJar(files(createUtilitiesModuleJar)))
     localRuntime(files("libs/createutilities-0.3.2+1.21.1.jar"))
 
     implementation(jarJar("io.github.llamalad7:mixinextras-neoforge:${mixin_extras_version}"))
