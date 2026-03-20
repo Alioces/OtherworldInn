@@ -3,6 +3,7 @@ package com.otherworldinn.init;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.entity.guest.HeavyPackGuestEntity;
 import com.otherworldinn.entity.guest.OrdinaryGuestEntity;
+import com.otherworldinn.entity.guest.OrdinaryVipGuestEntity;
 import com.otherworldinn.entity.guest.RichGuestEntity;
 import com.otherworldinn.entity.guest.UltraRichGuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
@@ -23,7 +24,7 @@ public class ModEntities {
                     "ordinary_guest",
                     () ->
                             EntityType.Builder.of(OrdinaryGuestEntity::new, MobCategory.CREATURE)
-                                    .sized(0.6F, 1.8F) // Alex/Steve size
+                                    .sized(0.6F, 1.8F)
                                     .clientTrackingRange(80)
                                     .updateInterval(2)
                                     .setShouldReceiveVelocityUpdates(true)
@@ -61,6 +62,17 @@ public class ModEntities {
                                     .updateInterval(2)
                                     .setShouldReceiveVelocityUpdates(true)
                                     .build("ultra_rich_guest"));
+
+    public static final Supplier<EntityType<OrdinaryVipGuestEntity>> ORDINARY_VIP_GUEST =
+            ENTITY_TYPES.register(
+                    "ordinary_vip_guest",
+                    () ->
+                            EntityType.Builder.of(OrdinaryVipGuestEntity::new, MobCategory.CREATURE)
+                                    .sized(0.6F, 1.8F)
+                                    .clientTrackingRange(80)
+                                    .updateInterval(2)
+                                    .setShouldReceiveVelocityUpdates(true)
+                                    .build("ordinary_vip_guest"));
 
     public static final Supplier<EntityType<BlacksmithEntity>> BLACKSMITH =
             ENTITY_TYPES.register(

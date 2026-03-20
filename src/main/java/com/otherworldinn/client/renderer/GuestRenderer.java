@@ -27,9 +27,6 @@ public class GuestRenderer<T extends GuestEntity> extends HumanoidMobRenderer<T,
         super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.5F);
         this.defaultModel = this.model;
         this.itemRenderer = context.getItemRenderer();
-        // PlayerModel 的构造函数接受 ModelPart 和 boolean (slim)
-        // 但在新版本中，ModelLayers.PLAYER_SLIM 对应的 layer definition 结构可能不同
-        // 此处假设 PlayerModel 能正确处理
         this.slimModel = new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER_SLIM), true);
     }
 
@@ -50,9 +47,9 @@ public class GuestRenderer<T extends GuestEntity> extends HumanoidMobRenderer<T,
         ItemStack headItem = entity.getHeadDisplayItem();
         if (!headItem.isEmpty()) {
             poseStack.pushPose();
-            poseStack.translate(0.0D, entity.getBbHeight() + 0.65D, 0.0D);
+            poseStack.translate(0.0D, entity.getBbHeight() + 0.45D, 0.0D);
             poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
-            poseStack.scale(0.55F, 0.55F, 0.55F);
+            poseStack.scale(0.75F, 0.75F, 0.75F);
             this.itemRenderer.renderStatic(
                     headItem,
                     ItemDisplayContext.GROUND,

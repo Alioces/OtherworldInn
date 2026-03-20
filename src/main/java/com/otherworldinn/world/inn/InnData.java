@@ -1,6 +1,7 @@
 package com.otherworldinn.world.inn;
 
 import com.otherworldinn.entity.base.GuestEntity;
+import com.otherworldinn.entity.base.VipGuestEntity;
 import com.otherworldinn.foundation.ModBlockProperties;
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.util.EntityUtils;
@@ -954,8 +955,10 @@ public class InnData {
     public void checkOut(UUID guestId, ServerLevel level, boolean isNormalCheckout) {
         Entity entity = level.getEntity(guestId);
         GuestData guest = null;
+        boolean vipGuest = false;
         if (entity instanceof GuestEntity guestEntity) {
             guest = guestEntity.getGuestData();
+            vipGuest = guestEntity instanceof VipGuestEntity;
             if (guest != null) {
                 guest.dropRewards(level, entity.blockPosition());
             }
@@ -1008,8 +1011,19 @@ public class InnData {
             if (isNormalCheckout && guest != null) {
                 guest.updatePreferenceScore(targetRoom);
                 int score = guest.getPreferenceScore();
-                int reputationGain = Math.max(2, Math.min(10, score));
-                this.addReputation(reputationGain);
+                int baseReputationGain = Math.max(2, Math.min(10, score));
+                if (!vipGuest) {
+                    this.addReputation(baseReputationGain);
+                } else {
+                    int mismatchCount = countPreferenceMismatch(guest, targetRoom);
+                    if (mismatchCount == 0) {
+                        int vipReputationGain = Math.max(1, Math.round(baseReputationGain * 1.7f));
+                        this.addReputation(vipReputationGain);
+                    } else if (mismatchCount >= 2) {
+                        int vipReputationLoss = 2 + level.random.nextInt(5);
+                        this.addReputation(-vipReputationLoss);
+                    }
+                }
             }
         }
         if (guest != null) {
@@ -1026,6 +1040,20 @@ public class InnData {
         if (entity != null) {
             EntityUtils.scheduleDisappear(entity);
         }
+    }
+
+    private int countPreferenceMismatch(GuestData guest, RoomData room) {
+        int mismatch = 0;
+        if (!guest.getComfortPreference().contains(room.getComfort())) {
+            mismatch++;
+        }
+        if (!guest.getLightPreference().contains(room.getLight())) {
+            mismatch++;
+        }
+        if (!guest.getHumidityPreference().contains(room.getHumidity())) {
+            mismatch++;
+        }
+        return mismatch;
     }
 
     /**

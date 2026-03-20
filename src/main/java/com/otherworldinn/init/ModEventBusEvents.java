@@ -18,6 +18,7 @@ public class ModEventBusEvents {
         event.put(ModEntities.RICH_GUEST.get(), GuestEntity.createAttributes().build());
         event.put(ModEntities.HEAVY_PACK_GUEST.get(), GuestEntity.createAttributes().build());
         event.put(ModEntities.ULTRA_RICH_GUEST.get(), GuestEntity.createAttributes().build());
+        event.put(ModEntities.ORDINARY_VIP_GUEST.get(), GuestEntity.createAttributes().build());
         event.put(ModEntities.BLACKSMITH.get(), BlacksmithEntity.createAttributes().build());
         event.put(ModEntities.MAGICIAN.get(), MagicianEntity.createAttributes().build());
     }

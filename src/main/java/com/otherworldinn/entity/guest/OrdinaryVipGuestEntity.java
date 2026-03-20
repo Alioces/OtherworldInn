@@ -1,6 +1,10 @@
 package com.otherworldinn.entity.guest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.client.util.TextureUtils;
 import com.otherworldinn.entity.base.VipGuestEntity;
 import com.otherworldinn.world.inn.GuestData;
 import net.minecraft.resources.ResourceLocation;
@@ -12,7 +16,9 @@ public class OrdinaryVipGuestEntity extends VipGuestEntity {
     private static final ResourceLocation DEFAULT_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(
                     OtherworldInn.MODID, "textures/entity/guest/ordinary_guest/1.png");
-
+    private static final List<ResourceLocation> TEXTURES = new ArrayList<>();
+    private static boolean texturesLoaded = false;
+    
     public OrdinaryVipGuestEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
     }
@@ -33,6 +39,23 @@ public class OrdinaryVipGuestEntity extends VipGuestEntity {
 
     @Override
     public ResourceLocation getSkinTexture() {
-        return DEFAULT_TEXTURE;
+        if (!texturesLoaded && this.level().isClientSide) {
+            try {
+                List<ResourceLocation> found =
+                        TextureUtils.findTexturesInFolder(
+                                OtherworldInn.MODID, "textures/entity/guest/ordinary_vip_guest");
+                if (!found.isEmpty()) {
+                    TEXTURES.clear();
+                    TEXTURES.addAll(found);
+                }
+            } catch (Throwable e) {
+            }
+            texturesLoaded = true;
+        }
+
+        if (TEXTURES.isEmpty()) {
+            return DEFAULT_TEXTURE;
+        }
+        return TEXTURES.get(Math.abs(this.getSkinVariant()) % TEXTURES.size());
     }
 }
