@@ -280,8 +280,13 @@ public abstract class VipGuestEntity extends GuestEntity {
         this.vipNextOrderTime = level.getGameTime() + 1200L + this.getRandom().nextInt(3601);
     }
 
+    protected int getVipMealMinPriceExclusive() {
+        return 20;
+    }
+
     private ResourceLocation pickVipMealItem() {
-        List<ResourceLocation> candidates = ItemSellPriceManager.getConfiguredItemsAbovePrice(20);
+        List<ResourceLocation> candidates =
+                ItemSellPriceManager.getConfiguredItemsAbovePrice(getVipMealMinPriceExclusive());
         if (candidates.isEmpty()) {
             return null;
         }
