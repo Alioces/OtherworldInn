@@ -35,6 +35,7 @@
   "entity.otherworldinn.sponsor_guest": "赞助者旅客",
   "entity.otherworldinn.ultra_rich_guest": "非常富有的顾客",
   "facility.otherworldinn.boiler_room": "锅炉房",
+  "facility.otherworldinn.greenhouse": "温室",
   "facility.otherworldinn.overlay.level": "等级: %s/%s",
   "facility.otherworldinn.overlay.name": "名称: %s",
   "facility.otherworldinn.overlay.no_items": "无",

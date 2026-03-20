@@ -181,11 +181,6 @@ public final class FacilityRegistry {
                                 900),
                         new LevelUpgradeCost(
                                 List.of(
-                                        new ItemStack(Items.REDSTONE, 24),
-                                        new ItemStack(Items.CAULDRON, 2)),
-                                1800),
-                        new LevelUpgradeCost(
-                                List.of(
                                         new ItemStack(Items.GOLD_INGOT, 16),
                                         new ItemStack(Items.BLAZE_ROD, 8)),
                                 3200)),
