@@ -3,6 +3,7 @@ package com.otherworldinn.init;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.entity.base.GuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
+import com.otherworldinn.entity.store.FarmerEntity;
 import com.otherworldinn.entity.store.MagicianEntity;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -23,5 +24,6 @@ public class ModEventBusEvents {
         event.put(ModEntities.SPONSOR_GUEST.get(), GuestEntity.createAttributes().build());
         event.put(ModEntities.BLACKSMITH.get(), BlacksmithEntity.createAttributes().build());
         event.put(ModEntities.MAGICIAN.get(), MagicianEntity.createAttributes().build());
+        event.put(ModEntities.FARMER.get(), FarmerEntity.createAttributes().build());
     }
 }

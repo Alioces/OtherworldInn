@@ -9,6 +9,7 @@ import com.otherworldinn.entity.guest.RichGuestEntity;
 import com.otherworldinn.entity.guest.SponsorGuestEntity;
 import com.otherworldinn.entity.guest.UltraRichGuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
+import com.otherworldinn.entity.store.FarmerEntity;
 import com.otherworldinn.entity.store.MagicianEntity;
 import java.util.function.Supplier;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -123,4 +124,17 @@ public class ModEntities {
                                     .updateInterval(2)
                                     .setShouldReceiveVelocityUpdates(true)
                                     .build("magician"));
+
+    public static final Supplier<EntityType<FarmerEntity>> FARMER =
+            ENTITY_TYPES.register(
+                    "farmer",
+                    () ->
+                            EntityType.Builder.of(
+                                            FarmerEntity::new,
+                                            MobCategory.MISC)
+                                    .sized(0.6F, 1.95F)
+                                    .clientTrackingRange(80)
+                                    .updateInterval(2)
+                                    .setShouldReceiveVelocityUpdates(true)
+                                    .build("farmer"));
 }

@@ -553,6 +553,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry(ModEntities.SPONSOR_GUEST.get()).zh("赞助者旅客").en("Sponsor Guest");
         entry(ModEntities.BLACKSMITH.get()).zh("铁匠").en("Blacksmith");
         entry(ModEntities.MAGICIAN.get()).zh("魔法使").en("Magician");
+        entry(ModEntities.FARMER.get()).zh("农夫").en("Farmer");
 
         // 商店 GUI
         entry("gui.otherworldinn.store.confirm").zh("确定").en("Confirm");
