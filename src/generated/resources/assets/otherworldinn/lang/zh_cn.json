@@ -274,6 +274,7 @@
   "todo.otherworldinn.room_cleaning": "%s 号房间需要打扫",
   "todo.otherworldinn.vip_meal_order": "贵宾 %s 选订了餐品 %s",
   "tooltip.otherworldinn.banned_in_town": "§c当前维度内禁用",
+  "tooltip.otherworldinn.create_clipboard_hint": "放置在旅社范围内时，会自动添加并提醒重要的待办事项",
   "tooltip.otherworldinn.furniture.comfort": "§f§r舒适度: %s",
   "tooltip.otherworldinn.furniture.humidity": "§f§r湿度: %s",
   "tooltip.otherworldinn.furniture.light": "§f§r光照度: %s",
