@@ -4,9 +4,13 @@ import com.otherworldinn.world.event.TownStructurePlacer;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -15,6 +19,10 @@ public final class FacilityUpgradeService {
     private FacilityUpgradeService() {}
 
     public static FacilityContext findContext(ServerPlayer player) {
+        return findContext(player, player == null ? null : player.blockPosition());
+    }
+
+    public static FacilityContext findContext(ServerPlayer player, BlockPos interactionPos) {
         if (player == null) {
             return null;
         }
@@ -23,7 +31,7 @@ public final class FacilityUpgradeService {
             return null;
         }
         FacilityRegistry.FacilityDefinition facility =
-                FacilityRegistry.findFacilityInRange(player.blockPosition()).orElse(null);
+                FacilityRegistry.findFacilityInRange(interactionPos).orElse(null);
         if (facility == null) {
             return null;
         }
@@ -35,13 +43,17 @@ public final class FacilityUpgradeService {
     }
 
     public static boolean tryUpgrade(ServerPlayer player, InteractionHand hand) {
+        return tryUpgrade(player, hand, player == null ? null : player.blockPosition());
+    }
+
+    public static boolean tryUpgrade(ServerPlayer player, InteractionHand hand, BlockPos interactionPos) {
         if (player == null) {
             return false;
         }
         if (!FacilityRegistry.isToolStack(player.getItemInHand(hand))) {
             return false;
         }
-        FacilityContext context = findContext(player);
+        FacilityContext context = findContext(player, interactionPos);
         if (context == null) {
             return false;
         }
@@ -92,14 +104,21 @@ public final class FacilityUpgradeService {
             team.removeCoins(next.requiredCoins(), player.getServer());
         }
 
+        boolean isRepair = context.currentLevel() == 0;
+        playUpgradeEffects(
+                player,
+                serverLevel,
+                interactionPos == null ? context.facility().centerPos() : interactionPos,
+                hand,
+                isRepair);
         team.getInnData().setFacilityLevel(context.facility().id(), next.level());
-        if (context.currentLevel() == 0) {
+        if (isRepair) {
             TeamManager.getInstance()
                     .unlockMapPoint(team, context.facility().mapPointId(), player.getServer());
         }
         TeamManager.getInstance().syncTeam(team, player.getServer());
         String resultKey =
-                context.currentLevel() == 0
+                isRepair
                         ? "facility.otherworldinn.repair_success"
                         : "facility.otherworldinn.upgrade_success";
         player.displayClientMessage(
@@ -109,6 +128,26 @@ public final class FacilityUpgradeService {
                         next.level()),
                 true);
         return true;
+    }
+
+    private static void playUpgradeEffects(
+            ServerPlayer player,
+            ServerLevel level,
+            BlockPos centerPos,
+            InteractionHand hand,
+            boolean isRepair) {
+        player.swing(hand, true);
+        double x = centerPos.getX() + 0.5D;
+        double y = centerPos.getY() + 1.0D;
+        double z = centerPos.getZ() + 0.5D;
+        level.sendParticles(ParticleTypes.HAPPY_VILLAGER, x, y, z, 24, 0.9D, 0.6D, 0.9D, 0.02D);
+        level.playSound(
+                null,
+                centerPos,
+                isRepair ? SoundEvents.ANVIL_USE : SoundEvents.PLAYER_LEVELUP,
+                SoundSource.PLAYERS,
+                1.0F,
+                isRepair ? 1.0F : 1.1F);
     }
 
     private static boolean hasRequiredItems(Inventory inventory, List<ItemStack> requiredItems) {

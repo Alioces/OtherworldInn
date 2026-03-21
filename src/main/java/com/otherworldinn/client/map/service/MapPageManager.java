@@ -49,17 +49,20 @@ public class MapPageManager {
         addPage(0, 0, Direction.SOUTH);
         addPage(0, 1, Direction.EAST);
 
-        // 为第 0 页添加初始点
+        // 主页面
         registerPoint(0, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn"));
         registerPoint(
                 0, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "blacksmith"));
         registerPoint(
                 0, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "town_gate"));
 
-        // 为第 1 页添加共用点
+        // 旅社方向页
         registerPoint(1, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn"));
         registerPoint(
                 1, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "blacksmith"));
+
+        //温室方向页
+        registerPoint(0, 1, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "greenhouse"));
 
         syncFacilityPointsToPages();
     }

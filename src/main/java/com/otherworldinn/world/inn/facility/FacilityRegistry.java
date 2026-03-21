@@ -228,7 +228,7 @@ public final class FacilityRegistry {
                 "Greenhouse",
                 "温室",
                 3,
-                new BlockPos(0, 70, 49),
+                new BlockPos(-29, 70, 49),
                 new FacilityRange(new BlockPos(0, 85, 65), new BlockPos(-30, 70, 49)),
                 List.of(
                         new LevelUpgradeCost(
@@ -253,14 +253,14 @@ public final class FacilityRegistry {
                                 OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
                         MapPoint.MapPointType.SHOP,
                         0,
-                        0),
+                        -50),
                 Map.of(
                         1,
-                        List.of(new FacilityRange(new BlockPos(0, 0, 0), new BlockPos(0, 0, 0))),
+                        List.of(new FacilityRange(new BlockPos(-2, 71, 63), new BlockPos(-11, 75, 51))),
                         2,
-                        List.of(new FacilityRange(new BlockPos(0, 0, 0), new BlockPos(0, 0, 0))),
+                        List.of(new FacilityRange(new BlockPos(-2, 71, 63), new BlockPos(-17, 75, 51))),
                         3,
-                        List.of(new FacilityRange(new BlockPos(0, 0, 0), new BlockPos(0, 0, 0)))));
+                        List.of(new FacilityRange(new BlockPos(-2, 71, 63), new BlockPos(-23, 75, 51)))));
     }
 
     private static FacilityMapPointConfig normalizeMapPointConfig(

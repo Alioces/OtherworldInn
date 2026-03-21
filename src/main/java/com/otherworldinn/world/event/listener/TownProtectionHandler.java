@@ -166,33 +166,40 @@ public class TownProtectionHandler {
             return 0;
         }
         FacilityRegistry.FacilityDefinition greenhouse = FacilityRegistry.get(GREENHOUSE_FACILITY_ID);
-        if (greenhouse == null || !greenhouse.facilityRange().contains(pos)) {
+        if (greenhouse == null) {
             return 0;
         }
-        TeamData team = TeamManager.getInstance().getTeamAt(pos, serverLevel.getServer());
-        if (team == null) {
+        TeamManager manager = TeamManager.getInstance();
+        TeamData teamAtPos = manager.getTeamAt(pos, serverLevel.getServer());
+        int levelAtPos = getGreenhouseLevelForTeamAtPos(teamAtPos, greenhouse, pos);
+        if (levelAtPos > 0) {
+            return levelAtPos;
+        }
+        TeamData nearestTeam = manager.getNearestInn(pos, serverLevel.getServer());
+        if (nearestTeam == null || nearestTeam == teamAtPos) {
             return 0;
         }
-        return Math.max(0, team.getInnData().getFacilityLevel(GREENHOUSE_FACILITY_ID));
+        return getGreenhouseLevelForTeamAtPos(nearestTeam, greenhouse, pos);
     }
 
-    private static boolean isGreenhousePos(Level level, BlockPos pos) {
-        if (level == null || pos == null) {
-            return false;
+    private static int getGreenhouseLevelForTeamAtPos(
+            TeamData team, FacilityRegistry.FacilityDefinition greenhouse, BlockPos pos) {
+        if (team == null || greenhouse == null || pos == null) {
+            return 0;
         }
-        FacilityRegistry.FacilityDefinition greenhouse = FacilityRegistry.get(GREENHOUSE_FACILITY_ID);
-        return greenhouse != null && greenhouse.facilityRange().contains(pos);
-    }
-
-    private static boolean isActiveGreenhousePos(Level level, BlockPos pos) {
-        return getGreenhouseLevelAtPos(level, pos) > 0;
-    }
-
-    private static Component getFarmingDenyReason(Player player, BlockPos pos, Level level) {
-        if (isActiveGreenhousePos(level, pos)) {
-            return null;
+        int greenhouseLevel = Math.max(0, team.getInnData().getFacilityLevel(GREENHOUSE_FACILITY_ID));
+        if (greenhouseLevel <= 0) {
+            return 0;
         }
-        return getBuildDenyReason(player, pos, level);
+        if (greenhouse.facilityRange().contains(pos)) {
+            return greenhouseLevel;
+        }
+        for (FacilityRegistry.FacilityRange range : greenhouse.getExtraBuildAllowRanges(greenhouseLevel)) {
+            if (range.contains(pos)) {
+                return greenhouseLevel;
+            }
+        }
+        return 0;
     }
 
     private static double getCropGrowthMultiplier(Level level, BlockPos pos, BlockState state) {
@@ -206,7 +213,7 @@ public class TownProtectionHandler {
         }
         int greenhouseLevel = getGreenhouseLevelAtPos(level, pos);
         if (greenhouseLevel > 0) {
-            return 1.0D + (0.5D * greenhouseLevel);
+            return GREENHOUSE_CROP_GROWTH_MULTIPLIER + (1.0D * (greenhouseLevel - 1));
         }
         return TOWN_CROP_GROWTH_MULTIPLIER;
     }
@@ -261,9 +268,6 @@ public class TownProtectionHandler {
         BlockPos pos = event.getPos();
         BlockState state = serverLevel.getBlockState(pos);
         if (state.getBlock() instanceof SaplingBlock || state.is(net.minecraft.tags.BlockTags.SAPLINGS)) {
-            return;
-        }
-        if (!isGreenhousePos(serverLevel, pos)) {
             return;
         }
         double multiplier = getCropGrowthMultiplier(serverLevel, pos, state);
@@ -392,7 +396,7 @@ public class TownProtectionHandler {
                 return;
             }
             if (player instanceof ServerPlayer serverPlayer && !(player instanceof FakePlayer)) {
-                Component denyReason = getFarmingDenyReason(player, event.getPos(), level);
+                Component denyReason = getBuildDenyReason(player, event.getPos(), level);
                 if (denyReason != null) {
                     event.setCanceled(true);
                     sendDenyMessage(player, denyReason);
@@ -436,8 +440,7 @@ public class TownProtectionHandler {
                 event.setCanceled(true);
                 return;
             }
-            if (!isActiveGreenhousePos(serverLevel, event.getPos())
-                    && !isInnZonePos(serverLevel, event.getPos())) {
+            if (!isInnZonePos(serverLevel, event.getPos())) {
                 event.setCanceled(true);
                 return;
             }
@@ -465,7 +468,7 @@ public class TownProtectionHandler {
                     || !isTownDimension(level)) {
                 return;
             }
-            Component denyReason = getFarmingDenyReason(player, event.getPos(), level);
+            Component denyReason = getBuildDenyReason(player, event.getPos(), level);
             if (denyReason != null) {
                 event.setCanceled(true);
                 if (player instanceof ServerPlayer serverPlayer) {
@@ -601,7 +604,7 @@ public class TownProtectionHandler {
                 && stack.getItem() instanceof BlockItem blockItem) {
             // 允许种植农作物 (例如种子)
             if (isFarmingBlock(blockItem.getBlock().defaultBlockState())) {
-                Component denyReason = getFarmingDenyReason(player, pos, level);
+                Component denyReason = getBuildDenyReason(player, pos, level);
                 if (denyReason != null) {
                     event.setCanceled(true);
                     event.setUseItem(TriState.FALSE);
@@ -635,7 +638,7 @@ public class TownProtectionHandler {
         }
 
         if (!player.isCreative() && stack.getItem() instanceof HoeItem) {
-            Component denyReason = getFarmingDenyReason(player, pos, level);
+            Component denyReason = getBuildDenyReason(player, pos, level);
             if (denyReason != null) {
                 event.setCanceled(true);
                 event.setUseItem(TriState.FALSE);

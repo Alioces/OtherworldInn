@@ -22,10 +22,29 @@ public class FacilityInteractionHandler {
         if (!FacilityRegistry.isHoldingFacilityTool(player)) {
             return;
         }
-        if (FacilityUpgradeService.findContext(player) == null) {
+        if (FacilityUpgradeService.findContext(player, event.getPos()) == null) {
             return;
         }
-        if (FacilityUpgradeService.tryUpgrade(player, event.getHand())) {
+        if (FacilityUpgradeService.tryUpgrade(player, event.getHand(), event.getPos())) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (player.level().dimension() != TownDimensions.TOWN_LEVEL) {
+            return;
+        }
+        if (!FacilityRegistry.isHoldingFacilityTool(player)) {
+            return;
+        }
+        if (FacilityUpgradeService.findContext(player, player.blockPosition()) == null) {
+            return;
+        }
+        if (FacilityUpgradeService.tryUpgrade(player, event.getHand(), player.blockPosition())) {
             event.setCanceled(true);
         }
     }
