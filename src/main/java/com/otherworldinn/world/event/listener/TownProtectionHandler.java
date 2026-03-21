@@ -9,7 +9,9 @@ import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.facility.FacilityRegistry;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,6 +27,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AttachedStemBlock;
 import net.minecraft.world.level.block.CocoaBlock;
@@ -43,6 +46,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.player.BonemealEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockGrowFeatureEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
@@ -60,6 +64,7 @@ public class TownProtectionHandler {
     private static final double TOWN_CROP_GROWTH_MULTIPLIER = 0.3D;
     private static final double GREENHOUSE_CROP_GROWTH_MULTIPLIER = 1.5D;
     private static final String GREENHOUSE_FACILITY_ID = "greenhouse";
+    private static final Map<String, Long> CROP_BONEMEAL_DAY_CACHE = new HashMap<>();
 
     /**
      * 检查是否可以在指定位置建筑（针对玩家），如果不可以则返回拒绝原因
@@ -115,6 +120,10 @@ public class TownProtectionHandler {
                 || state.getBlock() instanceof FarmBlock
                 || state.is(net.minecraft.tags.BlockTags.CROPS)
                 || state.is(net.minecraft.tags.BlockTags.MAINTAINS_FARMLAND);
+    }
+
+    private static boolean isBonemealLimitedCrop(BlockState state) {
+        return isFarmingBlock(state) && !(state.getBlock() instanceof FarmBlock);
     }
 
     private static boolean isBedSheetCleaningUpdate(Player player, BlockState state) {
@@ -227,6 +236,34 @@ public class TownProtectionHandler {
         }
         if (multiplier < 1.0D && serverLevel.random.nextDouble() >= multiplier) {
             event.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onBonemeal(BonemealEvent event) {
+        Level level = event.getLevel();
+        if (level.isClientSide) {
+            return;
+        }
+        if (!event.getStack().is(Items.BONE_MEAL)) {
+            return;
+        }
+        if (!event.isValidBonemealTarget()) {
+            return;
+        }
+        if (!isBonemealLimitedCrop(event.getState())) {
+            return;
+        }
+        long currentDay = level.getGameTime() / 24000L;
+        String key = level.dimension().location() + "|" + event.getPos().asLong();
+        Long usedDay = CROP_BONEMEAL_DAY_CACHE.get(key);
+        if (usedDay != null && usedDay == currentDay) {
+            event.setCanceled(true);
+            return;
+        }
+        CROP_BONEMEAL_DAY_CACHE.put(key, currentDay);
+        if (CROP_BONEMEAL_DAY_CACHE.size() > 4096) {
+            CROP_BONEMEAL_DAY_CACHE.entrySet().removeIf(entry -> entry.getValue() < currentDay);
         }
     }
 
