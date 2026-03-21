@@ -4,5 +4,11 @@
     "sounds": [
       "otherworldinn:payment"
     ]
+  },
+  "maimai": {
+    "subtitle": "subtitles.otherworldinn.maimai",
+    "sounds": [
+      "otherworldinn:maimai"
+    ]
   }
 }
