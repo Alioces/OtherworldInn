@@ -10,5 +10,11 @@
     "sounds": [
       "otherworldinn:maimai"
     ]
+  },
+  "maimai_end": {
+    "subtitle": "subtitles.otherworldinn.maimai_end",
+    "sounds": [
+      "otherworldinn:maimai_end"
+    ]
   }
 }
