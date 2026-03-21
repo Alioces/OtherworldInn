@@ -44,6 +44,15 @@
       "chars": [
         "\uE005"
       ]
+    },
+    {
+      "type": "bitmap",
+      "file": "otherworldinn:font/rating_empty.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "\uE006"
+      ]
     }
   ]
 }

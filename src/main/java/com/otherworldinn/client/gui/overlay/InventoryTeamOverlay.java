@@ -1,6 +1,7 @@
 package com.otherworldinn.client.gui.overlay;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.client.PlayerEasterEggFlags;
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
@@ -31,6 +32,9 @@ public class InventoryTeamOverlay {
     private static final ResourceLocation RATING_BACKGROUND_ATLAS =
             ResourceLocation.fromNamespaceAndPath(
                     OtherworldInn.MODID, "textures/gui/overlay/inventory_team_bg_atlas.png");
+    private static final ResourceLocation RATING_BACKGROUND_ATLAS_MAIMAI =
+            ResourceLocation.fromNamespaceAndPath(
+                    OtherworldInn.MODID, "textures/gui/overlay/inventory_team_bg_atlas_maimai.png");
 
     @SubscribeEvent
     public static void onRenderScreen(ScreenEvent.Render.Post event) {
@@ -56,14 +60,16 @@ public class InventoryTeamOverlay {
         int y = guiTop - 10;
 
         int displayRating = Math.max(0, team.getInnData().getRating());
-        Component ratingText =
-                displayRating == 0
-                        ? Component.literal("0")
-                        : Component.literal(String.valueOf('\uE005').repeat(displayRating));
+        boolean useMaimaiAtlas = PlayerEasterEggFlags.isMaimaiAtlasEnabled();
+        ResourceLocation ratingBackgroundAtlas =
+                useMaimaiAtlas ? RATING_BACKGROUND_ATLAS_MAIMAI : RATING_BACKGROUND_ATLAS;
         int clampedRating = Math.min(5, displayRating);
+        Component ratingText =
+                Component.literal(String.valueOf('\uE005').repeat(clampedRating)
+                        + String.valueOf('\uE006').repeat(5 - clampedRating));
         int atlasV = clampedRating * BAR_HEIGHT;
         guiGraphics.blit(
-                RATING_BACKGROUND_ATLAS,
+                ratingBackgroundAtlas,
                 barLeft,
                 barY,
                 0,
