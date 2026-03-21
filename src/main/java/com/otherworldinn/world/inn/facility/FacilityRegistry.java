@@ -40,7 +40,8 @@ public final class FacilityRegistry {
             BlockPos centerPos,
             FacilityRange facilityRange,
             List<LevelUpgradeCost> levelUpgradeCosts,
-            FacilityMapPointConfig mapPointConfig) {
+            FacilityMapPointConfig mapPointConfig,
+            Map<Integer, List<FacilityRange>> extraBuildAllowRangesByLevel) {
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("Facility id cannot be blank.");
         }
@@ -92,7 +93,8 @@ public final class FacilityRegistry {
                         facilityRange.normalize(),
                         "facility." + OtherworldInn.MODID + "." + id,
                         normalizeMapPointConfig(id, centerPos, mapPointConfig),
-                        Map.copyOf(levels));
+                        Map.copyOf(levels),
+                        normalizeExtraBuildAllowRanges(maxLevel, extraBuildAllowRangesByLevel));
         FACILITIES.put(id, definition);
         return definition;
     }
@@ -160,6 +162,33 @@ public final class FacilityRegistry {
         return List.copyOf(copied);
     }
 
+    private static Map<Integer, List<FacilityRange>> normalizeExtraBuildAllowRanges(
+            int maxLevel, Map<Integer, List<FacilityRange>> rangesByLevel) {
+        if (rangesByLevel == null || rangesByLevel.isEmpty()) {
+            return Map.of();
+        }
+        Map<Integer, List<FacilityRange>> normalized = new LinkedHashMap<>();
+        for (Map.Entry<Integer, List<FacilityRange>> entry : rangesByLevel.entrySet()) {
+            Integer level = entry.getKey();
+            if (level == null || level <= 0 || level > maxLevel) {
+                continue;
+            }
+            List<FacilityRange> ranges = entry.getValue();
+            if (ranges == null || ranges.isEmpty()) {
+                normalized.put(level, List.of());
+                continue;
+            }
+            List<FacilityRange> copied = new ArrayList<>(ranges.size());
+            for (FacilityRange range : ranges) {
+                if (range != null) {
+                    copied.add(range.normalize());
+                }
+            }
+            normalized.put(level, List.copyOf(copied));
+        }
+        return Map.copyOf(normalized);
+    }
+
     private static void registerDefaults() {
         registerFacility(
                 "boiler_room",
@@ -191,15 +220,16 @@ public final class FacilityRegistry {
                                 OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
                         MapPoint.MapPointType.SHOP,
                         0,
-                        0));
+                        0),
+                Map.of());
 
         registerFacility(
                 "greenhouse",
                 "Greenhouse",
                 "温室",
                 3,
-                new BlockPos(25, 71, -8),
-                new FacilityRange(new BlockPos(18, 66, -14), new BlockPos(32, 78, -2)),
+                new BlockPos(0, 70, 49),
+                new FacilityRange(new BlockPos(0, 85, 65), new BlockPos(-30, 70, 49)),
                 List.of(
                         new LevelUpgradeCost(
                                 List.of(
@@ -217,13 +247,20 @@ public final class FacilityRegistry {
                                         new ItemStack(Items.BONE_MEAL, 32)),
                                 2600)),
                 new FacilityMapPointConfig(
-                        new Vec3(25, 71, -8),
+                        new Vec3(2, 71, 52),
                         new Vec2(12, -10),
                         ResourceLocation.fromNamespaceAndPath(
                                 OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
                         MapPoint.MapPointType.SHOP,
                         0,
-                        0));
+                        0),
+                Map.of(
+                        1,
+                        List.of(new FacilityRange(new BlockPos(0, 0, 0), new BlockPos(0, 0, 0))),
+                        2,
+                        List.of(new FacilityRange(new BlockPos(0, 0, 0), new BlockPos(0, 0, 0))),
+                        3,
+                        List.of(new FacilityRange(new BlockPos(0, 0, 0), new BlockPos(0, 0, 0)))));
     }
 
     private static FacilityMapPointConfig normalizeMapPointConfig(
@@ -260,10 +297,19 @@ public final class FacilityRegistry {
             FacilityRange facilityRange,
             String translationKey,
             FacilityMapPointConfig mapPointConfig,
-            Map<Integer, FacilityLevelDefinition> levels) {
+            Map<Integer, FacilityLevelDefinition> levels,
+            Map<Integer, List<FacilityRange>> extraBuildAllowRangesByLevel) {
         public FacilityLevelDefinition getLevel(int level) {
             int clamped = Math.max(0, Math.min(level, maxLevel));
             return levels.get(clamped);
+        }
+
+        public List<FacilityRange> getExtraBuildAllowRanges(int level) {
+            int clamped = Math.max(0, Math.min(level, maxLevel));
+            if (clamped <= 0) {
+                return List.of();
+            }
+            return extraBuildAllowRangesByLevel.getOrDefault(clamped, List.of());
         }
 
         public ResourceLocation mapPointId() {

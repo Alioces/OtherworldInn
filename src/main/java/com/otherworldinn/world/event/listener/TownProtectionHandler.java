@@ -78,6 +78,9 @@ public class TownProtectionHandler {
         }
 
         TeamData team = TeamManager.getInstance().getPlayerTeam(player);
+        if (isInsideGreenhouseExtraBuildAllowRange(team, pos)) {
+            return null;
+        }
 
         // 情况 1: 没有队伍 或 不在旅社区域内 -> 通用保护提示
         if (team == null || !isInsideInnZone(team, pos)) {
@@ -136,6 +139,26 @@ public class TownProtectionHandler {
 
     private static boolean isInnZonePos(ServerLevel level, BlockPos pos) {
         return TeamManager.getInstance().getTeamAt(pos, level.getServer()) != null;
+    }
+
+    private static boolean isInsideGreenhouseExtraBuildAllowRange(TeamData team, BlockPos pos) {
+        if (team == null || pos == null) {
+            return false;
+        }
+        int greenhouseLevel = Math.max(0, team.getInnData().getFacilityLevel(GREENHOUSE_FACILITY_ID));
+        if (greenhouseLevel <= 0) {
+            return false;
+        }
+        FacilityRegistry.FacilityDefinition greenhouse = FacilityRegistry.get(GREENHOUSE_FACILITY_ID);
+        if (greenhouse == null) {
+            return false;
+        }
+        for (FacilityRegistry.FacilityRange range : greenhouse.getExtraBuildAllowRanges(greenhouseLevel)) {
+            if (range.contains(pos)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static int getGreenhouseLevelAtPos(Level level, BlockPos pos) {
