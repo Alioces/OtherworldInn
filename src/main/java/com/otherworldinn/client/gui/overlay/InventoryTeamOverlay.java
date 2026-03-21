@@ -64,9 +64,6 @@ public class InventoryTeamOverlay {
         ResourceLocation ratingBackgroundAtlas =
                 useMaimaiAtlas ? RATING_BACKGROUND_ATLAS_MAIMAI : RATING_BACKGROUND_ATLAS;
         int clampedRating = Math.min(5, displayRating);
-        Component ratingText =
-                Component.literal(String.valueOf('\uE005').repeat(clampedRating)
-                        + String.valueOf('\uE006').repeat(5 - clampedRating));
         int atlasV = clampedRating * BAR_HEIGHT;
         guiGraphics.blit(
                 ratingBackgroundAtlas,
@@ -82,7 +79,6 @@ public class InventoryTeamOverlay {
                 Component.translatable("message.otherworldinn.inventory.overlay.coins", team.getCoins());
         int coinsX = contentRight - mc.font.width(coinsText);
 
-        guiGraphics.drawString(mc.font, ratingText, contentLeft, y, ModColors.WHITE, false);
         guiGraphics.drawString(
                 mc.font,
                 coinsText,
@@ -93,7 +89,7 @@ public class InventoryTeamOverlay {
 
         int mouseX = (int) event.getMouseX();
         int mouseY = (int) event.getMouseY();
-        int ratingWidth = mc.font.width(ratingText);
+        int ratingWidth = mc.font.width(Component.literal(String.valueOf('\uE005').repeat(5)));
         int lineHeight = mc.font.lineHeight;
         if (mouseX >= contentLeft
                 && mouseX <= contentLeft + ratingWidth
