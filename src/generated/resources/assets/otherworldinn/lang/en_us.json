@@ -157,7 +157,7 @@
   "item.otherworldinn.end_space_sphere.tooltip.0": "Use to teleport to End",
   "item.otherworldinn.facility_upgrade_template": "Facility Upgrade Template",
   "item.otherworldinn.facility_upgrade_template.tooltip.0": "Used for repairing or upgrading facilities. The upgraded facilities will reset all blocks inside, ",
-  "item.otherworldinn.facility_upgrade_template.tooltip.1": "§7so please ensure that no important blocks are placed inside the facilities.",
+  "item.otherworldinn.facility_upgrade_template.tooltip.1": "so please ensure that no important blocks are placed inside the facilities.",
   "item.otherworldinn.inn_key": "Inn Key",
   "item.otherworldinn.inn_key.tooltip.0": "Right click Desk Bell to toggle Inn state",
   "item.otherworldinn.land_deed": "Land Deed",

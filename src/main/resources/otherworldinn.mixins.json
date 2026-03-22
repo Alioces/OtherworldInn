@@ -11,7 +11,12 @@
     "MixinFanProcessing",
     "MixinDepotRenderer",
     "MixinTransportedItemStack",
-    "MixinReskillableConfiguration"
+    "MixinReskillableConfiguration",
+    "MixinPlayerExperience",
+    "MixinReskillableSkillButton",
+    "MixinReskillableSkillScreen",
+    "MixinReskillableSkillModel",
+    "MixinReskillableRequestLevelUp"
   ],
   "injectors": {
     "defaultRequire": 1
