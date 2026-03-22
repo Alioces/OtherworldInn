@@ -199,6 +199,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.protection.only_in_town")
                 .zh("此物品仅限在城镇维度使用")
                 .en("This item is usable only in the Town dimension.");
+        entry("message.otherworldinn.coin.no_team")
+                .zh("你还没有队伍，无法存入金币")
+                .en("You are not in a team, cannot deposit coin.");
 
         // 物品提示
         entry("tooltip.otherworldinn.sell_price")
@@ -392,6 +395,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.inventory.overlay.coins")
                 .zh("§f\uE001§r%s")
                 .en("§f\uE001§r%s");
+        entry("message.otherworldinn.inventory.overlay.coins.withdraw_one")
+                .zh("左键点击可取出 1 枚金币")
+                .en("Left-click to withdraw 1 coin");
         entry("message.otherworldinn.inventory.overlay.reputation_detail")
                 .zh("声望：%s/%s")
                 .en("Reputation: %s/%s");

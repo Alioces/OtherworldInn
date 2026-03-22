@@ -3,12 +3,15 @@ package com.otherworldinn.client.gui.overlay;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.client.PlayerEasterEggFlags;
 import com.otherworldinn.foundation.ModColors;
+import com.otherworldinn.network.ModMessages;
+import com.otherworldinn.network.packet.C2SWithdrawCoinPacket;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.ChatFormatting;
@@ -16,6 +19,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -148,11 +152,54 @@ public class InventoryTeamOverlay {
                                                     "message.otherworldinn.inventory.overlay.income.dining",
                                                     innData.getYesterdayDiningIncome())
                                             .withStyle(ChatFormatting.DARK_AQUA)));
+            tooltip.add(Component.empty());
+            tooltip.add(
+                    Component.translatable("message.otherworldinn.inventory.overlay.coins.withdraw_one")
+                            .withStyle(ChatFormatting.GRAY));
             List<FormattedCharSequence> tooltipLines = new ArrayList<>();
             for (Component line : tooltip) {
                 tooltipLines.add(Language.getInstance().getVisualOrder(line));
             }
             guiGraphics.renderTooltip(mc.font, tooltipLines, mouseX, mouseY);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onMousePressed(ScreenEvent.MouseButtonPressed.Pre event) {
+        if (!(event.getScreen() instanceof InventoryScreen)) {
+            return;
+        }
+        if (event.getButton() != 0) {
+            return;
+        }
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) {
+            return;
+        }
+        TeamData team = TeamManager.getInstance().getClientPlayerTeam();
+        if (team == null) {
+            return;
+        }
+        int screenWidth = event.getScreen().width;
+        int screenHeight = event.getScreen().height;
+        int guiLeft = (screenWidth - INVENTORY_WIDTH) / 2;
+        int guiTop = (screenHeight - INVENTORY_HEIGHT) / 2;
+        int contentRight = guiLeft + BAR_WIDTH - CONTENT_INSET;
+        int y = guiTop - 10;
+        Component coinsText =
+                Component.translatable("message.otherworldinn.inventory.overlay.coins", team.getCoins());
+        int coinsWidth = mc.font.width(coinsText);
+        int coinsX = contentRight - coinsWidth;
+        int lineHeight = mc.font.lineHeight;
+        int mouseX = (int) event.getMouseX();
+        int mouseY = (int) event.getMouseY();
+        if (mouseX >= coinsX
+                && mouseX <= coinsX + coinsWidth
+                && mouseY >= y
+                && mouseY <= y + lineHeight) {
+            ModMessages.sendToServer(new C2SWithdrawCoinPacket());
+            mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            event.setCanceled(true);
         }
     }
 }

@@ -4,6 +4,7 @@ import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ItemDataGenInfo;
 import com.otherworldinn.foundation.ItemReg;
 import com.otherworldinn.item.BedSheetItem;
+import com.otherworldinn.item.CoinItem;
 import com.otherworldinn.item.EndSpaceSphereItem;
 import com.otherworldinn.item.InnKeyItem;
 import com.otherworldinn.item.LandDeedItem;
@@ -104,10 +105,21 @@ public class ModItems {
                     .stacksTo(16)
                     .lang("Facility Upgrade Template", "设施升级模板")
                     .tooltip(
-                            "Use in town to repair or upgrade nearby facilities",
-                            "在城镇内使用以维修或升级附近设施");
+                            "Used for repairing or upgrading facilities. The upgraded facilities will reset all blocks inside, so please ensure that no important blocks are placed inside the facilities.",
+                            "用于维修或升级设施，升级后的设施会重置内部的所有方块，请确保没有重要方块放置在设施内");
     public static final DeferredItem<Item> FACILITY_UPGRADE_TEMPLATE =
             FACILITY_UPGRADE_TEMPLATE_REG.register();
+
+    public static final ItemReg<CoinItem> COIN_REG =
+            register("coin", CoinItem::new)
+                    .rarity(Rarity.COMMON)
+                    .stacksTo(64)
+                    .lang("Coin", "金币")
+                    .tooltip("Sneak + Right Click to deposit into team balance", "潜行右键将金币存入队伍余额")
+                    .tooltip(
+                            "§7I wonder if you want to toss it somewhere...",
+                            "§7难道你想把它投到什么地方吗...");
+    public static final DeferredItem<CoinItem> COIN = COIN_REG.register();
 
     public static final ItemReg<SpaceSphereItem> SPACE_SPHERE_REG =
             new ItemReg<>("space_sphere", SpaceSphereItem::new)

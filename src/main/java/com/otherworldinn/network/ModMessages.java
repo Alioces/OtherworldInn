@@ -4,6 +4,7 @@ import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.network.packet.C2SStorePurchasePacket;
 import com.otherworldinn.network.packet.C2STeleportOverworldPacket;
 import com.otherworldinn.network.packet.C2STeleportPacket;
+import com.otherworldinn.network.packet.C2SWithdrawCoinPacket;
 import com.otherworldinn.network.packet.S2CTeamSyncPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
@@ -42,6 +43,11 @@ public class ModMessages {
                 C2SStorePurchasePacket.TYPE,
                 C2SStorePurchasePacket.STREAM_CODEC,
                 C2SStorePurchasePacket::handle);
+
+        registrar.playToServer(
+                C2SWithdrawCoinPacket.TYPE,
+                C2SWithdrawCoinPacket.STREAM_CODEC,
+                C2SWithdrawCoinPacket::handle);
     }
 
     /**

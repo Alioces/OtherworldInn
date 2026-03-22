@@ -95,17 +95,6 @@ public class TownProtectionHandler {
         return null; // 允许
     }
 
-    /**
-     * 检查是否可以在指定位置建筑（针对玩家）
-     *
-     * @deprecated Use {@link #getBuildDenyReason(Player, BlockPos, Level)} instead for better
-     *     feedback
-     */
-    @Deprecated
-    private static boolean canBuild(Player player, BlockPos pos, Level level) {
-        return getBuildDenyReason(player, pos, level) == null;
-    }
-
     /** 检查方块是否属于农作物白名单 */
     private static boolean isFarmingBlock(BlockState state) {
         if (state == null) return false;
@@ -371,6 +360,36 @@ public class TownProtectionHandler {
                 message.copy().withStyle(style -> style.withColor(ModColors.RED)), true);
     }
 
+    private static void syncInventoryIfServerPlayer(Player player) {
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.inventoryMenu.sendAllDataToRemote();
+        }
+    }
+
+    private static void denyBuildForPlayer(Player player, Component message) {
+        sendDenyMessage(player, message);
+        syncInventoryIfServerPlayer(player);
+    }
+
+    private static void denyRightClickBlock(PlayerInteractEvent.RightClickBlock event, Player player) {
+        event.setCanceled(true);
+        event.setUseItem(TriState.FALSE);
+        event.setUseBlock(TriState.FALSE);
+        event.setCancellationResult(InteractionResult.FAIL);
+        syncInventoryIfServerPlayer(player);
+    }
+
+    private static void denyRightClickBlock(
+            PlayerInteractEvent.RightClickBlock event, Player player, Component message) {
+        denyRightClickBlock(event, player);
+        sendDenyMessage(player, message);
+    }
+
+    private static boolean isEditModeAllowedAt(ServerLevel level, BlockPos pos) {
+        TeamData team = TeamManager.getInstance().getTeamAt(pos, level.getServer());
+        return team != null && team.getInnData().getState() == InnData.InnState.EDIT_MODE;
+    }
+
     private static void spawnFallingBlockDrop(
             ServerLevel level, FallingBlockEntity fallingBlock, BlockState state, BlockPos pos) {
         Item item = state.getBlock().asItem();
@@ -399,8 +418,7 @@ public class TownProtectionHandler {
                 Component denyReason = getBuildDenyReason(player, event.getPos(), level);
                 if (denyReason != null) {
                     event.setCanceled(true);
-                    sendDenyMessage(player, denyReason);
-                    serverPlayer.inventoryMenu.sendAllDataToRemote();
+                    denyBuildForPlayer(player, denyReason);
                 }
                 return;
             }
@@ -418,11 +436,7 @@ public class TownProtectionHandler {
         // 如果是非玩家实体或 FakePlayer (自动化设备)
         else if (level instanceof ServerLevel serverLevel) {
             if (serverLevel.dimension() == TownDimensions.TOWN_LEVEL) {
-                TeamData team =
-                        TeamManager.getInstance()
-                                .getTeamAt(event.getPos(), serverLevel.getServer());
-                // 只有在开启了编辑模式的旅社区域内才允许破坏
-                if (team == null || team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
+                if (!isEditModeAllowedAt(serverLevel, event.getPos())) {
                     event.setCanceled(true);
                 }
             }
@@ -471,10 +485,7 @@ public class TownProtectionHandler {
             Component denyReason = getBuildDenyReason(player, event.getPos(), level);
             if (denyReason != null) {
                 event.setCanceled(true);
-                if (player instanceof ServerPlayer serverPlayer) {
-                    sendDenyMessage(player, denyReason);
-                    serverPlayer.inventoryMenu.sendAllDataToRemote();
-                }
+                denyBuildForPlayer(player, denyReason);
             }
             return;
         }
@@ -489,8 +500,7 @@ public class TownProtectionHandler {
                         getBuildDenyReason(player, event.getPos(), (Level) event.getLevel());
                 if (denyReason != null) {
                     event.setCanceled(true);
-                    sendDenyMessage(player, denyReason);
-                    serverPlayer.inventoryMenu.sendAllDataToRemote();
+                    denyBuildForPlayer(player, denyReason);
                     return;
                 }
             }
@@ -499,12 +509,7 @@ public class TownProtectionHandler {
                 Level level = event.getEntity().level();
                 if (level instanceof ServerLevel serverLevel
                         && level.dimension() == TownDimensions.TOWN_LEVEL) {
-                    TeamData team =
-                            TeamManager.getInstance()
-                                    .getTeamAt(event.getPos(), serverLevel.getServer());
-                    // 只有在开启了编辑模式的旅社区域内才允许放置
-                    if (team == null
-                            || team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
+                    if (!isEditModeAllowedAt(serverLevel, event.getPos())) {
                         event.setCanceled(true);
                     }
                 }
@@ -514,11 +519,7 @@ public class TownProtectionHandler {
             Level level = event.getEntity().level();
             if (level instanceof ServerLevel serverLevel
                     && level.dimension() == TownDimensions.TOWN_LEVEL) {
-                TeamData team =
-                        TeamManager.getInstance()
-                                .getTeamAt(event.getPos(), serverLevel.getServer());
-                // 只有在开启了编辑模式的旅社区域内才允许放置
-                if (team == null || team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
+                if (!isEditModeAllowedAt(serverLevel, event.getPos())) {
                     event.setCanceled(true);
                 }
             }
@@ -563,16 +564,11 @@ public class TownProtectionHandler {
         // 1. 检查仅限城镇维度使用的物品 (如果不在城镇维度)
         if (level.dimension() != TownDimensions.TOWN_LEVEL) {
             if (stack.is(OtherworldInn.ONLY_IN_TOWN)) {
-                event.setCanceled(true);
-                event.setUseItem(TriState.FALSE);
-                event.setUseBlock(TriState.FALSE);
-                event.setCancellationResult(InteractionResult.FAIL);
-
+                denyRightClickBlock(event, player);
                 if (player instanceof ServerPlayer serverPlayer) {
                     serverPlayer.displayClientMessage(
                             Component.translatable("message.otherworldinn.protection.only_in_town"),
                             true);
-                    serverPlayer.inventoryMenu.sendAllDataToRemote();
                 }
                 return;
             }
@@ -583,16 +579,11 @@ public class TownProtectionHandler {
 
         // 2. 检查禁用物品
         if (stack.is(OtherworldInn.BANNED_IN_TOWN)) {
-            event.setCanceled(true);
-            event.setUseItem(TriState.FALSE);
-            event.setUseBlock(TriState.FALSE);
-            event.setCancellationResult(InteractionResult.FAIL);
-
+            denyRightClickBlock(event, player);
             if (player instanceof ServerPlayer serverPlayer) {
                 player.displayClientMessage(
                         Component.translatable("message.otherworldinn.protection.banned_item"),
                         true);
-                serverPlayer.inventoryMenu.sendAllDataToRemote();
             }
             return;
         }
@@ -606,14 +597,7 @@ public class TownProtectionHandler {
             if (isFarmingBlock(blockItem.getBlock().defaultBlockState())) {
                 Component denyReason = getBuildDenyReason(player, pos, level);
                 if (denyReason != null) {
-                    event.setCanceled(true);
-                    event.setUseItem(TriState.FALSE);
-                    event.setUseBlock(TriState.FALSE);
-                    event.setCancellationResult(InteractionResult.FAIL);
-                    if (player instanceof ServerPlayer serverPlayer) {
-                        sendDenyMessage(player, denyReason);
-                        serverPlayer.inventoryMenu.sendAllDataToRemote();
-                    }
+                    denyRightClickBlock(event, player, denyReason);
                 }
                 return;
             }
@@ -624,30 +608,14 @@ public class TownProtectionHandler {
             // 检查是否允许在该位置建筑
             Component denyReason = getBuildDenyReason(player, placePos, level);
             if (denyReason != null) {
-                event.setCanceled(true);
-                event.setUseItem(TriState.FALSE);
-                event.setUseBlock(TriState.FALSE);
-                event.setCancellationResult(InteractionResult.FAIL);
-
-                if (player instanceof ServerPlayer serverPlayer) {
-                    sendDenyMessage(player, denyReason);
-                    // 关键：同步背包数据，防止客户端显示物品被消耗
-                    serverPlayer.inventoryMenu.sendAllDataToRemote();
-                }
+                denyRightClickBlock(event, player, denyReason);
             }
         }
 
         if (!player.isCreative() && stack.getItem() instanceof HoeItem) {
             Component denyReason = getBuildDenyReason(player, pos, level);
             if (denyReason != null) {
-                event.setCanceled(true);
-                event.setUseItem(TriState.FALSE);
-                event.setUseBlock(TriState.FALSE);
-                event.setCancellationResult(InteractionResult.FAIL);
-                if (player instanceof ServerPlayer serverPlayer) {
-                    sendDenyMessage(player, denyReason);
-                    serverPlayer.inventoryMenu.sendAllDataToRemote();
-                }
+                denyRightClickBlock(event, player, denyReason);
             }
         }
     }
