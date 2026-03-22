@@ -29,18 +29,18 @@ public class MagicianModel extends StoreHumanoidModel<MagicianEntity> {
         this.body.xRot = 0.0F;
         this.body.yRot = 0.0F;
 
-        this.head.xRot += 0.42F + micro * 0.05F;
-        this.head.yRot += stir * 0.08F;
+        this.head.xRot += 0.34F + micro * 0.03F;
+        this.head.yRot += stir * 0.05F;
 
-        this.rightArm.xRot = -1.60F + stir * 0.34F;
-        this.rightArm.yRot = -0.52F + stir * 0.18F;
-        this.rightArm.zRot = 0.28F + stir * 0.14F;
+        this.rightArm.xRot = -1.36F + stir * 0.18F;
+        this.rightArm.yRot = -0.44F + stir * 0.10F;
+        this.rightArm.zRot = 0.22F + stir * 0.08F;
 
-        this.leftArm.xRot = -1.18F - stir * 0.14F;
-        this.leftArm.yRot = 0.36F;
-        this.leftArm.zRot = -0.20F;
+        this.leftArm.xRot = -1.02F - stir * 0.08F;
+        this.leftArm.yRot = 0.30F;
+        this.leftArm.zRot = -0.16F;
 
-        this.rightLeg.xRot = 0.12F;
-        this.leftLeg.xRot = 0.10F;
+        this.rightLeg.xRot = 0.08F;
+        this.leftLeg.xRot = 0.08F;
     }
 }

@@ -61,6 +61,8 @@ public class InnRenderer {
         // 渲染设置
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(false);
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.enableCull();
@@ -197,6 +199,7 @@ public class InnRenderer {
         }
 
         RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(true);
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
     }

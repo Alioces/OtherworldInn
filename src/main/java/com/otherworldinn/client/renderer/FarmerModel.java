@@ -23,13 +23,24 @@ public class FarmerModel extends StoreHumanoidModel<FarmerEntity> {
     @Override
     protected void applyIdlePose(FarmerEntity entity, float ageInTicks) {
         float t = ageInTicks * 0.08F;
-        this.head.yRot += (float) Math.sin(t * 0.8F) * 0.05F;
-        this.head.xRot += -0.02F;
-        this.rightArm.xRot = -0.35F + (float) Math.sin(t * 1.3F) * 0.05F;
-        this.rightArm.yRot = -0.1F;
-        this.leftArm.xRot = -0.45F + (float) Math.cos(t * 1.15F) * 0.05F;
-        this.leftArm.yRot = 0.1F;
-        this.rightLeg.xRot = -0.02F;
-        this.leftLeg.xRot = 0.02F;
+        float sway = (float) Math.sin(t * 0.9F);
+        float breathe = (float) Math.sin(t * 1.4F);
+
+        this.body.xRot = breathe * 0.015F;
+        this.body.yRot = sway * 0.03F;
+
+        this.head.yRot += sway * 0.04F;
+        this.head.xRot += -0.03F + breathe * 0.01F;
+
+        this.rightArm.xRot = -0.32F + breathe * 0.04F;
+        this.rightArm.yRot = -0.08F + sway * 0.03F;
+        this.rightArm.zRot = 0.02F;
+
+        this.leftArm.xRot = -0.38F - breathe * 0.04F;
+        this.leftArm.yRot = 0.08F - sway * 0.03F;
+        this.leftArm.zRot = -0.02F;
+
+        this.rightLeg.xRot = -0.015F;
+        this.leftLeg.xRot = 0.015F;
     }
 }
