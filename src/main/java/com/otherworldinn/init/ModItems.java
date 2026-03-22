@@ -105,8 +105,11 @@ public class ModItems {
                     .stacksTo(16)
                     .lang("Facility Upgrade Template", "设施升级模板")
                     .tooltip(
-                            "Used for repairing or upgrading facilities. The upgraded facilities will reset all blocks inside, so please ensure that no important blocks are placed inside the facilities.",
-                            "用于维修或升级设施，升级后的设施会重置内部的所有方块，请确保没有重要方块放置在设施内");
+                            "Used for repairing or upgrading facilities. The upgraded facilities will reset all blocks inside, ",
+                            "用于维修或升级设施，升级后的设施会重置内部的所有方块")
+                    .tooltip(
+                            "so please ensure that no important blocks are placed inside the facilities.",
+                            "，请确保没有重要方块放置在设施内");
     public static final DeferredItem<Item> FACILITY_UPGRADE_TEMPLATE =
             FACILITY_UPGRADE_TEMPLATE_REG.register();
 
