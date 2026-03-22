@@ -1,0 +1,35 @@
+{
+  "display": {
+    "icon": {
+      "id": "otherworldinn:inn_key"
+    },
+    "title": {
+      "translate": "advancements.otherworldinn.root.title"
+    },
+    "description": {
+      "translate": "advancements.otherworldinn.root.description"
+    },
+    "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "obtain_inn_key": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "otherworldinn:inn_key"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "obtain_inn_key"
+    ]
+  ]
+}

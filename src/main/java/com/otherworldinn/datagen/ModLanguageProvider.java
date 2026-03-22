@@ -49,6 +49,10 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("map_point.otherworldinn.town_gate").zh("城镇大门").en("Town Gate");
         entry("map_point.otherworldinn.locked").zh("未解锁").en("Locked");
         entry("map_point.otherworldinn.cant_teleport").zh("无法传送至").en("Cannot teleport to");
+        entry("advancements.otherworldinn.root.title").zh("旅社物语").en("Otherworld Inn");
+        entry("advancements.otherworldinn.root.description")
+                .zh("获得旅社钥匙，开启你的经营之旅")
+                .en("Obtain the Inn Key and begin your management journey");
         entry("facility.otherworldinn.overlay.title").zh("设施状态").en("Facility Status");
         entry("facility.otherworldinn.overlay.name").zh("名称: %s").en("Name: %s");
         entry("facility.otherworldinn.overlay.level").zh("等级: %s/%s").en("Level: %s/%s");
