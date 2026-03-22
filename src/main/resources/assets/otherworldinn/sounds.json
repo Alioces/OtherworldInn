@@ -16,5 +16,11 @@
     "sounds": [
       "otherworldinn:maimai_end"
     ]
+  },
+  "coin_projectile": {
+    "subtitle": "subtitles.otherworldinn.coin_projectile",
+    "sounds": [
+      "otherworldinn:coin_projectile"
+    ]
   }
 }

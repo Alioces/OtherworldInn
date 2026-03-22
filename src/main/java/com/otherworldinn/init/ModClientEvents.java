@@ -9,6 +9,7 @@ import com.otherworldinn.client.renderer.FarmerRenderer;
 import com.otherworldinn.client.renderer.GuestRenderer;
 import com.otherworldinn.client.renderer.MagicianModel;
 import com.otherworldinn.client.renderer.MagicianRenderer;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
@@ -61,6 +62,7 @@ public class ModClientEvents {
         event.registerEntityRenderer(ModEntities.BLACKSMITH.get(), BlacksmithRenderer::new);
         event.registerEntityRenderer(ModEntities.MAGICIAN.get(), MagicianRenderer::new);
         event.registerEntityRenderer(ModEntities.FARMER.get(), FarmerRenderer::new);
+        event.registerEntityRenderer(ModEntities.COIN_PROJECTILE.get(), ThrownItemRenderer::new);
     }
 
     @SubscribeEvent

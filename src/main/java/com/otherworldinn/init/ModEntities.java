@@ -11,6 +11,7 @@ import com.otherworldinn.entity.guest.UltraRichGuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
 import com.otherworldinn.entity.store.FarmerEntity;
 import com.otherworldinn.entity.store.MagicianEntity;
+import com.otherworldinn.world.entity.projectile.CoinProjectileEntity;
 import java.util.function.Supplier;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
@@ -137,4 +138,16 @@ public class ModEntities {
                                     .updateInterval(2)
                                     .setShouldReceiveVelocityUpdates(true)
                                     .build("farmer"));
+
+    public static final Supplier<EntityType<CoinProjectileEntity>> COIN_PROJECTILE =
+            ENTITY_TYPES.register(
+                    "coin_projectile",
+                    () ->
+                            EntityType.Builder.<CoinProjectileEntity>of(
+                                            CoinProjectileEntity::new, MobCategory.MISC)
+                                    .sized(0.25F, 0.25F)
+                                    .clientTrackingRange(32)
+                                    .updateInterval(2)
+                                    .setShouldReceiveVelocityUpdates(true)
+                                    .build("coin_projectile"));
 }

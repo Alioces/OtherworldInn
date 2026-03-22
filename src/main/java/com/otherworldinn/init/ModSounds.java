@@ -12,6 +12,7 @@ public class ModSounds {
             DeferredRegister.create(Registries.SOUND_EVENT, OtherworldInn.MODID);
 
     public static final Supplier<SoundEvent> PAYMENT = registerSoundEvent("payment");
+    public static final Supplier<SoundEvent> COIN_PROJECTILE = registerSoundEvent("coin_projectile");
 
     private static Supplier<SoundEvent> registerSoundEvent(String name) {
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, name);

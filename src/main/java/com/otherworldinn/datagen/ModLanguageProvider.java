@@ -90,6 +90,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("subtitles.otherworldinn.payment").zh("金币：叮铃").en("Coins: Clink");
         entry("subtitles.otherworldinn.maimai").zh("舞萌DX：激活").en("maimai DX: Activated");
         entry("subtitles.otherworldinn.maimai_end").zh("舞萌DX：结算").en("maimai DX: Result");
+        entry("subtitles.otherworldinn.coin_projectile").zh("金币：弹飞").en("Coin: Fling");
 
         // 队伍命令
         entry("command.otherworldinn.team.already_in_team")
