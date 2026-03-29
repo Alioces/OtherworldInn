@@ -10,6 +10,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
@@ -71,7 +72,8 @@ public class SponsorGuestEntity extends VipGuestEntity {
             MobSpawnType reason,
             @Nullable SpawnGroupData spawnData) {
         spawnData = super.finalizeSpawn(level, difficulty, reason, spawnData);
-        String sponsorName = SponsorNamePool.getRandomName(this.getRandom());
+        ServerLevel serverLevel = level instanceof ServerLevel server ? server : null;
+        String sponsorName = SponsorNamePool.getRandomName(this.getRandom(), serverLevel);
         this.setCustomName(Component.literal(sponsorName));
         this.setSkinVariant(this.getRandom().nextInt(10000));
         return spawnData;
