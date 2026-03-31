@@ -1,0 +1,14 @@
+{
+  "type": "create:compacting",
+  "ingredients": [
+    {
+      "item": "kaleidoscope_tavern:grape"
+    }
+  ],
+  "results": [
+    {
+      "id": "kaleidoscope_tavern:grape_juice",
+      "amount": 125
+    }
+  ]
+}

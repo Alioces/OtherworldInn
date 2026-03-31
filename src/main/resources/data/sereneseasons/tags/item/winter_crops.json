@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "kaleidoscope_tavern:grapevine"
+    "kaleidoscope_tavern:grapevine",
+    "kaleidoscope_tavern:grape"
   ]
 }

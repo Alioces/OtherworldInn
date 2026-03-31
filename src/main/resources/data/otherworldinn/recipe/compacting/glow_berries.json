@@ -1,0 +1,14 @@
+{
+  "type": "create:compacting",
+  "ingredients": [
+    {
+      "item": "minecraft:glow_berries"
+    }
+  ],
+  "results": [
+    {
+      "id": "kaleidoscope_tavern:glow_berries_juice",
+      "amount": 125
+    }
+  ]
+}

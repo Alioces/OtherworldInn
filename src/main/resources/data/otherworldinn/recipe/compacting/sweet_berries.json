@@ -1,0 +1,14 @@
+{
+  "type": "create:compacting",
+  "ingredients": [
+    {
+      "item": "minecraft:sweet_berries"
+    }
+  ],
+  "results": [
+    {
+      "id": "kaleidoscope_tavern:sweet_berries_juice",
+      "amount": 125
+    }
+  ]
+}
