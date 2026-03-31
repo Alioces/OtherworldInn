@@ -195,8 +195,8 @@ public final class FacilityRegistry {
                 "Boiler Room",
                 "锅炉房",
                 3,
-                new BlockPos(12, 71, -8),
-                new FacilityRange(new BlockPos(6, 65, -14), new BlockPos(18, 78, -2)),
+                new BlockPos(31, 61, -35),
+                new FacilityRange(new BlockPos(28, 61, -37), new BlockPos(36, 67, -31)),
                 List.of(
                         new LevelUpgradeCost(
                                 List.of(
@@ -214,13 +214,13 @@ public final class FacilityRegistry {
                                         new ItemStack(Items.BLAZE_ROD, 8)),
                                 3200)),
                 new FacilityMapPointConfig(
-                        new Vec3(9, 71, -3),
-                        new Vec2(12, -10),
+                        new Vec3(30, 62, -39),
+                        new Vec2(70, 70),
                         ResourceLocation.fromNamespaceAndPath(
                                 OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
                         MapPoint.MapPointType.SHOP,
                         0,
-                        0),
+                        -1),
                 Map.of());
 
         registerFacility(
@@ -248,12 +248,12 @@ public final class FacilityRegistry {
                                 2600)),
                 new FacilityMapPointConfig(
                         new Vec3(2, 71, 52),
-                        new Vec2(12, -10),
+                        new Vec2(20, -40),
                         ResourceLocation.fromNamespaceAndPath(
                                 OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
                         MapPoint.MapPointType.SHOP,
                         0,
-                        -50),
+                        1),
                 Map.of(
                         1,
                         List.of(new FacilityRange(new BlockPos(-2, 71, 63), new BlockPos(-11, 75, 51))),

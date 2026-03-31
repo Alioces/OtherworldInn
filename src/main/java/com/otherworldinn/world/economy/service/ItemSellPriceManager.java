@@ -20,7 +20,6 @@ public class ItemSellPriceManager {
     private static final Map<ResourceLocation, Integer> PRICES = new HashMap<>();
 
     static {
-        // 初始化默认价格
         // 原版水果
         addPrice("minecraft:apple", 3);
         addPrice("minecraft:sweet_berries", 2);
@@ -46,7 +45,8 @@ public class ItemSellPriceManager {
         addPrice("minecraft:beetroot_soup", 5);
         addPrice("minecraft:rabbit_stew", 7);
 
-        addPrice("kaleidoscope_cookery:suspicious_stir_fry", 18); // 谜之炒菜
+		//森罗厨房
+        addPrice("kaleidoscope_cookery:suspicious_stir_fry", 2); // 谜之炒菜
         addPrice("kaleidoscope_cookery:slime_ball_meal", 22); // 黏液饭
         addPrice("kaleidoscope_cookery:fondant_pie", 24); // 翻糖派
         addPrice("kaleidoscope_cookery:dongpo_pork", 26); // 东坡肉
@@ -134,6 +134,7 @@ public class ItemSellPriceManager {
         addPrice("kaleidoscope_cookery:hui_noodle", 30); // 羊肉烩面
         addPrice("kaleidoscope_cookery:udon_noodle", 24); // 乌冬面
 
+		//森罗酒馆
         addPrice("kaleidoscope_tavern:wine", 10); // 葡萄酒
         addPrice("kaleidoscope_tavern:molotov", 12); // 莫洛托夫鸡尾酒
         addPrice("kaleidoscope_tavern:champagne", 16); // 香槟

@@ -46,8 +46,13 @@ public class MapPageManager {
 
         // 注册地图页面
         addPage(0, 0, Direction.EAST);
-        addPage(0, 0, Direction.SOUTH);
         addPage(0, 1, Direction.EAST);
+        addPage(0, -1, Direction.EAST);
+
+        addPage(0, 0, Direction.SOUTH);
+
+        addPage(0, 0, Direction.NORTH);
+
 
         // 主页面
         registerPoint(0, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn"));
@@ -60,9 +65,11 @@ public class MapPageManager {
         registerPoint(1, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn"));
         registerPoint(
                 1, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "blacksmith"));
+        registerPoint(
+                1, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "boiler_room"));
 
         //温室方向页
-        registerPoint(0, 1, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "greenhouse"));
+        //registerPoint(0, 1, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "greenhouse"));
 
         syncFacilityPointsToPages();
     }
