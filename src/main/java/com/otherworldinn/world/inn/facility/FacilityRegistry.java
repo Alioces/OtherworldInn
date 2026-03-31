@@ -195,7 +195,7 @@ public final class FacilityRegistry {
                 "Boiler Room",
                 "锅炉房",
                 3,
-                new BlockPos(31, 61, -35),
+                new BlockPos(31, 62, -35),
                 new FacilityRange(new BlockPos(28, 61, -37), new BlockPos(36, 67, -31)),
                 List.of(
                         new LevelUpgradeCost(
