@@ -6,8 +6,11 @@ import com.otherworldinn.init.ModSounds;
 import com.otherworldinn.world.entity.projectile.CoinProjectileEntity;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -84,7 +87,9 @@ public class CoinItem extends Item {
         if (!level.isClientSide) {
             CoinProjectileEntity projectile =
                     new CoinProjectileEntity(ModEntities.COIN_PROJECTILE.get(), player, level);
-            projectile.setItem(new ItemStack(this));
+            ItemStack projectileStack = stack.copy();
+            projectileStack.setCount(1);
+            projectile.setItem(projectileStack);
             projectile.shootFromRotation(
                     player, player.getXRot(), player.getYRot(), 0.0F, power * 1.2F, 0.8F);
             level.addFreshEntity(projectile);
@@ -107,6 +112,21 @@ public class CoinItem extends Item {
         float f = (float) charge / 20.0F;
         f = (f * f + f * 2.0F) / 3.0F;
         return Math.min(f, 1.0F);
+    }
+
+    @Override
+    public boolean isEnchantable(ItemStack stack) {
+        return true;
+    }
+
+    @Override
+    public int getEnchantmentValue() {
+        return 1;
+    }
+
+    @Override
+    public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
+        return enchantment.is(Enchantments.CHANNELING);
     }
 
     private boolean depositOne(ServerPlayer player, InteractionHand hand) {

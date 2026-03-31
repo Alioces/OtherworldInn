@@ -4,9 +4,11 @@ import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.client.PlayerEasterEggFlags;
 import com.otherworldinn.init.ModItems;
 import java.util.Set;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -21,6 +23,8 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT)
 public class EasterEggClientHandler {
     private static final String SERVER_STATE_NBT_KEY = "otherworldinn_maimai_enabled";
+    private static final ResourceLocation MAIMAI_HIDDEN_ADVANCEMENT_ID =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "maimai_hidden");
     private static final ResourceLocation MAIMAI_SOUND_ID =
             ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "maimai");
     private static final ResourceLocation MAIMAI_END_SOUND_ID =
@@ -73,8 +77,21 @@ public class EasterEggClientHandler {
                 return;
             }
             consumeOneCoin(player);
+            if (player instanceof ServerPlayer serverPlayer) {
+                awardAdvancement(serverPlayer, MAIMAI_HIDDEN_ADVANCEMENT_ID);
+            }
         }
         persistentData.putBoolean(SERVER_STATE_NBT_KEY, shouldEnable);
+    }
+
+    private static void awardAdvancement(ServerPlayer player, ResourceLocation advancementId) {
+        AdvancementHolder advancement = player.server.getAdvancements().get(advancementId);
+        if (advancement == null) {
+            return;
+        }
+        for (String criterion : player.getAdvancements().getOrStartProgress(advancement).getRemainingCriteria()) {
+            player.getAdvancements().award(advancement, criterion);
+        }
     }
 
     private static boolean isHoldingCoin(Player player) {

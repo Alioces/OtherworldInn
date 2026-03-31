@@ -53,6 +53,12 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("advancements.otherworldinn.root.description")
                 .zh("获得旅社钥匙，开启你的经营之旅")
                 .en("Obtain the Inn Key and begin your management journey");
+        entry("advancements.otherworldinn.maimai_hidden.title")
+                .zh("这不是洗衣机")
+                .en("This Is Not a Washing Machine");
+        entry("advancements.otherworldinn.maimai_hidden.description")
+                .zh("将金币投入某个地方")
+                .en("Put a coin into somewhere");
         entry("facility.otherworldinn.overlay.title").zh("设施状态").en("Facility Status");
         entry("facility.otherworldinn.overlay.name").zh("名称: %s").en("Name: %s");
         entry("facility.otherworldinn.overlay.level").zh("等级: %s/%s").en("Level: %s/%s");

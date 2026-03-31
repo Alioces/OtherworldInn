@@ -16,8 +16,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -124,6 +126,10 @@ public class TownProtectionHandler {
 
     private static boolean isTownDimension(Level level) {
         return level.dimension() == TownDimensions.TOWN_LEVEL;
+    }
+
+    private static boolean isIgnitionFireBlock(BlockState state) {
+        return state != null && state.is(BlockTags.FIRE);
     }
 
     private static boolean isInnZonePos(ServerLevel level, BlockPos pos) {
@@ -445,6 +451,13 @@ public class TownProtectionHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
+        if (event.getLevel() instanceof ServerLevel serverLevel
+                && isTownDimension(serverLevel)
+                && isIgnitionFireBlock(event.getState())) {
+            event.setCanceled(true);
+            return;
+        }
+
         if (event.getEntity() == null
                 && event.getLevel() instanceof ServerLevel serverLevel
                 && isTownDimension(serverLevel)
@@ -633,9 +646,9 @@ public class TownProtectionHandler {
     public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
         if (event.getLevel().dimension() == TownDimensions.TOWN_LEVEL) {
             Entity entity = event.getEntity();
-
-            // 检查实体是否在禁用列表中 (通过 ResourceLocation 检查)
-            // ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+            if (entity instanceof LightningBolt lightningBolt) {
+                lightningBolt.setVisualOnly(true);
+            }
         }
     }
 

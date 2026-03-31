@@ -1,0 +1,23 @@
+{
+  "parent": "otherworldinn:root",
+  "display": {
+    "icon": {
+      "id": "otherworldinn:coin"
+    },
+    "title": {
+      "text": "你指尖跃动的电光..."
+    },
+    "description": {
+      "text": "发射一次“超电磁炮”"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "unlock": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

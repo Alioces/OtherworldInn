@@ -1,0 +1,23 @@
+{
+  "parent": "otherworldinn:root",
+  "display": {
+    "icon": {
+      "id": "otherworldinn:coin"
+    },
+    "title": {
+      "translate": "advancements.otherworldinn.maimai_hidden.title"
+    },
+    "description": {
+      "translate": "advancements.otherworldinn.maimai_hidden.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "unlock": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}
