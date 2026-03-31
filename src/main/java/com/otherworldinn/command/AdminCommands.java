@@ -33,7 +33,7 @@ public class AdminCommands {
                         .then(
                                 Commands.literal("facility")
                                         .then(
-                                                Commands.literal("downgrade")
+                                                Commands.literal("set_level")
                                                         .then(
                                                                 Commands.argument(
                                                                                 "target",
@@ -64,7 +64,7 @@ public class AdminCommands {
                                                                                                                                 0))
                                                                                                         .executes(
                                                                                                                 AdminCommands
-                                                                                                                        ::downgradeFacility)))))));
+                                                                                                                        ::setFacilityLevel)))))));
     }
 
     private static int resetDimensions(CommandContext<CommandSourceStack> context) {
@@ -79,7 +79,7 @@ public class AdminCommands {
         return 1;
     }
 
-    private static int downgradeFacility(CommandContext<CommandSourceStack> context) {
+    private static int setFacilityLevel(CommandContext<CommandSourceStack> context) {
         try {
             ServerPlayer target = EntityArgument.getPlayer(context, "target");
             String facilityId = StringArgumentType.getString(context, "facilityId");
@@ -111,16 +111,6 @@ public class AdminCommands {
                 return 0;
             }
 
-            int currentLevel = team.getInnData().getFacilityLevel(facility.id());
-            if (targetLevel >= currentLevel) {
-                context.getSource()
-                        .sendFailure(
-                                Component.translatable(
-                                        "command.otherworldinn.admin.facility.not_lower",
-                                        currentLevel));
-                return 0;
-            }
-
             ServerLevel townLevel = context.getSource().getServer().getLevel(TownDimensions.TOWN_LEVEL);
             if (townLevel == null) {
                 context.getSource()
@@ -149,7 +139,7 @@ public class AdminCommands {
                 manager.unlockMapPoint(team, facility.mapPointId(), context.getSource().getServer());
             }
 
-            int downgradedLevel = levelDefinition.level();
+            int updatedLevel = levelDefinition.level();
             context.getSource()
                     .sendSuccess(
                             () ->
@@ -157,7 +147,7 @@ public class AdminCommands {
                                             "command.otherworldinn.admin.facility.downgrade_success",
                                             team.getName(),
                                             Component.translatable(facility.translationKey()),
-                                            downgradedLevel),
+                                            updatedLevel),
                             true);
             return 1;
         } catch (Exception e) {

@@ -164,18 +164,15 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("command.otherworldinn.admin.facility.level_out_of_range")
                 .zh("目标等级超出范围，最大等级为 %s")
                 .en("Target level is out of range, max level is %s");
-        entry("command.otherworldinn.admin.facility.not_lower")
-                .zh("目标等级必须小于当前等级（当前：%s）")
-                .en("Target level must be lower than current level (current: %s)");
         entry("command.otherworldinn.admin.facility.town_unavailable")
-                .zh("城镇维度未加载，无法执行设施降级")
-                .en("Town dimension is not loaded, cannot downgrade facility");
+                .zh("城镇维度未加载，无法修改设施等级")
+                .en("Town dimension is not loaded, cannot modify facility level");
         entry("command.otherworldinn.admin.facility.place_fail")
-                .zh("降级失败：低级结构放置失败")
-                .en("Downgrade failed: lower-level structure placement failed");
+                .zh("等级修改失败：目标等级结构放置失败")
+                .en("Level update failed: target level structure placement failed");
         entry("command.otherworldinn.admin.facility.downgrade_success")
-                .zh("已将队伍 %s 的设施 %s 降级至 %s 级")
-                .en("Downgraded team %s facility %s to level %s");
+                .zh("已将队伍 %s 的设施 %s 修改为 %s 级")
+                .en("Updated team %s facility %s to level %s");
 
         entry("message.otherworldinn.reset.warning")
                 .zh("§c[注意] §e外部维度还有%d分钟重置，请尽快回到城镇")

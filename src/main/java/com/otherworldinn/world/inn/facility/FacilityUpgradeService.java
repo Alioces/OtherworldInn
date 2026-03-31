@@ -16,6 +16,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 public final class FacilityUpgradeService {
+    private static final int TOOL_COOLDOWN_TICKS = 100;
+
     private FacilityUpgradeService() {}
 
     public static FacilityContext findContext(ServerPlayer player) {
@@ -50,7 +52,8 @@ public final class FacilityUpgradeService {
         if (player == null) {
             return false;
         }
-        if (!FacilityRegistry.isToolStack(player.getItemInHand(hand))) {
+        ItemStack toolStack = player.getItemInHand(hand);
+        if (!FacilityRegistry.isToolStack(toolStack)) {
             return false;
         }
         FacilityContext context = findContext(player, interactionPos);
@@ -61,6 +64,7 @@ public final class FacilityUpgradeService {
             player.displayClientMessage(
                     Component.translatable("facility.otherworldinn.upgrade_max_level"),
                     true);
+            applyToolCooldown(player, toolStack);
             return true;
         }
 
@@ -75,17 +79,20 @@ public final class FacilityUpgradeService {
                                 next.requiredCoins(),
                                 team.getCoins()),
                         true);
+                applyToolCooldown(player, toolStack);
                 return true;
             }
             if (!hasRequiredItems(player.getInventory(), next.requiredItems())) {
                 player.displayClientMessage(
                         Component.translatable("facility.otherworldinn.upgrade_fail_items"),
                         true);
+                applyToolCooldown(player, toolStack);
                 return true;
             }
         }
 
         if (!(player.level() instanceof ServerLevel serverLevel)) {
+            applyToolCooldown(player, toolStack);
             return true;
         }
         boolean placed =
@@ -95,6 +102,7 @@ public final class FacilityUpgradeService {
             player.displayClientMessage(
                     Component.translatable("facility.otherworldinn.upgrade_fail_structure"),
                     true);
+            applyToolCooldown(player, toolStack);
             return true;
         }
 
@@ -127,7 +135,15 @@ public final class FacilityUpgradeService {
                         Component.translatable(context.facility().translationKey()),
                         next.level()),
                 true);
+        applyToolCooldown(player, toolStack);
         return true;
+    }
+
+    private static void applyToolCooldown(ServerPlayer player, ItemStack toolStack) {
+        if (toolStack.isEmpty()) {
+            return;
+        }
+        player.getCooldowns().addCooldown(toolStack.getItem(), TOOL_COOLDOWN_TICKS);
     }
 
     private static void playUpgradeEffects(

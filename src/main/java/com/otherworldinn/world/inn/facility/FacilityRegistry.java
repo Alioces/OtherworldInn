@@ -2,6 +2,9 @@ package com.otherworldinn.world.inn.facility;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.world.map.MapPoint;
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -201,17 +204,18 @@ public final class FacilityRegistry {
                         new LevelUpgradeCost(
                                 List.of(
                                         new ItemStack(Items.COPPER_INGOT, 12),
-                                        new ItemStack(Items.FURNACE, 2)),
+                                        new ItemStack(Items.FURNACE, 4)),
                                 400),
                         new LevelUpgradeCost(
                                 List.of(
-                                        new ItemStack(Items.IRON_INGOT, 20),
-                                        new ItemStack(Items.BLAST_FURNACE, 1)),
+                                        new ItemStack(Items.COPPER_INGOT, 32),
+                                        new ItemStack(AllBlocks.BLAZE_BURNER.asItem(), 4)),
                                 900),
                         new LevelUpgradeCost(
                                 List.of(
-                                        new ItemStack(Items.GOLD_INGOT, 16),
-                                        new ItemStack(Items.BLAZE_ROD, 8)),
+                                        new ItemStack(AllBlocks.COPPER_CASING.asItem(), 16),
+                                        new ItemStack(AllBlocks.STEAM_ENGINE.asItem(), 4),
+                                        new ItemStack(AllBlocks.BLAZE_BURNER.asItem(), 9)),
                                 3200)),
                 new FacilityMapPointConfig(
                         new Vec3(30, 62, -39),
@@ -243,8 +247,9 @@ public final class FacilityRegistry {
                                 1200),
                         new LevelUpgradeCost(
                                 List.of(
-                                        new ItemStack(Items.LANTERN, 8),
-                                        new ItemStack(Items.BONE_MEAL, 32)),
+                                        new ItemStack(Items.GLASS, 32),
+                                        new ItemStack(Items.IRON_INGOT, 48),
+                                        new ItemStack(Items.LANTERN, 8)),
                                 2600)),
                 new FacilityMapPointConfig(
                         new Vec3(2, 71, 52),
