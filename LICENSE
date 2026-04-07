@@ -1,5 +1,39 @@
-All Rights Reserved.
+LICENSE / 许可证
 
-This project includes textures from the Corpse Complex mod(LGPLv3).
-This project includes textures from the Supernatural mod(MIT).
-This project includes code from create-utilities (https://github.com/Duqueeee/create-utilities), licensed under MIT.
+This project is licensed under the terms of the GNU General Public License (GPL).
+
+In addition, this project contains components from other open-source projects, which are redistributed under their respective licenses:
+
+1. Textures from Corpse Complex
+   - Source: https://github.com/TheIllusiveC4/CorpseComplex
+   - Licensed under: GNU Lesser General Public License version 3 (LGPLv3)
+
+2. Textures from Supernatural
+   - Source: https://github.com/Jusey1/Supernatural
+   - Licensed under: MIT License
+
+3. Code from create-utilities
+   - Source: https://github.com/Duqueeee/create-utilities
+   - Licensed under: MIT License
+
+All other original portions of this project are subject to the terms of the GNU General Public License.
+
+---
+
+本项目根据 GNU 通用公共许可证（GNU General Public License，GPL）的条款授权。
+
+此外，本项目包含来自其他开源项目的组件，这些组件按其各自的许可证进行再分发：
+
+1. Corpse Complex 中的纹理
+   - 来源：https://github.com/TheIllusiveC4/CorpseComplex
+   - 许可证：GNU 宽通用公共许可证第 3 版（LGPLv3）
+
+2. Supernatural 中的纹理
+   - 来源：https://github.com/Jusey1/Supernatural
+   - 许可证：MIT 许可证
+
+3. create-utilities 中的代码
+   - 来源：https://github.com/Duqueeee/create-utilities
+   - 许可证：MIT 许可证
+
+本项目中所有其他原创部分均受 GNU 通用公共许可证条款的约束。
