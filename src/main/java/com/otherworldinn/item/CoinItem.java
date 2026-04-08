@@ -6,9 +6,14 @@ import com.otherworldinn.init.ModSounds;
 import com.otherworldinn.world.entity.projectile.CoinProjectileEntity;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
+import java.util.UUID;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.sounds.SoundSource;
@@ -24,6 +29,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 
 public class CoinItem extends Item {
+    private static final String WITHDRAWN_SOURCE_TEAM_KEY = "WithdrawnSourceTeam";
+
     public CoinItem(Properties properties) {
         super(properties);
     }
@@ -129,6 +136,28 @@ public class CoinItem extends Item {
         return enchantment.is(Enchantments.CHANNELING);
     }
 
+    public static void markWithdrawnSourceTeam(ItemStack stack, UUID teamId) {
+        if (stack.isEmpty() || teamId == null) {
+            return;
+        }
+        CompoundTag tag =
+                stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        tag.putUUID(WITHDRAWN_SOURCE_TEAM_KEY, teamId);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
+    public static boolean isWithdrawnFromTeam(ItemStack stack, UUID teamId) {
+        if (stack.isEmpty() || teamId == null) {
+            return false;
+        }
+        CompoundTag tag =
+                stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).getUnsafe();
+        if (tag == null || !tag.contains(WITHDRAWN_SOURCE_TEAM_KEY)) {
+            return false;
+        }
+        return teamId.equals(tag.getUUID(WITHDRAWN_SOURCE_TEAM_KEY));
+    }
+
     private boolean depositOne(ServerPlayer player, InteractionHand hand) {
         TeamData team = TeamManager.getInstance().getPlayerTeam(player);
         if (team == null) {
@@ -142,10 +171,16 @@ public class CoinItem extends Item {
         if (stack.isEmpty()) {
             return false;
         }
+        boolean fromSameTeamWithdrawal = isWithdrawnFromTeam(stack, team.getTeamId());
         if (!player.getAbilities().instabuild) {
             stack.shrink(1);
         }
         team.addCoins(1, player.getServer());
+        if (!fromSameTeamWithdrawal
+                && !player.getAbilities().instabuild
+                && player.level() instanceof ServerLevel serverLevel) {
+            team.getInnData().recordOtherIncome(1, serverLevel);
+        }
         TeamManager.getInstance().syncTeam(team, player.getServer());
         return true;
     }

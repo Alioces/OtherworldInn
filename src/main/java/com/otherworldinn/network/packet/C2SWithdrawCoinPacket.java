@@ -2,6 +2,7 @@ package com.otherworldinn.network.packet;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.init.ModItems;
+import com.otherworldinn.item.CoinItem;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -40,6 +41,7 @@ public record C2SWithdrawCoinPacket() implements CustomPacketPayload {
                         return;
                     }
                     ItemStack coin = new ItemStack(ModItems.COIN.get());
+                    CoinItem.markWithdrawnSourceTeam(coin, team.getTeamId());
                     if (!player.getInventory().add(coin)) {
                         player.drop(coin, false);
                     }

@@ -409,12 +409,34 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.inventory.overlay.reputation_detail")
                 .zh("声望：%s/%s")
                 .en("Reputation: %s/%s");
+        entry("message.otherworldinn.inventory.overlay.level_up.title")
+                .zh("升星要求")
+                .en("Star Upgrade Requirements");
+        entry("message.otherworldinn.inventory.overlay.level_up.max")
+                .zh("已达到最高星级")
+                .en("Already at max star rating");
+        entry("message.otherworldinn.inventory.overlay.level_up.target_rating")
+                .zh("目标星级：%s 星")
+                .en("Target Rating: %s★");
+        entry("message.otherworldinn.inventory.overlay.level_up.requirement.rooms")
+                .zh("房间数量：%s/%s（%s）")
+                .en("Room Count: %s/%s (%s)");
+        entry("message.otherworldinn.inventory.overlay.level_up.requirement.income")
+                .zh("总营业额：§f\uE001§r%s/§f\uE001§r%s（%s）")
+                .en("Total Income: §f\uE001§r%s/§f\uE001§r%s (%s)");
+        entry("message.otherworldinn.inventory.overlay.level_up.requirement.reputation")
+                .zh("声望：%s/%s（%s）")
+                .en("Reputation: %s/%s (%s)");
+        entry("message.otherworldinn.inventory.overlay.level_up.status.pass").zh("达成").en("Met");
+        entry("message.otherworldinn.inventory.overlay.level_up.status.fail")
+                .zh("未达成")
+                .en("Not Met");
         entry("message.otherworldinn.inventory.overlay.income.title")
                 .zh("收入统计")
                 .en("Income Breakdown");
         entry("message.otherworldinn.inventory.overlay.income.total")
-                .zh("总收入")
-                .en("Total Income");
+                .zh("总收入：§f\uE001§r%s")
+                .en("Total Income: §f\uE001§r%s");
         entry("message.otherworldinn.inventory.overlay.income.yesterday")
                 .zh("昨日收入")
                 .en("Yesterday Income");
@@ -424,6 +446,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.inventory.overlay.income.dining")
                 .zh("餐饮：§f\uE001§r%s")
                 .en("Dining: §f\uE001§r%s");
+        entry("message.otherworldinn.inventory.overlay.income.other")
+                .zh("其它：§f\uE001§r%s")
+                .en("Other: §f\uE001§r%s");
 
         // 旅社钥匙
         entry("message.otherworldinn.inn_key.no_permission")

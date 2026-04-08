@@ -99,12 +99,117 @@ public class InventoryTeamOverlay {
                 && mouseX <= contentLeft + ratingWidth
                 && mouseY >= y
                 && mouseY <= y + lineHeight) {
-            Component tooltip =
-                    Component.translatable(
-                            "message.otherworldinn.inventory.overlay.reputation_detail",
-                            team.getInnData().getReputation(),
-                            team.getInnData().getMaxReputation(displayRating));
-            guiGraphics.renderTooltip(mc.font, tooltip, mouseX, mouseY);
+            InnData innData = team.getInnData();
+            List<Component> tooltip = new ArrayList<>();
+            tooltip.add(
+                    Component.translatable("message.otherworldinn.inventory.overlay.level_up.title")
+                            .withStyle(ChatFormatting.GOLD));
+
+            int currentRating = Math.max(0, Math.min(5, innData.getRating()));
+            if (currentRating >= 5) {
+                tooltip.add(
+                        Component.translatable("message.otherworldinn.inventory.overlay.level_up.max")
+                                .withStyle(ChatFormatting.YELLOW));
+            } else {
+                int targetRating = currentRating + 1;
+                int currentRooms = innData.getRoomCount();
+                int requiredRooms = innData.getRequiredRoomCount(currentRating);
+                int currentIncome = innData.getTotalIncome();
+                int requiredIncome = innData.getRequiredTotalIncome(currentRating);
+                int currentReputation = innData.getReputation();
+                int requiredReputation = innData.getMaxReputation(currentRating);
+
+                tooltip.add(
+                        Component.translatable(
+                                        "message.otherworldinn.inventory.overlay.level_up.target_rating",
+                                        targetRating)
+                                .withStyle(ChatFormatting.YELLOW));
+                boolean roomRequirementMet = currentRooms >= requiredRooms;
+                Component roomCurrentText =
+                        Component.literal(String.valueOf(currentRooms))
+                                .withStyle(
+                                        roomRequirementMet ? ChatFormatting.WHITE : ChatFormatting.RED);
+                Component roomRequiredText =
+                        Component.literal(String.valueOf(requiredRooms))
+                                .withStyle(ChatFormatting.WHITE);
+                Component roomStatusText =
+                        Component.translatable(
+                                        roomRequirementMet
+                                                ? "message.otherworldinn.inventory.overlay.level_up.status.pass"
+                                                : "message.otherworldinn.inventory.overlay.level_up.status.fail")
+                                .withStyle(
+                                        roomRequirementMet ? ChatFormatting.GREEN : ChatFormatting.RED);
+                tooltip.add(
+                        Component.literal("  ")
+                                .append(
+                                        Component.translatable(
+                                                        "message.otherworldinn.inventory.overlay.level_up.requirement.rooms",
+                                                        roomCurrentText,
+                                                        roomRequiredText,
+                                                        roomStatusText)
+                                                .withStyle(ChatFormatting.GRAY)));
+                boolean incomeRequirementMet = currentIncome >= requiredIncome;
+                Component incomeCurrentText =
+                        Component.literal(String.valueOf(currentIncome))
+                                .withStyle(
+                                        incomeRequirementMet
+                                                ? ChatFormatting.WHITE
+                                                : ChatFormatting.RED);
+                Component incomeRequiredText =
+                        Component.literal(String.valueOf(requiredIncome))
+                                .withStyle(ChatFormatting.WHITE);
+                Component incomeStatusText =
+                        Component.translatable(
+                                        incomeRequirementMet
+                                                ? "message.otherworldinn.inventory.overlay.level_up.status.pass"
+                                                : "message.otherworldinn.inventory.overlay.level_up.status.fail")
+                                .withStyle(
+                                        incomeRequirementMet
+                                                ? ChatFormatting.GREEN
+                                                : ChatFormatting.RED);
+                tooltip.add(
+                        Component.literal("  ")
+                                .append(
+                                        Component.translatable(
+                                                        "message.otherworldinn.inventory.overlay.level_up.requirement.income",
+                                                        incomeCurrentText,
+                                                        incomeRequiredText,
+                                                        incomeStatusText)
+                                                .withStyle(ChatFormatting.GRAY)));
+                boolean reputationRequirementMet = currentReputation >= requiredReputation;
+                Component reputationCurrentText =
+                        Component.literal(String.valueOf(currentReputation))
+                                .withStyle(
+                                        reputationRequirementMet
+                                                ? ChatFormatting.WHITE
+                                                : ChatFormatting.RED);
+                Component reputationRequiredText =
+                        Component.literal(String.valueOf(requiredReputation))
+                                .withStyle(ChatFormatting.WHITE);
+                Component reputationStatusText =
+                        Component.translatable(
+                                        reputationRequirementMet
+                                                ? "message.otherworldinn.inventory.overlay.level_up.status.pass"
+                                                : "message.otherworldinn.inventory.overlay.level_up.status.fail")
+                                .withStyle(
+                                        reputationRequirementMet
+                                                ? ChatFormatting.GREEN
+                                                : ChatFormatting.RED);
+                tooltip.add(
+                        Component.literal("  ")
+                                .append(
+                                        Component.translatable(
+                                                        "message.otherworldinn.inventory.overlay.level_up.requirement.reputation",
+                                                        reputationCurrentText,
+                                                        reputationRequiredText,
+                                                        reputationStatusText)
+                                                .withStyle(ChatFormatting.GRAY)));
+            }
+            List<FormattedCharSequence> tooltipLines = new ArrayList<>();
+            for (Component line : tooltip) {
+                tooltipLines.add(Language.getInstance().getVisualOrder(line));
+            }
+            guiGraphics.renderTooltip(mc.font, tooltipLines, mouseX, mouseY);
             return;
         }
 
@@ -119,7 +224,9 @@ public class InventoryTeamOverlay {
                     Component.translatable("message.otherworldinn.inventory.overlay.income.title")
                             .withStyle(ChatFormatting.GOLD));
             tooltip.add(
-                    Component.translatable("message.otherworldinn.inventory.overlay.income.total")
+                    Component.translatable(
+                                    "message.otherworldinn.inventory.overlay.income.total",
+                                    innData.getTotalIncome())
                             .withStyle(ChatFormatting.YELLOW));
             tooltip.add(
                     Component.literal("  ")
@@ -134,6 +241,13 @@ public class InventoryTeamOverlay {
                                     Component.translatable(
                                                     "message.otherworldinn.inventory.overlay.income.dining",
                                                     innData.getTotalDiningIncome())
+                                            .withStyle(ChatFormatting.GRAY)));
+            tooltip.add(
+                    Component.literal("  ")
+                            .append(
+                                    Component.translatable(
+                                                    "message.otherworldinn.inventory.overlay.income.other",
+                                                    innData.getTotalOtherIncome())
                                             .withStyle(ChatFormatting.GRAY)));
             tooltip.add(
                     Component.translatable("message.otherworldinn.inventory.overlay.income.yesterday")
@@ -151,6 +265,13 @@ public class InventoryTeamOverlay {
                                     Component.translatable(
                                                     "message.otherworldinn.inventory.overlay.income.dining",
                                                     innData.getYesterdayDiningIncome())
+                                            .withStyle(ChatFormatting.DARK_AQUA)));
+            tooltip.add(
+                    Component.literal("  ")
+                            .append(
+                                    Component.translatable(
+                                                    "message.otherworldinn.inventory.overlay.income.other",
+                                                    innData.getYesterdayOtherIncome())
                                             .withStyle(ChatFormatting.DARK_AQUA)));
             tooltip.add(Component.empty());
             tooltip.add(

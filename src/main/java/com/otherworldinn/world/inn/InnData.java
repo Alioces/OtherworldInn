@@ -58,16 +58,25 @@ public class InnData {
     private int totalDiningIncome = 0;
 
     @Setter(AccessLevel.NONE)
+    private int totalOtherIncome = 0;
+
+    @Setter(AccessLevel.NONE)
     private int todayLodgingIncome = 0;
 
     @Setter(AccessLevel.NONE)
     private int todayDiningIncome = 0;
 
     @Setter(AccessLevel.NONE)
+    private int todayOtherIncome = 0;
+
+    @Setter(AccessLevel.NONE)
     private int yesterdayLodgingIncome = 0;
 
     @Setter(AccessLevel.NONE)
     private int yesterdayDiningIncome = 0;
+
+    @Setter(AccessLevel.NONE)
+    private int yesterdayOtherIncome = 0;
 
     @Setter(AccessLevel.NONE)
     private long incomeStatDay = -1L;
@@ -99,6 +108,8 @@ public class InnData {
     private static final int MIN_SPAWN_DELAY_TICKS = 600;
     private static final int MAX_SPAWN_DELAY_TICKS = 7200;
     private static final int[] REPUTATION_REQUIREMENTS_BY_RATING = {100, 250, 450, 700, 1000, 1350};
+    private static final int[] ROOM_REQUIREMENTS_BY_RATING = {2, 4, 6, 8, 10, 12};
+    private static final int[] TOTAL_INCOME_REQUIREMENTS_BY_RATING = {200, 800, 2000, 4500, 9000, 15000};
 
     public InnData() {}
 
@@ -123,6 +134,16 @@ public class InnData {
         return REPUTATION_REQUIREMENTS_BY_RATING[clamped];
     }
 
+    public int getRequiredRoomCount(int rating) {
+        int clamped = Math.max(0, Math.min(5, rating));
+        return ROOM_REQUIREMENTS_BY_RATING[clamped];
+    }
+
+    public int getRequiredTotalIncome(int rating) {
+        int clamped = Math.max(0, Math.min(5, rating));
+        return TOTAL_INCOME_REQUIREMENTS_BY_RATING[clamped];
+    }
+
     /**
      * 增加声望
      *
@@ -136,11 +157,11 @@ public class InnData {
     }
 
     public int getTotalIncome() {
-        return totalLodgingIncome + totalDiningIncome;
+        return totalLodgingIncome + totalDiningIncome + totalOtherIncome;
     }
 
     public int getYesterdayIncome() {
-        return yesterdayLodgingIncome + yesterdayDiningIncome;
+        return yesterdayLodgingIncome + yesterdayDiningIncome + yesterdayOtherIncome;
     }
 
     public void recordLodgingIncome(int amount, ServerLevel level) {
@@ -161,6 +182,15 @@ public class InnData {
         todayDiningIncome += amount;
     }
 
+    public void recordOtherIncome(int amount, ServerLevel level) {
+        if (amount <= 0) {
+            return;
+        }
+        syncIncomeStatDay(level);
+        totalOtherIncome += amount;
+        todayOtherIncome += amount;
+    }
+
     private void syncIncomeStatDay(ServerLevel level) {
         long currentDay = level.getDayTime() / 24000L;
         if (incomeStatDay < 0L) {
@@ -173,22 +203,40 @@ public class InnData {
         if (currentDay == incomeStatDay + 1L) {
             yesterdayLodgingIncome = todayLodgingIncome;
             yesterdayDiningIncome = todayDiningIncome;
+            yesterdayOtherIncome = todayOtherIncome;
         } else {
             yesterdayLodgingIncome = 0;
             yesterdayDiningIncome = 0;
+            yesterdayOtherIncome = 0;
         }
         todayLodgingIncome = 0;
         todayDiningIncome = 0;
+        todayOtherIncome = 0;
         incomeStatDay = currentDay;
     }
 
-    /**
-     * 检查是否可以升级旅社星级
-     *
-     * <p>逻辑暂时留空。
-     */
-    public void checkLevelUp() {
-        // TODO: 实现升级逻辑
+    public boolean checkLevelUp() {
+        if (this.rating >= 5) {
+            return false;
+        }
+
+        int clampedRating = Math.max(0, Math.min(5, this.rating));
+        int requiredRoomCount = getRequiredRoomCount(clampedRating);
+        int requiredTotalIncome = getRequiredTotalIncome(clampedRating);
+        int requiredReputation = getMaxReputation(clampedRating);
+
+        if (getRoomCount() < requiredRoomCount) {
+            return false;
+        }
+        if (getTotalIncome() < requiredTotalIncome) {
+            return false;
+        }
+        if (this.reputation < requiredReputation) {
+            return false;
+        }
+
+        this.rating = Math.min(5, this.rating + 1);
+        return true;
     }
 
     /**
@@ -1155,10 +1203,13 @@ public class InnData {
         tag.putInt("Reputation", reputation);
         tag.putInt("TotalLodgingIncome", totalLodgingIncome);
         tag.putInt("TotalDiningIncome", totalDiningIncome);
+        tag.putInt("TotalOtherIncome", totalOtherIncome);
         tag.putInt("TodayLodgingIncome", todayLodgingIncome);
         tag.putInt("TodayDiningIncome", todayDiningIncome);
+        tag.putInt("TodayOtherIncome", todayOtherIncome);
         tag.putInt("YesterdayLodgingIncome", yesterdayLodgingIncome);
         tag.putInt("YesterdayDiningIncome", yesterdayDiningIncome);
+        tag.putInt("YesterdayOtherIncome", yesterdayOtherIncome);
         tag.putLong("IncomeStatDay", incomeStatDay);
         tag.putString("State", state.name());
 
@@ -1218,6 +1269,11 @@ public class InnData {
         } else {
             totalDiningIncome = 0;
         }
+        if (tag.contains("TotalOtherIncome")) {
+            totalOtherIncome = tag.getInt("TotalOtherIncome");
+        } else {
+            totalOtherIncome = 0;
+        }
         if (tag.contains("TodayLodgingIncome")) {
             todayLodgingIncome = tag.getInt("TodayLodgingIncome");
         } else {
@@ -1228,6 +1284,11 @@ public class InnData {
         } else {
             todayDiningIncome = 0;
         }
+        if (tag.contains("TodayOtherIncome")) {
+            todayOtherIncome = tag.getInt("TodayOtherIncome");
+        } else {
+            todayOtherIncome = 0;
+        }
         if (tag.contains("YesterdayLodgingIncome")) {
             yesterdayLodgingIncome = tag.getInt("YesterdayLodgingIncome");
         } else {
@@ -1237,6 +1298,11 @@ public class InnData {
             yesterdayDiningIncome = tag.getInt("YesterdayDiningIncome");
         } else {
             yesterdayDiningIncome = 0;
+        }
+        if (tag.contains("YesterdayOtherIncome")) {
+            yesterdayOtherIncome = tag.getInt("YesterdayOtherIncome");
+        } else {
+            yesterdayOtherIncome = 0;
         }
         if (tag.contains("IncomeStatDay")) {
             incomeStatDay = tag.getLong("IncomeStatDay");
