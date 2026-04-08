@@ -16,7 +16,8 @@
     "MixinReskillableSkillButton",
     "MixinReskillableSkillScreen",
     "MixinReskillableSkillModel",
-    "MixinReskillableRequestLevelUp"
+    "MixinReskillableRequestLevelUp",
+    "MixinFTBUltimineServerConfig"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -6,7 +6,7 @@ In addition, this project contains components from other open-source projects, w
 
 1. Textures from Corpse Complex
    - Source: https://github.com/TheIllusiveC4/CorpseComplex
-   - Licensed under: GNU Lesser General Public License version 3 (LGPLv3)
+   - Licensed under: LGPLv3
 
 2. Textures from Supernatural
    - Source: https://github.com/Jusey1/Supernatural
@@ -15,6 +15,10 @@ In addition, this project contains components from other open-source projects, w
 3. Code from create-utilities
    - Source: https://github.com/Duqueeee/create-utilities
    - Licensed under: MIT License
+
+4. Code from Bountiful
+   - Source: https://github.com/ejektaflex/Bountiful
+   - Licensed under: GPL-3.0
 
 All other original portions of this project are subject to the terms of the GNU General Public License.
 
@@ -26,7 +30,7 @@ All other original portions of this project are subject to the terms of the GNU 
 
 1. Corpse Complex 中的纹理
    - 来源：https://github.com/TheIllusiveC4/CorpseComplex
-   - 许可证：GNU 宽通用公共许可证第 3 版（LGPLv3）
+   - 许可证：LGPLv3
 
 2. Supernatural 中的纹理
    - 来源：https://github.com/Jusey1/Supernatural
@@ -35,5 +39,9 @@ All other original portions of this project are subject to the terms of the GNU 
 3. create-utilities 中的代码
    - 来源：https://github.com/Duqueeee/create-utilities
    - 许可证：MIT 许可证
+
+4. Bountiful 中的代码
+   - 来源：https://github.com/ejektaflex/Bountiful
+   - 许可证：GPL-3.0
 
 本项目中所有其他原创部分均受 GNU 通用公共许可证条款的约束。
