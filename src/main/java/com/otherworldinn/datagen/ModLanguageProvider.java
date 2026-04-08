@@ -470,6 +470,18 @@ public class ModLanguageProvider extends LanguageProvider {
                 .zh("旅社已歇业，快去休息吧...")
                 .en("The Inn is now CLOSED. Time to rest...");
         entry("message.otherworldinn.inn_key.status").zh("当前状态: %s").en("Current State: %s");
+        entry("message.otherworldinn.inn_upgrade_voucher.overlay.use")
+                .zh("尝试提升旅社评级")
+                .en("Attempt Inn Rating Upgrade");
+        entry("message.otherworldinn.inn_upgrade_voucher.no_team")
+                .zh("你当前不在任何队伍中")
+                .en("You are not in any team");
+        entry("message.otherworldinn.inn_upgrade_voucher.fail")
+                .zh("当前条件不足，无法提升旅社评级")
+                .en("Current requirements are not met. Inn rating cannot be upgraded.");
+        entry("message.otherworldinn.inn_upgrade_voucher.success")
+                .zh("旅社评级提升成功：%s 星 → %s 星")
+                .en("Inn rating upgraded successfully: %s★ -> %s★");
         entry("message.otherworldinn.space_sphere.no_team")
                 .zh("你当前不在任何队伍中")
                 .en("You are not in any team");

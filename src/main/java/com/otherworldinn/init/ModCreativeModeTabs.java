@@ -29,6 +29,7 @@ public class ModCreativeModeTabs {
                                                 output.accept(ModItems.MESSY_BED_SHEET.get());
                                                 output.accept(ModItems.LAND_DEED.get());
                                                 output.accept(ModItems.INN_KEY.get());
+                                                output.accept(ModItems.INN_UPGRADE_VOUCHER.get());
                                                 output.accept(ModItems.ROOM_KEY.get());
                                                 output.accept(ModItems.SPACE_SPHERE.get());
                                                 output.accept(ModItems.NETHER_SPACE_SPHERE.get());

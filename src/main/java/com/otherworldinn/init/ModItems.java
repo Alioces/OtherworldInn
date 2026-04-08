@@ -7,6 +7,7 @@ import com.otherworldinn.item.BedSheetItem;
 import com.otherworldinn.item.CoinItem;
 import com.otherworldinn.item.EndSpaceSphereItem;
 import com.otherworldinn.item.InnKeyItem;
+import com.otherworldinn.item.InnUpgradeVoucherItem;
 import com.otherworldinn.item.LandDeedItem;
 import com.otherworldinn.item.MessyBedSheetItem;
 import com.otherworldinn.item.NetherSpaceSphereItem;
@@ -98,6 +99,17 @@ public class ModItems {
                     .lang("Inn Key", "旅社钥匙")
                     .tooltip("Right click Desk Bell to toggle Inn state", "潜行右键前台铃铛以切换旅社状态");
     public static final DeferredItem<InnKeyItem> INN_KEY = INN_KEY_REG.register();
+
+    public static final ItemReg<InnUpgradeVoucherItem> INN_UPGRADE_VOUCHER_REG =
+            new ItemReg<>("inn_upgrade_voucher", InnUpgradeVoucherItem::new)
+                    .rarity(Rarity.RARE)
+                    .stacksTo(16)
+                    .lang("Inn Upgrade Voucher", "旅社升级凭证")
+                    .tooltip(
+                            "Right click to attempt upgrading Inn rating",
+                            "右键提升旅社评级");
+    public static final DeferredItem<InnUpgradeVoucherItem> INN_UPGRADE_VOUCHER =
+            INN_UPGRADE_VOUCHER_REG.register();
 
     public static final ItemReg<Item> FACILITY_UPGRADE_TEMPLATE_REG =
             register("facility_upgrade_template")
