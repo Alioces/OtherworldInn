@@ -1,6 +1,7 @@
 package com.otherworldinn.world.inn.facility;
 
 import com.otherworldinn.world.event.TownStructurePlacer;
+import com.otherworldinn.util.AdvancementUtils;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import java.util.List;
@@ -123,6 +124,11 @@ public final class FacilityUpgradeService {
         if (isRepair) {
             TeamManager.getInstance()
                     .unlockMapPoint(team, context.facility().mapPointId(), player.getServer());
+            if ("boiler_room".equals(context.facility().id())) {
+                AdvancementUtils.award(player, AdvancementUtils.REPAIR_BOILER_ROOM);
+            } else if ("greenhouse".equals(context.facility().id())) {
+                AdvancementUtils.award(player, AdvancementUtils.REPAIR_GREENHOUSE);
+            }
         }
         TeamManager.getInstance().syncTeam(team, player.getServer());
         String resultKey =

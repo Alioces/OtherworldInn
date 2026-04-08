@@ -59,6 +59,44 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("advancements.otherworldinn.maimai_hidden.description")
                 .zh("将金币投入某个地方")
                 .en("Put a coin into somewhere");
+        entry("advancements.otherworldinn.repair_boiler_room.title")
+                .zh("修复锅炉房")
+                .en("Repair Boiler Room");
+        entry("advancements.otherworldinn.repair_boiler_room.description")
+                .zh("成功修复锅炉房设施")
+                .en("Successfully repair the boiler room facility");
+        entry("advancements.otherworldinn.repair_greenhouse.title")
+                .zh("修复温室")
+                .en("Repair Greenhouse");
+        entry("advancements.otherworldinn.repair_greenhouse.description")
+                .zh("成功修复温室设施")
+                .en("Successfully repair the greenhouse facility");
+        entry("advancements.otherworldinn.inn_rating_1.title").zh("新的开端").en("A New Beginning");
+        entry("advancements.otherworldinn.inn_rating_1.description")
+                .zh("将旅社星级提升至 1 级")
+                .en("Upgrade inn rating to level 1");
+        entry("advancements.otherworldinn.inn_rating_2.title").zh("初具规模").en("Taking Shape");
+        entry("advancements.otherworldinn.inn_rating_2.description")
+                .zh("将旅社星级提升至 2 级")
+                .en("Upgrade inn rating to level 2");
+        entry("advancements.otherworldinn.inn_rating_3.title").zh("小有成就").en("Making Progress");
+        entry("advancements.otherworldinn.inn_rating_3.description")
+                .zh("将旅社星级提升至 3 级")
+                .en("Upgrade inn rating to level 3");
+        entry("advancements.otherworldinn.inn_rating_4.title").zh("门庭若市").en("Bustling Inn");
+        entry("advancements.otherworldinn.inn_rating_4.description")
+                .zh("将旅社星级提升至 4 级")
+                .en("Upgrade inn rating to level 4");
+        entry("advancements.otherworldinn.inn_rating_5.title").zh("名扬天下").en("Renowned Everywhere");
+        entry("advancements.otherworldinn.inn_rating_5.description")
+                .zh("将旅社星级提升至 5 级")
+                .en("Upgrade inn rating to level 5");
+        entry("advancements.otherworldinn.serve_one_vip.title")
+                .zh("贵宾之礼")
+                .en("VIP Hospitality");
+        entry("advancements.otherworldinn.serve_one_vip.description")
+                .zh("成功完成一位贵宾的点单餐品")
+                .en("Successfully complete one VIP guest meal order");
         entry("facility.otherworldinn.overlay.title").zh("设施状态").en("Facility Status");
         entry("facility.otherworldinn.overlay.name").zh("名称: %s").en("Name: %s");
         entry("facility.otherworldinn.overlay.level").zh("等级: %s/%s").en("Level: %s/%s");

@@ -3,6 +3,7 @@ package com.otherworldinn.entity.base;
 import com.otherworldinn.world.economy.service.ItemSellPriceManager;
 import com.otherworldinn.world.inn.GuestData;
 import com.otherworldinn.world.inn.InnData;
+import com.otherworldinn.util.AdvancementUtils;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import java.util.List;
@@ -18,6 +19,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -186,6 +188,9 @@ public abstract class VipGuestEntity extends GuestEntity {
                         0.02D);
                 level.playSound(
                         null, this.blockPosition(), SoundEvents.VILLAGER_YES, SoundSource.NEUTRAL, 1.0F, 1.1F);
+                if (player instanceof ServerPlayer serverPlayer) {
+                    AdvancementUtils.award(serverPlayer, AdvancementUtils.SERVE_ONE_VIP);
+                }
                 clearVipWaitingState(level, true);
                 scheduleNextVipOrder(level);
                 return InteractionResult.SUCCESS;

@@ -1,0 +1,23 @@
+{
+  "parent": "otherworldinn:inn_rating_3",
+  "display": {
+    "icon": {
+      "id": "minecraft:gold_ingot"
+    },
+    "title": {
+      "translate": "advancements.otherworldinn.inn_rating_4.title"
+    },
+    "description": {
+      "translate": "advancements.otherworldinn.inn_rating_4.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "unlock": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

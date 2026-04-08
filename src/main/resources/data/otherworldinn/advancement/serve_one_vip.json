@@ -1,0 +1,23 @@
+{
+  "parent": "otherworldinn:root",
+  "display": {
+    "icon": {
+      "id": "minecraft:netherite_ingot"
+    },
+    "title": {
+      "translate": "advancements.otherworldinn.serve_one_vip.title"
+    },
+    "description": {
+      "translate": "advancements.otherworldinn.serve_one_vip.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "unlock": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

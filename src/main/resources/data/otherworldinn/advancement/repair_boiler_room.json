@@ -1,0 +1,23 @@
+{
+  "parent": "otherworldinn:root",
+  "display": {
+    "icon": {
+      "id": "minecraft:furnace"
+    },
+    "title": {
+      "translate": "advancements.otherworldinn.repair_boiler_room.title"
+    },
+    "description": {
+      "translate": "advancements.otherworldinn.repair_boiler_room.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "unlock": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

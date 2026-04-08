@@ -1,6 +1,7 @@
 package com.otherworldinn.item;
 
 import com.otherworldinn.foundation.ModColors;
+import com.otherworldinn.util.AdvancementUtils;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
@@ -55,6 +56,7 @@ public class InnUpgradeVoucherItem extends Item {
         if (!serverPlayer.getAbilities().instabuild) {
             stack.shrink(1);
         }
+        AdvancementUtils.awardInnRatingProgress(serverPlayer, innData.getRating());
         serverPlayer.displayClientMessage(
                 Component.translatable(
                                 "message.otherworldinn.inn_upgrade_voucher.success",

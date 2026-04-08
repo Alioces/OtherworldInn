@@ -1,0 +1,23 @@
+{
+  "parent": "otherworldinn:repair_boiler_room",
+  "display": {
+    "icon": {
+      "id": "minecraft:glass"
+    },
+    "title": {
+      "translate": "advancements.otherworldinn.repair_greenhouse.title"
+    },
+    "description": {
+      "translate": "advancements.otherworldinn.repair_greenhouse.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "unlock": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

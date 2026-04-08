@@ -1,0 +1,23 @@
+{
+  "parent": "otherworldinn:root",
+  "display": {
+    "icon": {
+      "id": "minecraft:oak_planks"
+    },
+    "title": {
+      "translate": "advancements.otherworldinn.inn_rating_1.title"
+    },
+    "description": {
+      "translate": "advancements.otherworldinn.inn_rating_1.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "unlock": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}
