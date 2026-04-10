@@ -49,8 +49,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 
@@ -640,6 +642,93 @@ public abstract class GuestEntity extends PathfinderMob {
         this.setNavigationTarget(target);
     }
 
+    private boolean handleSleepBehavior(ServerLevel level) {
+        if (this.guestData.getState() != GuestData.GuestState.CHECKED_IN) {
+            if (this.isSleeping()) {
+                this.stopSleeping();
+            }
+            return false;
+        }
+        if (!level.isNight()) {
+            if (this.isSleeping()) {
+                this.stopSleeping();
+            }
+            return false;
+        }
+        BlockPos assignedBed = this.guestData.getAssignedBedPos();
+        if (assignedBed == null) {
+            return true;
+        }
+        BlockPos bedHeadPos = normalizeBedHeadPos(level, assignedBed);
+        if (bedHeadPos == null) {
+            return true;
+        }
+        if (this.isSleeping()) {
+            if (this.getSleepingPos().isPresent() && bedHeadPos.equals(this.getSleepingPos().get())) {
+                return true;
+            }
+            this.stopSleeping();
+        }
+        double distSqr =
+                this.distanceToSqr(
+                        bedHeadPos.getX() + 0.5D, bedHeadPos.getY(), bedHeadPos.getZ() + 0.5D);
+        if (distSqr <= 3.0D) {
+            this.startSleeping(bedHeadPos);
+            this.clearNavigationTarget();
+            return true;
+        }
+        BlockPos approachPos = findBedApproachPos(level, bedHeadPos);
+        if (approachPos != null && (this.navigationTarget == null || !this.navigationTarget.equals(approachPos))) {
+            this.setNavigationTarget(approachPos);
+        }
+        return true;
+    }
+
+    @Nullable
+    private BlockPos normalizeBedHeadPos(ServerLevel level, BlockPos bedPos) {
+        BlockState state = level.getBlockState(bedPos);
+        if (!(state.getBlock() instanceof BedBlock) || !state.hasProperty(BedBlock.PART)) {
+            return null;
+        }
+        if (state.getValue(BedBlock.PART) == BedPart.HEAD) {
+            return bedPos.immutable();
+        }
+        if (!state.hasProperty(BedBlock.FACING)) {
+            return null;
+        }
+        return bedPos.relative(state.getValue(BedBlock.FACING)).immutable();
+    }
+
+    @Nullable
+    private BlockPos findBedApproachPos(ServerLevel level, BlockPos bedHeadPos) {
+        BlockState headState = level.getBlockState(bedHeadPos);
+        if (!(headState.getBlock() instanceof BedBlock)
+                || !headState.hasProperty(BedBlock.FACING)
+                || !headState.hasProperty(BedBlock.PART)
+                || headState.getValue(BedBlock.PART) != BedPart.HEAD) {
+            return null;
+        }
+        net.minecraft.core.Direction facing = headState.getValue(BedBlock.FACING);
+        BlockPos footPos = bedHeadPos.relative(facing.getOpposite());
+        BlockPos[] candidates =
+                new BlockPos[] {
+                    footPos.relative(facing.getOpposite()),
+                    footPos.relative(facing.getClockWise()),
+                    footPos.relative(facing.getCounterClockWise()),
+                    bedHeadPos.relative(facing),
+                    footPos
+                };
+        for (BlockPos candidate : candidates) {
+            BlockState feetState = level.getBlockState(candidate);
+            BlockState headAboveState = level.getBlockState(candidate.above());
+            BlockState groundState = level.getBlockState(candidate.below());
+            if (!feetState.isSolid() && !headAboveState.isSolid() && groundState.isSolid()) {
+                return candidate.immutable();
+            }
+        }
+        return null;
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -666,8 +755,11 @@ public abstract class GuestEntity extends PathfinderMob {
                 }
             }
 
-            if (this.level() instanceof ServerLevel serverLevel && shouldRunBudgetDiningBehavior()) {
-                handleDiningPurchase(serverLevel);
+            if (this.level() instanceof ServerLevel serverLevel) {
+                boolean sleepingHandled = handleSleepBehavior(serverLevel);
+                if (!sleepingHandled && shouldRunBudgetDiningBehavior()) {
+                    handleDiningPurchase(serverLevel);
+                }
             }
 
             // 同步状态到 SynchedEntityData

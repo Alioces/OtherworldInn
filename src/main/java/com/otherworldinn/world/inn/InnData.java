@@ -597,14 +597,22 @@ public class InnData {
         // 执行入住逻辑
         if (room.addGuest(guestId)) {
             guest.setRoomId(roomId);
+            BlockPos assignedBedPos = claimUnassignedBedForGuest(room, guestId, level);
+            if (assignedBedPos == null) {
+                room.removeGuest(guestId);
+                guest.setRoomId(-1);
+                return false;
+            }
+            guest.setAssignedBedPos(assignedBedPos);
             // 更新偏好分数
             guest.updatePreferenceScore(room);
             this.addGuest(guestId);
 
-            // 让实体寻路到房间中心
+            // 让实体寻路到房间
             Entity entity = level.getEntity(guestId);
             if (entity instanceof GuestEntity guestEntity) {
-                BlockPos targetPos = findBestRoomNavigationTarget(level, guestEntity, room);
+                BlockPos targetPos =
+                        findBestRoomNavigationTarget(level, guestEntity, room, assignedBedPos);
                 guestEntity.setNavigationTarget(targetPos);
 
                 // 移除剪贴板 TODO
@@ -634,7 +642,14 @@ public class InnData {
     }
 
     private BlockPos findBestRoomNavigationTarget(
-            ServerLevel level, GuestEntity guestEntity, RoomData room) {
+            ServerLevel level, GuestEntity guestEntity, RoomData room, BlockPos assignedBedPos) {
+        BlockPos bedApproach = findBedApproachTarget(level, assignedBedPos);
+        if (bedApproach != null) {
+            Path path = guestEntity.getNavigation().createPath(bedApproach, 0);
+            if (path != null && path.canReach()) {
+                return bedApproach;
+            }
+        }
         BlockPos min = room.getMinPos();
         BlockPos max = room.getMaxPos();
         int centerX = (min.getX() + max.getX()) / 2;
@@ -672,6 +687,124 @@ public class InnData {
             return fallback.above();
         }
         return fallback;
+    }
+
+    private BlockPos claimUnassignedBedForGuest(RoomData room, UUID guestId, ServerLevel level) {
+        List<BlockPos> cleanBedHeads = collectCleanBedHeads(room, level);
+        if (cleanBedHeads.isEmpty()) {
+            return null;
+        }
+        double centerX = (room.getMinPos().getX() + room.getMaxPos().getX()) / 2.0D;
+        double centerY = room.getMinPos().getY() + 1.0D;
+        double centerZ = (room.getMinPos().getZ() + room.getMaxPos().getZ()) / 2.0D;
+        cleanBedHeads.sort(
+                Comparator.comparingDouble(
+                        pos -> {
+                            double dx = pos.getX() - centerX;
+                            double dy = pos.getY() - centerY;
+                            double dz = pos.getZ() - centerZ;
+                            return dx * dx + dy * dy + dz * dz;
+                        }));
+        for (BlockPos bedHead : cleanBedHeads) {
+            if (!isBedClaimedByOtherGuest(room, guestId, bedHead, level)) {
+                return bedHead.immutable();
+            }
+        }
+        return null;
+    }
+
+    private List<BlockPos> collectCleanBedHeads(RoomData room, ServerLevel level) {
+        List<BlockPos> result = new ArrayList<>();
+        for (BlockPos pos : BlockPos.betweenClosed(room.getMinPos(), room.getMaxPos())) {
+            BlockState state = level.getBlockState(pos);
+            BlockPos headPos = toBedHeadPos(state, pos);
+            if (headPos == null || !headPos.equals(pos)) {
+                continue;
+            }
+            if (!isCleanBedState(state)) {
+                continue;
+            }
+            result.add(headPos.immutable());
+        }
+        return result;
+    }
+
+    private boolean isBedClaimedByOtherGuest(
+            RoomData room, UUID excludedGuestId, BlockPos bedHeadPos, ServerLevel level) {
+        for (UUID roomGuestId : room.getCurrentGuests()) {
+            if (roomGuestId.equals(excludedGuestId)) {
+                continue;
+            }
+            GuestData roomGuestData = getGuestData(roomGuestId, level);
+            if (roomGuestData == null) {
+                continue;
+            }
+            BlockPos claimed = roomGuestData.getAssignedBedPos();
+            if (claimed != null && claimed.equals(bedHeadPos)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private BlockPos findBedApproachTarget(ServerLevel level, BlockPos bedHeadPos) {
+        if (bedHeadPos == null) {
+            return null;
+        }
+        BlockState headState = level.getBlockState(bedHeadPos);
+        BlockPos normalizedHead = toBedHeadPos(headState, bedHeadPos);
+        if (normalizedHead == null) {
+            return null;
+        }
+        BlockState normalizedHeadState = level.getBlockState(normalizedHead);
+        if (!isCleanBedState(normalizedHeadState) && !isBedState(normalizedHeadState)) {
+            return null;
+        }
+        Direction facing = normalizedHeadState.getValue(BedBlock.FACING);
+        BlockPos footPos = normalizedHead.relative(facing.getOpposite());
+        BlockPos[] candidates =
+                new BlockPos[] {
+                    footPos.relative(facing.getOpposite()),
+                    footPos.relative(facing.getClockWise()),
+                    footPos.relative(facing.getCounterClockWise()),
+                    normalizedHead.relative(facing),
+                    footPos
+                };
+        for (BlockPos candidate : candidates) {
+            if (isWalkableRoomTarget(level, candidate)) {
+                return candidate.immutable();
+            }
+        }
+        return null;
+    }
+
+    private boolean isCleanBedState(BlockState state) {
+        if (!isBedState(state)) {
+            return false;
+        }
+        if (state.hasProperty(ModBlockProperties.MESSY) && state.getValue(ModBlockProperties.MESSY)) {
+            return false;
+        }
+        return state.hasProperty(BedBlock.PART) && state.getValue(BedBlock.PART) == BedPart.HEAD;
+    }
+
+    private boolean isBedState(BlockState state) {
+        return state.getBlock() instanceof BedBlock
+                && state.hasProperty(BedBlock.PART)
+                && state.hasProperty(BedBlock.FACING);
+    }
+
+    private BlockPos toBedHeadPos(BlockState state, BlockPos pos) {
+        if (!isBedState(state)) {
+            return null;
+        }
+        BedPart part = state.getValue(BedBlock.PART);
+        if (part == BedPart.HEAD) {
+            return pos.immutable();
+        }
+        Direction facing = state.getValue(BedBlock.FACING);
+        BlockPos headPos = pos.relative(facing);
+        return headPos.immutable();
     }
 
     private boolean isWalkableRoomTarget(ServerLevel level, BlockPos pos) {
@@ -816,49 +949,43 @@ public class InnData {
      * @param level 服务器等级
      * @return 是否成功弄乱了一张床
      */
-    private boolean setRoomBedMessy(int roomId, ServerLevel level) {
+    private boolean setRoomBedMessy(int roomId, ServerLevel level, BlockPos preferredBedHeadPos) {
         RoomData room = rooms.get(roomId);
         if (room == null) return false;
+
+        if (preferredBedHeadPos != null && setBedMessy(preferredBedHeadPos, level)) {
+            return true;
+        }
 
         BlockPos min = room.getMinPos();
         BlockPos max = room.getMaxPos();
 
         for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
-            BlockState state = level.getBlockState(pos);
-            if (state.getBlock() instanceof BedBlock) {
-                // 找到第一张可处理的床并标记为脏乱
-                if (state.hasProperty(ModBlockProperties.MESSY)) {
-                    // 检查是否已经是脏乱的，我们只弄乱干净的床
-                    if (!state.getValue(ModBlockProperties.MESSY)) {
-                        level.setBlock(pos, state.setValue(ModBlockProperties.MESSY, true), 3);
-
-                        // 如果是床头，还需要处理床脚，反之亦然。
-                        BedPart part = state.getValue(BedBlock.PART);
-                        // 根据 Facing 和 Part 来推断另一半
-                        Direction facing = state.getValue(BedBlock.FACING);
-                        BlockPos otherPos =
-                                pos.relative(part == BedPart.HEAD ? facing.getOpposite() : facing);
-
-                        BlockState otherState = level.getBlockState(otherPos);
-                        // 检查另一半是否也是床且也是正确的部分
-                        if (otherState.getBlock() instanceof BedBlock
-                                && otherState.hasProperty(ModBlockProperties.MESSY)) {
-                            // 简单的双重检查，确保是同一张床
-                            if (otherState.getValue(BedBlock.PART) != part) {
-                                level.setBlock(
-                                        otherPos,
-                                        otherState.setValue(ModBlockProperties.MESSY, true),
-                                        3);
-                            }
-                        }
-
-                        // 只弄乱一张床即可，并返回成功
-                        return true;
-                    }
-                }
+            if (setBedMessy(pos, level)) {
+                return true;
             }
         }
         return false;
+    }
+
+    private boolean setBedMessy(BlockPos anyBedPartPos, ServerLevel level) {
+        BlockState state = level.getBlockState(anyBedPartPos);
+        BlockPos headPos = toBedHeadPos(state, anyBedPartPos);
+        if (headPos == null) {
+            return false;
+        }
+        BlockState headState = level.getBlockState(headPos);
+        if (!isCleanBedState(headState) || !headState.hasProperty(ModBlockProperties.MESSY)) {
+            return false;
+        }
+        level.setBlock(headPos, headState.setValue(ModBlockProperties.MESSY, true), 3);
+        Direction facing = headState.getValue(BedBlock.FACING);
+        BlockPos footPos = headPos.relative(facing.getOpposite());
+        BlockState footState = level.getBlockState(footPos);
+        if (isBedState(footState) && footState.hasProperty(ModBlockProperties.MESSY)) {
+            level.setBlock(footPos, footState.setValue(ModBlockProperties.MESSY, true), 3);
+        }
+        return true;
     }
 
     /**
@@ -1025,7 +1152,8 @@ public class InnData {
         }
         TeamData team = null;
         if (targetRoom != null) {
-            boolean bedMessy = setRoomBedMessy(targetRoom.getId(), level);
+            BlockPos boundBedPos = guest == null ? null : guest.getAssignedBedPos();
+            boolean bedMessy = setRoomBedMessy(targetRoom.getId(), level, boundBedPos);
             if (bedMessy) {
                 targetRoom.setMaxGuests(Math.max(0, targetRoom.getMaxGuests() - 1));
             }
@@ -1075,6 +1203,7 @@ public class InnData {
             }
         }
         if (guest != null) {
+            guest.setAssignedBedPos(null);
             guest.setRoomId(-1);
             guest.setCheckedOut(true);
         }

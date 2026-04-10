@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * 旅客数据
@@ -45,6 +46,7 @@ public class GuestData {
 
     // 房间 ID
     private int roomId = -1;
+    @Nullable private BlockPos assignedBedPos = null;
 
     public void setRoomId(int roomId) {
         this.roomId = roomId;
@@ -53,6 +55,7 @@ public class GuestData {
             this.waitingSince = 0;
         } else if (this.state == GuestState.CHECKED_IN) {
             this.state = GuestState.IDLE;
+            this.assignedBedPos = null;
         }
     }
 
@@ -60,6 +63,7 @@ public class GuestData {
         if (checkedOut) {
             this.state = GuestState.CHECKED_OUT;
             this.roomId = -1;
+            this.assignedBedPos = null;
         } else if (this.state == GuestState.CHECKED_OUT) {
             this.state = GuestState.IDLE;
         }
@@ -231,6 +235,9 @@ public class GuestData {
         tag.putUUID("UUID", uuid);
         tag.putLong("CheckoutTime", checkoutTime);
         tag.putInt("RoomID", roomId);
+        if (assignedBedPos != null) {
+            tag.putLong("AssignedBedPos", assignedBedPos.asLong());
+        }
         tag.putInt("State", state.ordinal());
         tag.putLong("WaitingSince", waitingSince);
 
@@ -261,6 +268,9 @@ public class GuestData {
 
         if (tag.contains("RoomID")) {
             guest.roomId = tag.getInt("RoomID");
+        }
+        if (tag.contains("AssignedBedPos")) {
+            guest.assignedBedPos = BlockPos.of(tag.getLong("AssignedBedPos"));
         }
 
         if (tag.contains("State")) {
