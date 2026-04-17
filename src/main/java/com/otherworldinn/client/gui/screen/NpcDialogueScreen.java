@@ -15,6 +15,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 public class NpcDialogueScreen extends Screen {
     private static final int OPTION_WIDTH = 180;
@@ -27,6 +28,9 @@ public class NpcDialogueScreen extends Screen {
     private static final ResourceLocation DIALOGUE_BOX_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(
                     OtherworldInn.MODID, "textures/gui/dialogue/dialogue_box.png");
+    private static final ResourceLocation OPTION_BUTTON_ATLAS_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(
+                    OtherworldInn.MODID, "textures/gui/dialogue/dialogue_option_button_atlas.png");
 
     private DialogueNodeView view;
     private final List<Button> optionButtons = new ArrayList<>();
@@ -166,6 +170,7 @@ public class NpcDialogueScreen extends Screen {
 
     private static class LeftAlignedOptionButton extends Button {
         private final Component label;
+        private static final int ATLAS_STATE_COUNT = 3;
 
         protected LeftAlignedOptionButton(
                 int x, int y, int width, int height, Component label, OnPress onPress) {
@@ -175,11 +180,31 @@ public class NpcDialogueScreen extends Screen {
 
         @Override
         public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.getResourceManager().getResource(OPTION_BUTTON_ATLAS_TEXTURE).isPresent()) {
+                int vOffset = 0;
+                if (this.isHoveredOrFocused()) {
+                    vOffset = this.isActive() && mc.mouseHandler.isLeftPressed() ? this.height * 2 : this.height;
+                }
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
+                guiGraphics.blit(
+                        OPTION_BUTTON_ATLAS_TEXTURE,
+                        this.getX(),
+                        this.getY(),
+                        0,
+                        vOffset,
+                        this.width,
+                        this.height,
+                        this.width,
+                        this.height * ATLAS_STATE_COUNT);
+                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            }
             int textColor = this.active ? 0xFFFFFF : 0xA0A0A0;
             int textX = this.getX() + 8;
             int textY = this.getY() + (this.height - 8) / 2;
-            guiGraphics.drawString(Minecraft.getInstance().font, this.label, textX, textY, textColor, false);
+            guiGraphics.drawString(mc.font, this.label, textX, textY, textColor, false);
         }
     }
 }
