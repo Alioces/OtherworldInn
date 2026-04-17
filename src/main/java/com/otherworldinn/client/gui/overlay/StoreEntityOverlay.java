@@ -42,6 +42,6 @@ public class StoreEntityOverlay {
                 guiGraphics,
                 new ItemHudOverlay.MouseAction(
                         ItemHudOverlay.MouseButton.RIGHT,
-                        Component.translatable("message.otherworldinn.store.overlay.open")));
+                        Component.translatable("message.otherworldinn.store.overlay.talk")));
     }
 }

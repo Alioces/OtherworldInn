@@ -6,6 +6,10 @@ import com.otherworldinn.foundation.ItemDataGenInfo;
 import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModEntities;
 import com.otherworldinn.init.ModItems;
+import com.otherworldinn.world.dialogue.DialogueDefinition;
+import com.otherworldinn.world.dialogue.DialogueNodeDef;
+import com.otherworldinn.world.dialogue.DialogueOptionDef;
+import com.otherworldinn.world.dialogue.DialogueRegistry;
 import com.otherworldinn.world.inn.facility.FacilityRegistry;
 import java.util.List;
 import java.util.Map;
@@ -437,6 +441,10 @@ public class ModLanguageProvider extends LanguageProvider {
                 .zh("旅社装修中")
                 .en("The Inn is under RENOVATION");
         entry("message.otherworldinn.store.overlay.open").zh("打开商店").en("Open Store");
+        entry("message.otherworldinn.store.overlay.talk").zh("与店主对话").en("Talk");
+        entry("screen.otherworldinn.dialogue.title").zh("对话").en("Dialogue");
+        entry("dialogue.otherworldinn.npc.unknown").zh("陌生人").en("Unknown");
+        addDialogueTranslations();
         entry("message.otherworldinn.broom.overlay.expel").zh("驱逐旅客（降低声望）").en("Expel Guest");
         entry("message.otherworldinn.inventory.overlay.coins")
                 .zh("§f\uE001§r%s")
@@ -689,6 +697,19 @@ public class ModLanguageProvider extends LanguageProvider {
                 .zh("旅社营业时，自动为等待旅客匹配最合适房间并办理入住。")
                 .en(
                         "When the Inn is open, automatically matches waiting guests to the best room and checks them in.");
+    }
+
+    private void addDialogueTranslations() {
+        for (DialogueDefinition dialogue : DialogueRegistry.allDialogues()) {
+            for (DialogueNodeDef node : dialogue.nodes().values()) {
+                entry(dialogue.nodeTextKey(node.id())).zh(node.text().zh()).en(node.text().en());
+                for (DialogueOptionDef option : node.options()) {
+                    entry(dialogue.optionTextKey(node.id(), option.id()))
+                            .zh(option.label().zh())
+                            .en(option.label().en());
+                }
+            }
+        }
     }
 
     private void addGeneratedTranslations() {

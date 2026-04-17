@@ -1,10 +1,14 @@
 package com.otherworldinn.network;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.network.packet.C2SDialogueClosePacket;
+import com.otherworldinn.network.packet.C2SDialogueOptionPacket;
 import com.otherworldinn.network.packet.C2SStorePurchasePacket;
 import com.otherworldinn.network.packet.C2STeleportOverworldPacket;
 import com.otherworldinn.network.packet.C2STeleportPacket;
 import com.otherworldinn.network.packet.C2SWithdrawCoinPacket;
+import com.otherworldinn.network.packet.S2CDialogueClosePacket;
+import com.otherworldinn.network.packet.S2CDialogueNodePacket;
 import com.otherworldinn.network.packet.S2CTeamSyncPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,6 +33,14 @@ public class ModMessages {
         // 注册 S2C 数据包
         registrar.playToClient(
                 S2CTeamSyncPacket.TYPE, S2CTeamSyncPacket.STREAM_CODEC, S2CTeamSyncPacket::handle);
+        registrar.playToClient(
+                S2CDialogueNodePacket.TYPE,
+                S2CDialogueNodePacket.STREAM_CODEC,
+                S2CDialogueNodePacket::handle);
+        registrar.playToClient(
+                S2CDialogueClosePacket.TYPE,
+                S2CDialogueClosePacket.STREAM_CODEC,
+                S2CDialogueClosePacket::handle);
 
         // 注册 C2S 数据包
         registrar.playToServer(
@@ -48,6 +60,15 @@ public class ModMessages {
                 C2SWithdrawCoinPacket.TYPE,
                 C2SWithdrawCoinPacket.STREAM_CODEC,
                 C2SWithdrawCoinPacket::handle);
+
+        registrar.playToServer(
+                C2SDialogueOptionPacket.TYPE,
+                C2SDialogueOptionPacket.STREAM_CODEC,
+                C2SDialogueOptionPacket::handle);
+        registrar.playToServer(
+                C2SDialogueClosePacket.TYPE,
+                C2SDialogueClosePacket.STREAM_CODEC,
+                C2SDialogueClosePacket::handle);
     }
 
     /**

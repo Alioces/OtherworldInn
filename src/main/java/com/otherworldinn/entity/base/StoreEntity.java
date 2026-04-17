@@ -1,5 +1,6 @@
 package com.otherworldinn.entity.base;
 
+import com.otherworldinn.world.dialogue.DialogueService;
 import com.otherworldinn.world.inventory.StoreMenu;
 import java.util.ArrayList;
 import java.util.List;
@@ -142,7 +143,11 @@ public abstract class StoreEntity extends PathfinderMob {
                                     1.0F,
                                     1.0F);
                 }
-                // 打开商店界面 (服务端逻辑)
+                if (player instanceof ServerPlayer serverPlayer
+                        && DialogueService.tryStartDialogue(serverPlayer, this)) {
+                    return InteractionResult.SUCCESS;
+                }
+                // 兜底：未匹配到对话定义时直接打开商店
                 this.openStoreScreen(player);
             }
             // 客户端返回 SUCCESS 播放交互动作 (挥手)
@@ -180,6 +185,10 @@ public abstract class StoreEntity extends PathfinderMob {
                         }
                     });
         }
+    }
+
+    public void openStoreForPlayer(Player player) {
+        this.openStoreScreen(player);
     }
 
     /**
