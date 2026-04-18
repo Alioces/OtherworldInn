@@ -394,16 +394,32 @@ public abstract class StoreEntity extends PathfinderMob {
         return getDiscountedPriceForFavorLevel(item.getPrice(), this.favorLevel);
     }
 
-    public void addSpentCoins(int spentCoins) {
-        if (spentCoins <= 0) {
+    /**
+     * 增加商店好感进度（公共入口，可由外部系统调用）。
+     *
+     * <p>当前好感进度与历史消费共享同一计量单位，因此该方法会同步累加 totalSpentCoins。
+     *
+     * @param favorProgress 要增加的进度值，<= 0 时忽略
+     */
+    public void addFavorProgress(int favorProgress) {
+        if (favorProgress <= 0) {
             return;
         }
-        this.totalSpentCoins += spentCoins;
+        this.totalSpentCoins += favorProgress;
         int newLevel = this.calculateFavorLevel(this.totalSpentCoins);
         if (newLevel != this.favorLevel) {
             this.favorLevel = newLevel;
             this.unlockFavorStoreItems();
         }
+    }
+
+    /**
+     * 增加消费累计（兼容旧调用）。
+     *
+     * <p>消费会转换为同等好感进度。
+     */
+    public void addSpentCoins(int spentCoins) {
+        this.addFavorProgress(spentCoins);
     }
 
     public void addFavorStoreItem(int requiredFavorLevel, ItemStack item, int price, int maxStock) {
