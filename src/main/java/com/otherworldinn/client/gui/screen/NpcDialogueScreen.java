@@ -5,6 +5,7 @@ import com.otherworldinn.network.ModMessages;
 import com.otherworldinn.network.packet.C2SDialogueClosePacket;
 import com.otherworldinn.network.packet.C2SDialogueOptionPacket;
 import com.otherworldinn.world.dialogue.DialogueNodeView;
+import com.otherworldinn.world.dialogue.DialogueOptionType;
 import com.otherworldinn.world.dialogue.DialogueOptionView;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,8 @@ import net.minecraft.util.FormattedCharSequence;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 public class NpcDialogueScreen extends Screen {
+    private static final String BRANCH_ICON = "\uE007";
+    private static final String FUNCTION_ICON = "\uE008";
     private static final int OPTION_WIDTH = 180;
     private static final int OPTION_HEIGHT = 20;
     private static final int OPTION_GAP = 6;
@@ -63,7 +66,8 @@ public class NpcDialogueScreen extends Screen {
         for (int i = options.size() - 1; i >= 0; i--) {
             DialogueOptionView option = options.get(i);
             int y = optionBaseY - index * (OPTION_HEIGHT + OPTION_GAP);
-            Component label = Component.translatable(option.labelKey());
+            String icon = option.type() == DialogueOptionType.FUNCTION ? FUNCTION_ICON : BRANCH_ICON;
+            Component label = Component.literal(icon + " ").append(Component.translatable(option.labelKey()));
             Button button =
                     new LeftAlignedOptionButton(
                             rightPanelX,
@@ -126,6 +130,9 @@ public class NpcDialogueScreen extends Screen {
         int boxY = this.height - DIALOG_BOX_HEIGHT - DIALOG_MARGIN;
         if (this.minecraft != null
                 && this.minecraft.getResourceManager().getResource(DIALOGUE_BOX_TEXTURE).isPresent()) {
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             guiGraphics.blit(
                     DIALOGUE_BOX_TEXTURE,
                     boxX,
@@ -136,6 +143,7 @@ public class NpcDialogueScreen extends Screen {
                     DIALOG_BOX_HEIGHT,
                     boxWidth,
                     DIALOG_BOX_HEIGHT);
+            RenderSystem.disableBlend();
         }
 
         Component npcName = getNpcName();
@@ -200,6 +208,7 @@ public class NpcDialogueScreen extends Screen {
                         this.width,
                         this.height * ATLAS_STATE_COUNT);
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                RenderSystem.disableBlend();
             }
             int textColor = this.active ? 0xFFFFFF : 0xA0A0A0;
             int textX = this.getX() + 8;
