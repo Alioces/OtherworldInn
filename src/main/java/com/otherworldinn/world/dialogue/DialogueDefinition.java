@@ -17,6 +17,10 @@ public record DialogueDefinition(String id, String rootNodeId, Map<String, Dialo
         return "dialogue.otherworldinn." + id + ".node." + nodeId;
     }
 
+    public String nodeConditionalTextKey(String nodeId, boolean repaired) {
+        return nodeTextKey(nodeId) + (repaired ? ".repaired" : ".unrepaired");
+    }
+
     public String optionTextKey(String nodeId, String optionId) {
         return "dialogue.otherworldinn." + id + ".option." + nodeId + "." + optionId;
     }

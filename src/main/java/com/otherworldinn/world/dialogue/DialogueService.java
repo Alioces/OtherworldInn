@@ -4,6 +4,8 @@ import com.otherworldinn.entity.base.StoreEntity;
 import com.otherworldinn.network.ModMessages;
 import com.otherworldinn.network.packet.S2CDialogueClosePacket;
 import com.otherworldinn.network.packet.S2CDialogueNodePacket;
+import com.otherworldinn.world.team.TeamData;
+import com.otherworldinn.world.team.service.TeamManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -102,7 +104,7 @@ public final class DialogueService {
 
     private static void sendNodeToPlayer(
             ServerPlayer player, DialogueSession session, DialogueNodeDef node) {
-        String nodeTextKey = session.definition().nodeTextKey(node.id());
+        String nodeTextKey = resolveNodeTextKey(player, session, node);
         DialogueNodeView nodeView =
                 new DialogueNodeView(
                         session.entityId(),
@@ -119,6 +121,18 @@ public final class DialogueService {
                                                         o.type()))
                                 .toList());
         ModMessages.sendToPlayer(new S2CDialogueNodePacket(nodeView), player);
+    }
+
+    private static String resolveNodeTextKey(
+            ServerPlayer player, DialogueSession session, DialogueNodeDef node) {
+        DialogueNodeConditionalText conditionalText = node.conditionalText();
+        if (conditionalText == null) {
+            return session.definition().nodeTextKey(node.id());
+        }
+        TeamData team = TeamManager.getInstance().getPlayerTeam(player);
+        boolean repaired =
+                team != null && team.getInnData().getFacilityLevel(conditionalText.facilityId()) > 0;
+        return session.definition().nodeConditionalTextKey(node.id(), repaired);
     }
 
     private record DialogueSession(

@@ -702,7 +702,16 @@ public class ModLanguageProvider extends LanguageProvider {
     private void addDialogueTranslations() {
         for (DialogueDefinition dialogue : DialogueRegistry.allDialogues()) {
             for (DialogueNodeDef node : dialogue.nodes().values()) {
-                entry(dialogue.nodeTextKey(node.id())).zh(node.text().zh()).en(node.text().en());
+                if (node.conditionalText() != null) {
+                    entry(dialogue.nodeConditionalTextKey(node.id(), false))
+                            .zh(node.conditionalText().unrepaired().zh())
+                            .en(node.conditionalText().unrepaired().en());
+                    entry(dialogue.nodeConditionalTextKey(node.id(), true))
+                            .zh(node.conditionalText().repaired().zh())
+                            .en(node.conditionalText().repaired().en());
+                } else {
+                    entry(dialogue.nodeTextKey(node.id())).zh(node.text().zh()).en(node.text().en());
+                }
                 for (DialogueOptionDef option : node.options()) {
                     entry(dialogue.optionTextKey(node.id(), option.id()))
                             .zh(option.label().zh())
