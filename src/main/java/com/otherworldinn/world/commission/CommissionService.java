@@ -1,6 +1,7 @@
 package com.otherworldinn.world.commission;
 
 import com.otherworldinn.entity.base.StoreEntity;
+import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.init.ModSounds;
 import com.otherworldinn.network.ModMessages;
 import com.otherworldinn.network.packet.S2CCommissionBoardPacket;
@@ -20,6 +21,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -214,18 +216,23 @@ public final class CommissionService {
         data.setRewardClaimed(true);
         data.setNextAutoRefreshDay(
                 currentDay(triggerPlayer.serverLevel()) + UNACCEPTED_REFRESH_INTERVAL_DAYS);
-        notifyTeamCommissionCompleted(triggerPlayer.serverLevel(), team);
+        notifyTeamCommissionCompleted(triggerPlayer.serverLevel(), team, active);
         TeamManager.getInstance().syncTeam(team, triggerPlayer.getServer());
         broadcastBoard(team, triggerPlayer.serverLevel(), null);
     }
 
-    private static void notifyTeamCommissionCompleted(ServerLevel level, TeamData team) {
+    private static void notifyTeamCommissionCompleted(
+            ServerLevel level, TeamData team, CommissionEntry active) {
         for (UUID memberId : team.getMembers()) {
             ServerPlayer member = level.getServer().getPlayerList().getPlayer(memberId);
             if (member != null) {
                 member.playNotifySound(ModSounds.PAYMENT.get(), SoundSource.PLAYERS, 0.8F, 1.05F);
                 member.sendSystemMessage(
-                        Component.translatable("message.otherworldinn.commission.completed"));
+                        Component.translatable("message.otherworldinn.commission.completed_with_rewards")
+                                .withStyle(style -> style.withColor(ModColors.SUCCESS)));
+                for (MutableComponent rewardLine : buildRewardLines(active)) {
+                    member.sendSystemMessage(rewardLine);
+                }
             }
         }
     }
@@ -236,9 +243,50 @@ public final class CommissionService {
             if (member != null) {
                 member.playNotifySound(ModSounds.PAYMENT.get(), SoundSource.PLAYERS, 0.75F, 0.85F);
                 member.sendSystemMessage(
-                        Component.translatable("message.otherworldinn.commission.expired"));
+                        Component.translatable("message.otherworldinn.commission.expired")
+                                .withStyle(style -> style.withColor(ModColors.ERROR)));
             }
         }
+    }
+
+    private static List<MutableComponent> buildRewardLines(CommissionEntry active) {
+        List<MutableComponent> lines = new ArrayList<>();
+        if (active.getCoinReward() > 0) {
+            lines.add(
+                    Component.translatable(
+                            "message.otherworldinn.commission.reward_line.coin", active.getCoinReward()));
+        }
+        for (CommissionEntry.ItemReward reward : active.getItemRewards()) {
+            ResourceLocation id = ResourceLocation.tryParse(reward.itemId());
+            if (id == null) {
+                continue;
+            }
+            Item item = BuiltInRegistries.ITEM.get(id);
+            if (item == null) {
+                continue;
+            }
+            lines.add(
+                    Component.translatable(
+                            "message.otherworldinn.commission.reward_line.item",
+                            Component.translatable(item.getDescriptionId()),
+                            reward.count()));
+        }
+        for (CommissionEntry.NpcFavorReward reward : active.getNpcFavorRewards()) {
+            ResourceLocation npcId = ResourceLocation.tryParse(reward.npcEntityTypeId());
+            if (npcId == null) {
+                continue;
+            }
+            EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.get(npcId);
+            if (type == null) {
+                continue;
+            }
+            lines.add(
+                    Component.translatable(
+                            "message.otherworldinn.commission.reward_line.favor",
+                            type.getDescription(),
+                            reward.favorProgress()));
+        }
+        return lines;
     }
 
     private static void grantRewards(ServerPlayer triggerPlayer, TeamData team, CommissionEntry active) {

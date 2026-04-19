@@ -471,9 +471,21 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.commission.completed")
                 .zh("委托已完成！")
                 .en("Commission Completed!");
+        entry("message.otherworldinn.commission.completed_with_rewards")
+                .zh("委托已完成！获得奖励：")
+                .en("Commission completed! Rewards:");
         entry("message.otherworldinn.commission.expired")
                 .zh("委托已过期！")
                 .en("Commission Expired!");
+        entry("message.otherworldinn.commission.reward_line.coin")
+                .zh("- \uE001%s")
+                .en("- \uE001%s");
+        entry("message.otherworldinn.commission.reward_line.item")
+                .zh("- %s x%s")
+                .en("- %s x%s");
+        entry("message.otherworldinn.commission.reward_line.favor")
+                .zh("- %s好感 +%s")
+                .en("- %s Favor +%s");
         entry("message.otherworldinn.commission.submit_not_needed")
                 .zh("该委托无需提交物品")
                 .en("This commission does not require item submission");
