@@ -52,6 +52,7 @@ public class ModBlocks {
             register("commission_board", CommissionBoardBlock::new)
                     .properties(props -> props.strength(114514.0F).noOcclusion())
                     .cutout()
+                    .noModel()
                     .lang("Commission Board", "委托板");
     public static final DeferredBlock<CommissionBoardBlock> COMMISSION_BOARD =
             COMMISSION_BOARD_REG.register();

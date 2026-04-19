@@ -2,7 +2,6 @@ package com.otherworldinn.world.commission;
 
 import com.otherworldinn.entity.base.StoreEntity;
 import com.otherworldinn.foundation.ModColors;
-import com.otherworldinn.init.ModSounds;
 import com.otherworldinn.network.ModMessages;
 import com.otherworldinn.network.packet.S2CCommissionBoardPacket;
 import com.otherworldinn.world.commission.CommissionRegistry.CommissionTemplate;
@@ -25,6 +24,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
@@ -223,10 +224,10 @@ public final class CommissionService {
 
     private static void notifyTeamCommissionCompleted(
             ServerLevel level, TeamData team, CommissionEntry active) {
+        playNotifySoundForAllPlayers(level, SoundEvents.PLAYER_LEVELUP, 0.8F, 1.0F);
         for (UUID memberId : team.getMembers()) {
             ServerPlayer member = level.getServer().getPlayerList().getPlayer(memberId);
             if (member != null) {
-                member.playNotifySound(ModSounds.PAYMENT.get(), SoundSource.PLAYERS, 0.8F, 1.05F);
                 member.sendSystemMessage(
                         Component.translatable("message.otherworldinn.commission.completed_with_rewards")
                                 .withStyle(style -> style.withColor(ModColors.SUCCESS)));
@@ -238,14 +239,21 @@ public final class CommissionService {
     }
 
     private static void notifyTeamCommissionExpired(ServerLevel level, TeamData team) {
+        playNotifySoundForAllPlayers(level, SoundEvents.VILLAGER_NO, 0.8F, 1.0F);
         for (UUID memberId : team.getMembers()) {
             ServerPlayer member = level.getServer().getPlayerList().getPlayer(memberId);
             if (member != null) {
-                member.playNotifySound(ModSounds.PAYMENT.get(), SoundSource.PLAYERS, 0.75F, 0.85F);
                 member.sendSystemMessage(
                         Component.translatable("message.otherworldinn.commission.expired")
                                 .withStyle(style -> style.withColor(ModColors.ERROR)));
             }
+        }
+    }
+
+    private static void playNotifySoundForAllPlayers(
+            ServerLevel level, SoundEvent sound, float volume, float pitch) {
+        for (ServerPlayer onlinePlayer : level.getServer().getPlayerList().getPlayers()) {
+            onlinePlayer.playNotifySound(sound, SoundSource.PLAYERS, volume, pitch);
         }
     }
 

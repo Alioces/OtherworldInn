@@ -26,7 +26,7 @@ public final class CommissionRegistry {
                 .build();
 
         register("forge_maintenance")
-                .stars(2, 3)
+                .stars(1, 2)
                 .weight(10)
                 .description(
                         LocalizedText.of(
@@ -50,7 +50,7 @@ public final class CommissionRegistry {
                 .build();
 
         register("road_patrol_mixed")
-                .stars(3, 4)
+                .stars(3, 3)
                 .weight(9)
                 .description(
                         LocalizedText.of(

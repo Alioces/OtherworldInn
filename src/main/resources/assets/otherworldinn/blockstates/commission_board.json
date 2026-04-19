@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=south": {
+      "model": "otherworldinn:block/commission_board"
+    },
+    "facing=west": {
+      "model": "otherworldinn:block/commission_board",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "otherworldinn:block/commission_board",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "otherworldinn:block/commission_board",
+      "y": 270
+    }
+  }
+}
