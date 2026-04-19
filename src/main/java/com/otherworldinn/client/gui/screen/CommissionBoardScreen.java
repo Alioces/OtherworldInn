@@ -206,7 +206,19 @@ public class CommissionBoardScreen extends AbstractContainerScreen<CommissionBoa
 
             int lineY = drawDescription(guiGraphics, entry, x, y + 38, cardWidth, contentBottomY);
             ItemStack[] currentHover = new ItemStack[] {ItemStack.EMPTY};
-            lineY = drawRequirements(guiGraphics, entry, x + 8, lineY, cardWidth - 16, contentBottomY, mouseX, mouseY, currentHover);
+            boolean showKillProgress = acceptedIndex == 0 && !rewardClaimed;
+            lineY =
+                    drawRequirements(
+                            guiGraphics,
+                            entry,
+                            x + 8,
+                            lineY,
+                            cardWidth - 16,
+                            contentBottomY,
+                            mouseX,
+                            mouseY,
+                            currentHover,
+                            showKillProgress);
             drawRewards(
                     guiGraphics,
                     entry,
@@ -238,7 +250,16 @@ public class CommissionBoardScreen extends AbstractContainerScreen<CommissionBoa
     }
 
     private int drawRequirements(
-            GuiGraphics guiGraphics, CompoundTag entry, int x, int y, int maxWidth, int bottomY, int mouseX, int mouseY, ItemStack[] currentHover) {
+            GuiGraphics guiGraphics,
+            CompoundTag entry,
+            int x,
+            int y,
+            int maxWidth,
+            int bottomY,
+            int mouseX,
+            int mouseY,
+            ItemStack[] currentHover,
+            boolean showKillProgress) {
         int lineY =
                 drawSingleLineClamped(
                         guiGraphics,
@@ -272,16 +293,43 @@ public class CommissionBoardScreen extends AbstractContainerScreen<CommissionBoa
             for (Tag t : kills) {
                 if (t instanceof CompoundTag req) {
                     Component entityName = entityNameComponent(req.getString("EntityTypeId"));
-                    Component line =
-                            Component.translatable(
-                                    "message.otherworldinn.commission.line.kill",
-                                    entityName,
-                                    req.getInt("Count"));
+                    int required = req.getInt("Count");
+                    Component line;
+                    if (showKillProgress) {
+                        int current = getKillProgress(req.getString("EntityTypeId"));
+                        line =
+                                Component.translatable(
+                                        "message.otherworldinn.commission.line.kill_progress",
+                                        entityName,
+                                        current,
+                                        required);
+                    } else {
+                        line =
+                                Component.translatable(
+                                        "message.otherworldinn.commission.line.kill",
+                                        entityName,
+                                        required);
+                    }
                     lineY = drawSingleLineClamped(guiGraphics, line, x, lineY, maxWidth, bottomY, COLOR_BODY);
                 }
             }
         }
         return lineY;
+    }
+
+    private int getKillProgress(String entityId) {
+        CompoundTag commissionData = boardData.getCompound("CommissionData");
+        if (!commissionData.contains("KillProgress", Tag.TAG_LIST)) {
+            return 0;
+        }
+        ListTag killProgress = commissionData.getList("KillProgress", Tag.TAG_COMPOUND);
+        for (Tag tag : killProgress) {
+            if (tag instanceof CompoundTag progressTag
+                    && entityId.equals(progressTag.getString("EntityId"))) {
+                return Math.max(0, progressTag.getInt("Count"));
+            }
+        }
+        return 0;
     }
 
     private int drawDescription(

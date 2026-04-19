@@ -460,6 +460,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.commission.line.submit_icon").zh("提交：").en("Submit: ");
         entry("message.otherworldinn.commission.line.reward_item_icon").zh("物品奖励：").en("Item Reward: ");
         entry("message.otherworldinn.commission.line.kill").zh("- 击杀: %s x%s").en("- Kill: %s x%s");
+        entry("message.otherworldinn.commission.line.kill_progress")
+                .zh("- 击杀: %s %s/%s")
+                .en("- Kill: %s %s/%s");
         entry("message.otherworldinn.commission.line.coin").zh("§0-§r \uE001§0%s").en("§0-§r \uE001§0%s");
         entry("message.otherworldinn.commission.line.favor").zh("- 好感: %s +%s").en("- Favor: %s +%s");
         entry("message.otherworldinn.commission.overlay.submit")

@@ -46,7 +46,7 @@ public final class CommissionService {
         ensureBoard(player.serverLevel(), team);
         ModMessages.sendToPlayer(
                 new S2CCommissionBoardPacket(
-                        createBoardViewTag(team, boardPos, currentDay(player.serverLevel()))),
+                        createBoardViewTag(team, boardPos, currentDay(player.serverLevel())), true),
                 player);
     }
 
@@ -490,7 +490,7 @@ public final class CommissionService {
         for (UUID memberId : members) {
             ServerPlayer member = level.getServer().getPlayerList().getPlayer(memberId);
             if (member != null) {
-                ModMessages.sendToPlayer(new S2CCommissionBoardPacket(payload.copy()), member);
+                ModMessages.sendToPlayer(new S2CCommissionBoardPacket(payload.copy(), false), member);
             }
         }
     }

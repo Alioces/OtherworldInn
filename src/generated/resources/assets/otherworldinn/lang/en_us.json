@@ -258,6 +258,7 @@
   "message.otherworldinn.commission.line.coin": "§0-§r §0%s",
   "message.otherworldinn.commission.line.favor": "- Favor: %s +%s",
   "message.otherworldinn.commission.line.kill": "- Kill: %s x%s",
+  "message.otherworldinn.commission.line.kill_progress": "- Kill: %s %s/%s",
   "message.otherworldinn.commission.line.reward_item_icon": "Item Reward: ",
   "message.otherworldinn.commission.line.submit": "- Submit: %s x%s",
   "message.otherworldinn.commission.line.submit_icon": "Submit: ",

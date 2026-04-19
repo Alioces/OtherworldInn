@@ -258,6 +258,7 @@
   "message.otherworldinn.commission.line.coin": "§0-§r §0%s",
   "message.otherworldinn.commission.line.favor": "- 好感: %s +%s",
   "message.otherworldinn.commission.line.kill": "- 击杀: %s x%s",
+  "message.otherworldinn.commission.line.kill_progress": "- 击杀: %s %s/%s",
   "message.otherworldinn.commission.line.reward_item_icon": "物品奖励：",
   "message.otherworldinn.commission.line.submit": "- 提交: %s x%s",
   "message.otherworldinn.commission.line.submit_icon": "提交：",

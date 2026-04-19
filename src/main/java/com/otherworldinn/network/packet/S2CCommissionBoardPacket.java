@@ -10,7 +10,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record S2CCommissionBoardPacket(CompoundTag data) implements CustomPacketPayload {
+public record S2CCommissionBoardPacket(CompoundTag data, boolean openScreen)
+        implements CustomPacketPayload {
     public static final Type<S2CCommissionBoardPacket> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "commission_board"));
 
@@ -18,6 +19,8 @@ public record S2CCommissionBoardPacket(CompoundTag data) implements CustomPacket
             StreamCodec.composite(
                     ByteBufCodecs.COMPOUND_TAG,
                     S2CCommissionBoardPacket::data,
+                    ByteBufCodecs.BOOL,
+                    S2CCommissionBoardPacket::openScreen,
                     S2CCommissionBoardPacket::new);
 
     @Override
@@ -26,6 +29,7 @@ public record S2CCommissionBoardPacket(CompoundTag data) implements CustomPacket
     }
 
     public static void handle(S2CCommissionBoardPacket packet, IPayloadContext context) {
-        context.enqueueWork(() -> CommissionClientManager.handleBoardData(packet.data()));
+        context.enqueueWork(
+                () -> CommissionClientManager.handleBoardData(packet.data(), packet.openScreen()));
     }
 }
