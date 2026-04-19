@@ -1,6 +1,7 @@
 package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.block.CommissionBoardBlock;
 import com.otherworldinn.block.OverworldPortalBlock;
 import com.otherworldinn.foundation.BlockDataGenInfo;
 import com.otherworldinn.foundation.BlockReg;
@@ -46,6 +47,14 @@ public class ModBlocks {
 
     public static final DeferredBlock<OverworldPortalBlock> OVERWORLD_PORTAL =
             OVERWORLD_PORTAL_REG.register();
+
+    public static final BlockReg<CommissionBoardBlock> COMMISSION_BOARD_REG =
+            register("commission_board", CommissionBoardBlock::new)
+                    .properties(props -> props.strength(114514.0F).noOcclusion())
+                    .cutout()
+                    .lang("Commission Board", "委托板");
+    public static final DeferredBlock<CommissionBoardBlock> COMMISSION_BOARD =
+            COMMISSION_BOARD_REG.register();
 
     /** 判断实体是否可以在该方块上生成 用于 isValidSpawn 属性 */
     private static boolean never(

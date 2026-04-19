@@ -6,6 +6,7 @@ import com.otherworldinn.foundation.ItemDataGenInfo;
 import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModEntities;
 import com.otherworldinn.init.ModItems;
+import com.otherworldinn.world.commission.CommissionRegistry;
 import com.otherworldinn.world.dialogue.DialogueDefinition;
 import com.otherworldinn.world.dialogue.DialogueNodeDef;
 import com.otherworldinn.world.dialogue.DialogueOptionDef;
@@ -442,9 +443,47 @@ public class ModLanguageProvider extends LanguageProvider {
                 .en("The Inn is under RENOVATION");
         entry("message.otherworldinn.store.overlay.open").zh("打开商店").en("Open Store");
         entry("message.otherworldinn.store.overlay.talk").zh("与店主对话").en("Talk");
+        entry("screen.otherworldinn.commission_board.title").zh("委托板").en("Commission Board");
+        entry("message.otherworldinn.commission.accept").zh("接取委托").en("Accept");
+        entry("message.otherworldinn.commission.accepted").zh("已接取").en("Accepted");
+        entry("message.otherworldinn.commission.empty").zh("暂无委托").en("Empty");
+        entry("message.otherworldinn.commission.star").zh("%s星委托").en("%s-Star Commission");
+        entry("message.otherworldinn.commission.difficulty").zh("难度：").en("Difficulty: ");
+        entry("message.otherworldinn.commission.limit_day").zh("限时: %s 天").en("Limit: %s days");
+        entry("message.otherworldinn.commission.expire_day").zh("到期日: 第 %s 天").en("Expire Day: %s");
+        entry("message.otherworldinn.commission.remaining_day").zh("剩余: %s 天").en("Remaining: %s days");
+        entry("message.otherworldinn.commission.today").zh("今日").en("Today");
+        entry("message.otherworldinn.commission.no_new").zh("当前没有新的委托...").en("There are no new commissions right now...");
+        entry("message.otherworldinn.commission.requirement").zh("目标").en("Objectives");
+        entry("message.otherworldinn.commission.reward").zh("奖励").en("Rewards");
+        entry("message.otherworldinn.commission.line.submit").zh("- 提交: %s x%s").en("- Submit: %s x%s");
+        entry("message.otherworldinn.commission.line.submit_icon").zh("提交：").en("Submit: ");
+        entry("message.otherworldinn.commission.line.reward_item_icon").zh("物品奖励：").en("Item Reward: ");
+        entry("message.otherworldinn.commission.line.kill").zh("- 击杀: %s x%s").en("- Kill: %s x%s");
+        entry("message.otherworldinn.commission.line.coin").zh("§0-§r \uE001§0%s").en("§0-§r \uE001§0%s");
+        entry("message.otherworldinn.commission.line.favor").zh("- 好感: %s +%s").en("- Favor: %s +%s");
+        entry("message.otherworldinn.commission.overlay.submit")
+                .zh("交付物品")
+                .en("Submit Items");
+        entry("message.otherworldinn.commission.completed")
+                .zh("委托已完成！")
+                .en("Commission Completed!");
+        entry("message.otherworldinn.commission.expired")
+                .zh("委托已过期！")
+                .en("Commission Expired!");
+        entry("message.otherworldinn.commission.submit_not_needed")
+                .zh("该委托无需提交物品")
+                .en("This commission does not require item submission");
+        entry("message.otherworldinn.commission.submit_kill_unfinished")
+                .zh("击杀目标尚未完成")
+                .en("Kill objectives are not complete yet");
+        entry("message.otherworldinn.commission.submit_items_missing")
+                .zh("背包内缺少所需提交物品")
+                .en("Missing required submission items in inventory");
         entry("screen.otherworldinn.dialogue.title").zh("对话").en("Dialogue");
         entry("dialogue.otherworldinn.npc.unknown").zh("陌生人").en("Unknown");
         addDialogueTranslations();
+        addCommissionTranslations();
         entry("message.otherworldinn.broom.overlay.expel").zh("驱逐旅客（降低声望）").en("Expel Guest");
         entry("message.otherworldinn.inventory.overlay.coins")
                 .zh("§f\uE001§r%s")
@@ -718,6 +757,14 @@ public class ModLanguageProvider extends LanguageProvider {
                             .en(option.label().en());
                 }
             }
+        }
+    }
+
+    private void addCommissionTranslations() {
+        for (CommissionRegistry.CommissionTemplate template : CommissionRegistry.allTemplates()) {
+            entry(template.descriptionKey())
+                    .zh(template.description().zh())
+                    .en(template.description().en());
         }
     }
 

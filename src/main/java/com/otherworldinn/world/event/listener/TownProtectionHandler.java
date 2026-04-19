@@ -428,6 +428,13 @@ public class TownProtectionHandler {
                 }
                 return;
             }
+            // 覆盖 FakePlayer 路径
+            if (level instanceof ServerLevel serverLevel && player instanceof FakePlayer) {
+                if (!isEditModeAllowedAt(serverLevel, event.getPos())) {
+                    event.setCanceled(true);
+                }
+                return;
+            }
             return;
         }
 
@@ -597,6 +604,16 @@ public class TownProtectionHandler {
                 player.displayClientMessage(
                         Component.translatable("message.otherworldinn.protection.banned_item"),
                         true);
+            }
+            return;
+        }
+
+        // 2.5 拦截农作物右键交互（覆盖 FTB Ultimine 右键收获路径）
+        BlockState clickedState = level.getBlockState(pos);
+        if (isFarmingBlock(clickedState)) {
+            Component denyReason = getBuildDenyReason(player, pos, level);
+            if (denyReason != null) {
+                denyRightClickBlock(event, player, denyReason);
             }
             return;
         }

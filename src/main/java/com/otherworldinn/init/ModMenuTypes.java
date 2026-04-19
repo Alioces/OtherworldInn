@@ -14,4 +14,12 @@ public class ModMenuTypes {
 
     public static final Supplier<MenuType<StoreMenu>> STORE_MENU =
             MENU_TYPES.register("store_menu", () -> IMenuTypeExtension.create(StoreMenu::new));
+
+    public static final Supplier<MenuType<com.otherworldinn.world.inventory.CommissionBoardMenu>> COMMISSION_BOARD_MENU =
+            MENU_TYPES.register(
+                    "commission_board_menu",
+                    () ->
+                            IMenuTypeExtension.create(
+                                    (windowId, inv, data) ->
+                                            new com.otherworldinn.world.inventory.CommissionBoardMenu(windowId, inv)));
 }

@@ -3,10 +3,12 @@ package com.otherworldinn.network;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.network.packet.C2SDialogueClosePacket;
 import com.otherworldinn.network.packet.C2SDialogueOptionPacket;
+import com.otherworldinn.network.packet.C2SAcceptCommissionPacket;
 import com.otherworldinn.network.packet.C2SStorePurchasePacket;
 import com.otherworldinn.network.packet.C2STeleportOverworldPacket;
 import com.otherworldinn.network.packet.C2STeleportPacket;
 import com.otherworldinn.network.packet.C2SWithdrawCoinPacket;
+import com.otherworldinn.network.packet.S2CCommissionBoardPacket;
 import com.otherworldinn.network.packet.S2CDialogueClosePacket;
 import com.otherworldinn.network.packet.S2CDialogueNodePacket;
 import com.otherworldinn.network.packet.S2CTeamSyncPacket;
@@ -41,6 +43,10 @@ public class ModMessages {
                 S2CDialogueClosePacket.TYPE,
                 S2CDialogueClosePacket.STREAM_CODEC,
                 S2CDialogueClosePacket::handle);
+        registrar.playToClient(
+                S2CCommissionBoardPacket.TYPE,
+                S2CCommissionBoardPacket.STREAM_CODEC,
+                S2CCommissionBoardPacket::handle);
 
         // 注册 C2S 数据包
         registrar.playToServer(
@@ -69,6 +75,10 @@ public class ModMessages {
                 C2SDialogueClosePacket.TYPE,
                 C2SDialogueClosePacket.STREAM_CODEC,
                 C2SDialogueClosePacket::handle);
+        registrar.playToServer(
+                C2SAcceptCommissionPacket.TYPE,
+                C2SAcceptCommissionPacket.STREAM_CODEC,
+                C2SAcceptCommissionPacket::handle);
     }
 
     /**

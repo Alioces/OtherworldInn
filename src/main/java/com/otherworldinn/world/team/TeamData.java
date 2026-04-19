@@ -1,6 +1,7 @@
 package com.otherworldinn.world.team;
 
 import com.otherworldinn.init.ModSounds;
+import com.otherworldinn.world.commission.TeamCommissionData;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.map.MapPoint;
 import com.otherworldinn.world.map.TownDataProvider;
@@ -86,6 +87,7 @@ public class TeamData {
     private final List<InnRegion> innRegions = new ArrayList<>();
 
     private final InnData innData = new InnData(); // 旅社数据管理系统
+    private final TeamCommissionData commissionData = new TeamCommissionData(); // 队伍委托数据
 
     public TeamData(UUID teamId) {
         this.teamId = teamId;
@@ -407,6 +409,7 @@ public class TeamData {
 
         // 旅社数据 (包含 EditMode)
         tag.put("InnData", innData.save(new CompoundTag()));
+        tag.put("CommissionData", commissionData.save());
 
         // 旅社区域
         ListTag regionsTag = new ListTag();
@@ -462,6 +465,9 @@ public class TeamData {
         // 优先加载 InnData，因为后续可能需要用到它
         if (tag.contains("InnData")) {
             innData.load(tag.getCompound("InnData"));
+        }
+        if (tag.contains("CommissionData")) {
+            commissionData.load(tag.getCompound("CommissionData"));
         }
 
         // 加载区域

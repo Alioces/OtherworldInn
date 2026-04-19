@@ -4,7 +4,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.otherworldinn.world.dimension.TownDimensions;
+import com.otherworldinn.world.commission.CommissionService;
 import com.otherworldinn.world.event.TownStructurePlacer;
 import com.otherworldinn.world.inn.facility.FacilityRegistry;
 import com.otherworldinn.world.team.TeamData;
@@ -35,10 +37,7 @@ public class AdminCommands {
                                         .then(
                                                 Commands.literal("set_level")
                                                         .then(
-                                                                Commands.argument(
-                                                                                "target",
-                                                                                EntityArgument
-                                                                                        .player())
+                                                                Commands.argument("target", EntityArgument.player())
                                                                         .then(
                                                                                 Commands.argument(
                                                                                                 "facilityId",
@@ -64,7 +63,23 @@ public class AdminCommands {
                                                                                                                                 0))
                                                                                                         .executes(
                                                                                                                 AdminCommands
-                                                                                                                        ::setFacilityLevel)))))));
+                                                                                                                        ::setFacilityLevel))))))
+                        .then(
+                                Commands.literal("commission")
+                                        .then(
+                                                Commands.literal("complete_current")
+                                                        .then(
+                                                                Commands.argument("target", EntityArgument.player())
+                                                                        .executes(
+                                                                                AdminCommands
+                                                                                        ::completeCurrentCommission)))
+                                        .then(
+                                                Commands.literal("refresh")
+                                                        .then(
+                                                                Commands.argument("target", EntityArgument.player())
+                                                                        .executes(
+                                                                                AdminCommands
+                                                                                        ::refreshCommissionBoard)))));
     }
 
     private static int resetDimensions(CommandContext<CommandSourceStack> context) {
@@ -154,5 +169,53 @@ public class AdminCommands {
             context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
             return 0;
         }
+    }
+
+    private static int completeCurrentCommission(CommandContext<CommandSourceStack> context)
+            throws CommandSyntaxException {
+        ServerPlayer target = EntityArgument.getPlayer(context, "target");
+        TeamData team = TeamManager.getInstance().getPlayerTeam(target);
+        if (team == null) {
+            context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.target_no_team"));
+            return 0;
+        }
+        boolean ok = CommissionService.adminCompleteCurrentCommission(target);
+        if (!ok) {
+            context.getSource().sendFailure(Component.literal("目标队伍当前没有可完成的委托"));
+            return 0;
+        }
+        context.getSource()
+                .sendSuccess(
+                        () ->
+                                Component.literal(
+                                        "已完成 "
+                                                + target.getName().getString()
+                                                + " 所在队伍的当前委托并发放奖励"),
+                        true);
+        return 1;
+    }
+
+    private static int refreshCommissionBoard(CommandContext<CommandSourceStack> context)
+            throws CommandSyntaxException {
+        ServerPlayer target = EntityArgument.getPlayer(context, "target");
+        TeamData team = TeamManager.getInstance().getPlayerTeam(target);
+        if (team == null) {
+            context.getSource().sendFailure(Component.translatable("command.otherworldinn.team.target_no_team"));
+            return 0;
+        }
+        boolean ok = CommissionService.adminRefreshBoard(target);
+        if (!ok) {
+            context.getSource().sendFailure(Component.literal("刷新委托板失败"));
+            return 0;
+        }
+        context.getSource()
+                .sendSuccess(
+                        () ->
+                                Component.literal(
+                                        "已刷新 "
+                                                + target.getName().getString()
+                                                + " 所在队伍的委托板"),
+                        true);
+        return 1;
     }
 }
