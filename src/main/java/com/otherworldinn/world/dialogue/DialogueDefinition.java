@@ -22,6 +22,6 @@ public record DialogueDefinition(String id, String rootNodeId, Map<String, Dialo
     }
 
     public String optionTextKey(String nodeId, String optionId) {
-        return "dialogue.otherworldinn." + id + ".option." + nodeId + "." + optionId;
+        return "dialogue.otherworldinn.option." + optionId;
     }
 }

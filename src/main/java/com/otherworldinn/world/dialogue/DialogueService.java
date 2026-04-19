@@ -9,8 +9,14 @@ import com.otherworldinn.world.team.service.TeamManager;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AnvilMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
 import org.jetbrains.annotations.Nullable;
 
 public final class DialogueService {
@@ -70,6 +76,8 @@ public final class DialogueService {
             if (DialogueRegistry.FUNCTION_OPEN_STORE.equals(selected.functionId())
                     && entity instanceof StoreEntity storeEntity) {
                 storeEntity.openStoreForPlayer(player);
+            } else if (DialogueRegistry.FUNCTION_OPEN_VIRTUAL_ANVIL.equals(selected.functionId())) {
+                openVirtualAnvil(player);
             }
             closeDialogue(player, true);
             return;
@@ -133,6 +141,20 @@ public final class DialogueService {
         boolean repaired =
                 team != null && team.getInnData().getFacilityLevel(conditionalText.facilityId()) > 0;
         return session.definition().nodeConditionalTextKey(node.id(), repaired);
+    }
+
+    private static void openVirtualAnvil(ServerPlayer player) {
+        MenuProvider menuProvider =
+                new SimpleMenuProvider(
+                        (id, inventory, ignoredPlayer) ->
+                                new AnvilMenu(id, inventory, ContainerLevelAccess.NULL) {
+                                    @Override
+                                    public boolean stillValid(Player playerEntity) {
+                                        return true;
+                                    }
+                                },
+                        Component.translatable("container.repair"));
+        player.openMenu(menuProvider);
     }
 
     private record DialogueSession(

@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 public final class DialogueRegistry {
     public static final String FUNCTION_OPEN_STORE = "open_store";
+    public static final String FUNCTION_OPEN_VIRTUAL_ANVIL = "open_virtual_anvil";
 
 
     private static final DialogueDefinition BLACKSMITH_DIALOGUE =
@@ -31,7 +32,9 @@ public final class DialogueRegistry {
                     LocalizedText.of("地下那座锅炉房好久没人修理了，不知道还能不能用", 
                                      "No one has repaired the boiler room downstairs for a long time. I don't even know if it still works."),
                     LocalizedText.of("你把它修好了？太好了，我们的机器可以用了",
-                                     "You repaired it? That's great."));
+                                     "You repaired it? That's great."),
+                    LocalizedText.of("借用一下铁砧", "Borrow the Anvil"),
+                    FUNCTION_OPEN_VIRTUAL_ANVIL);
     private static final DialogueDefinition FARMER_DIALOGUE =
             buildStoreDialogueWithFacilityTopics(
                     "farmer",
@@ -47,6 +50,8 @@ public final class DialogueRegistry {
                                      "That greenhouse across the way has been abandoned for ages... it used to be so useful."),
                     LocalizedText.of("你居然真的把它修好了，感谢你的付出，现在种地更方便了", 
                                      "You actually got it repaired. Thank you for putting in the work."),
+                    null,
+                    null,
                     null,
                     null);
     private static final DialogueDefinition MAGICIAN_DIALOGUE =
@@ -123,13 +128,13 @@ public final class DialogueRegistry {
                         askGoodsText,
                         List.of(
                                 new DialogueOptionDef(
-                                        "open_store_after_ask",
+                                        "open_store",
                                         LocalizedText.of("打开商店", "Open Shop"),
                                         DialogueOptionType.FUNCTION,
                                         null,
                                         FUNCTION_OPEN_STORE),
                                 new DialogueOptionDef(
-                                        "leave_after_ask",
+                                        "leave",
                                         LocalizedText.of("先告辞", "Leave"),
                                         DialogueOptionType.BRANCH,
                                         null,
@@ -146,7 +151,9 @@ public final class DialogueRegistry {
             @Nullable LocalizedText greenhouseUnrepairedText,
             @Nullable LocalizedText greenhouseRepairedText,
             @Nullable LocalizedText boilerRoomUnrepairedText,
-            @Nullable LocalizedText boilerRoomRepairedText) {
+            @Nullable LocalizedText boilerRoomRepairedText,
+            @Nullable LocalizedText extraFunctionLabel,
+            @Nullable String extraFunctionId) {
         String root = "root";
         String askGoods = "ask_goods";
         String greenhouseTopic = "topic_greenhouse";
@@ -169,6 +176,15 @@ public final class DialogueRegistry {
                         DialogueOptionType.FUNCTION,
                         null,
                         FUNCTION_OPEN_STORE));
+        if (extraFunctionLabel != null && extraFunctionId != null && !extraFunctionId.isBlank()) {
+            rootOptions.add(
+                    new DialogueOptionDef(
+                            "extra_function",
+                            extraFunctionLabel,
+                            DialogueOptionType.FUNCTION,
+                            null,
+                            extraFunctionId));
+        }
         rootOptions.add(
                 new DialogueOptionDef(
                         "ask_goods",
@@ -206,15 +222,24 @@ public final class DialogueRegistry {
         List<DialogueOptionDef> askGoodsOptions = new ArrayList<>();
         askGoodsOptions.add(
                 new DialogueOptionDef(
-                        "open_store_after_ask",
+                        "open_store",
                         LocalizedText.of("打开商店", "Open Shop"),
                         DialogueOptionType.FUNCTION,
                         null,
                         FUNCTION_OPEN_STORE));
+        if (extraFunctionLabel != null && extraFunctionId != null && !extraFunctionId.isBlank()) {
+            askGoodsOptions.add(
+                    new DialogueOptionDef(
+                            "extra_function",
+                            extraFunctionLabel,
+                            DialogueOptionType.FUNCTION,
+                            null,
+                            extraFunctionId));
+        }
         if (hasGreenhouseTopic) {
             askGoodsOptions.add(
                     new DialogueOptionDef(
-                            "about_greenhouse_after_ask",
+                            "about_greenhouse",
                             aboutGreenhouseLabel,
                             DialogueOptionType.BRANCH,
                             greenhouseTopic,
@@ -223,7 +248,7 @@ public final class DialogueRegistry {
         if (hasBoilerTopic) {
             askGoodsOptions.add(
                     new DialogueOptionDef(
-                            "about_boiler_room_after_ask",
+                            "about_boiler_room",
                             aboutBoilerRoomLabel,
                             DialogueOptionType.BRANCH,
                             boilerTopic,
@@ -231,7 +256,7 @@ public final class DialogueRegistry {
         }
         askGoodsOptions.add(
                 new DialogueOptionDef(
-                        "leave_after_ask",
+                        "leave",
                         LocalizedText.of("先告辞", "Leave"),
                         DialogueOptionType.BRANCH,
                         null,
@@ -239,46 +264,70 @@ public final class DialogueRegistry {
         nodes.put(askGoods, new DialogueNodeDef(askGoods, askGoodsText, List.copyOf(askGoodsOptions)));
 
         if (hasGreenhouseTopic) {
+            List<DialogueOptionDef> greenhouseOptions = new ArrayList<>();
+            greenhouseOptions.add(
+                    new DialogueOptionDef(
+                            "open_store",
+                            LocalizedText.of("打开商店", "Open Shop"),
+                            DialogueOptionType.FUNCTION,
+                            null,
+                            FUNCTION_OPEN_STORE));
+            if (extraFunctionLabel != null && extraFunctionId != null && !extraFunctionId.isBlank()) {
+                greenhouseOptions.add(
+                        new DialogueOptionDef(
+                                "extra_function",
+                                extraFunctionLabel,
+                                DialogueOptionType.FUNCTION,
+                                null,
+                                extraFunctionId));
+            }
+            greenhouseOptions.add(
+                    new DialogueOptionDef(
+                            "leave",
+                            LocalizedText.of("先告辞", "Leave"),
+                            DialogueOptionType.BRANCH,
+                            null,
+                            null));
             nodes.put(
                     greenhouseTopic,
                     new DialogueNodeDef(
                             greenhouseTopic,
                             greenhouseUnrepairedText,
-                            List.of(
-                                    new DialogueOptionDef(
-                                            "open_store_after_greenhouse_topic",
-                                            LocalizedText.of("打开商店", "Open Shop"),
-                                            DialogueOptionType.FUNCTION,
-                                            null,
-                                            FUNCTION_OPEN_STORE),
-                                    new DialogueOptionDef(
-                                            "leave_after_greenhouse_topic",
-                                            LocalizedText.of("先告辞", "Leave"),
-                                            DialogueOptionType.BRANCH,
-                                            null,
-                                            null)),
+                            List.copyOf(greenhouseOptions),
                             new DialogueNodeConditionalText(
                                     "greenhouse", greenhouseUnrepairedText, greenhouseRepairedText)));
         }
         if (hasBoilerTopic) {
+            List<DialogueOptionDef> boilerOptions = new ArrayList<>();
+            boilerOptions.add(
+                    new DialogueOptionDef(
+                            "open_store",
+                            LocalizedText.of("打开商店", "Open Shop"),
+                            DialogueOptionType.FUNCTION,
+                            null,
+                            FUNCTION_OPEN_STORE));
+            if (extraFunctionLabel != null && extraFunctionId != null && !extraFunctionId.isBlank()) {
+                boilerOptions.add(
+                        new DialogueOptionDef(
+                                "extra_function",
+                                extraFunctionLabel,
+                                DialogueOptionType.FUNCTION,
+                                null,
+                                extraFunctionId));
+            }
+            boilerOptions.add(
+                    new DialogueOptionDef(
+                            "leave",
+                            LocalizedText.of("先告辞", "Leave"),
+                            DialogueOptionType.BRANCH,
+                            null,
+                            null));
             nodes.put(
                     boilerTopic,
                     new DialogueNodeDef(
                             boilerTopic,
                             boilerRoomUnrepairedText,
-                            List.of(
-                                    new DialogueOptionDef(
-                                            "open_store_after_boiler_topic",
-                                            LocalizedText.of("打开商店", "Open Shop"),
-                                            DialogueOptionType.FUNCTION,
-                                            null,
-                                            FUNCTION_OPEN_STORE),
-                                    new DialogueOptionDef(
-                                            "leave_after_boiler_topic",
-                                            LocalizedText.of("先告辞", "Leave"),
-                                            DialogueOptionType.BRANCH,
-                                            null,
-                                            null)),
+                            List.copyOf(boilerOptions),
                             new DialogueNodeConditionalText(
                                     "boiler_room", boilerRoomUnrepairedText, boilerRoomRepairedText)));
         }

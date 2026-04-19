@@ -8,6 +8,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.BlockGetter;
@@ -102,6 +103,9 @@ public class CommissionBoardBlock extends Block {
     }
 
     private InteractionResult handleUse(Level level, BlockPos pos, Player player) {
+        if (level.isClientSide) {
+            player.playSound(SoundEvents.BOOK_PAGE_TURN, 0.8F, 1.0F);
+        }
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
             CommissionService.openBoard(serverPlayer, pos);
         }

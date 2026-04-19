@@ -12,8 +12,10 @@ import com.otherworldinn.world.dialogue.DialogueNodeDef;
 import com.otherworldinn.world.dialogue.DialogueOptionDef;
 import com.otherworldinn.world.dialogue.DialogueRegistry;
 import com.otherworldinn.world.inn.facility.FacilityRegistry;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.entity.EntityType;
 import net.neoforged.neoforge.common.data.LanguageProvider;
@@ -757,6 +759,7 @@ public class ModLanguageProvider extends LanguageProvider {
     }
 
     private void addDialogueTranslations() {
+        Set<String> seenOptionKeys = new HashSet<>();
         for (DialogueDefinition dialogue : DialogueRegistry.allDialogues()) {
             for (DialogueNodeDef node : dialogue.nodes().values()) {
                 if (node.conditionalText() != null) {
@@ -770,9 +773,10 @@ public class ModLanguageProvider extends LanguageProvider {
                     entry(dialogue.nodeTextKey(node.id())).zh(node.text().zh()).en(node.text().en());
                 }
                 for (DialogueOptionDef option : node.options()) {
-                    entry(dialogue.optionTextKey(node.id(), option.id()))
-                            .zh(option.label().zh())
-                            .en(option.label().en());
+                    String optionKey = dialogue.optionTextKey(node.id(), option.id());
+                    if (seenOptionKeys.add(optionKey)) {
+                        entry(optionKey).zh(option.label().zh()).en(option.label().en());
+                    }
                 }
             }
         }
