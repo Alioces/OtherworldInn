@@ -186,6 +186,7 @@
   "gui.otherworldinn.store.favor_unlock": "Unlocks at Favor Level %s",
   "gui.otherworldinn.store.limit_purchase": "Limit %s",
   "gui.otherworldinn.store.price": "Price: §f§r%s",
+  "gui.otherworldinn.store.progress_unlock": "Unlocks after obtaining advancement [%s]",
   "gui.otherworldinn.store.purchase": "§f§r%sBuy",
   "gui.otherworldinn.store.stock": "Stock: %s/%s",
   "gui.otherworldinn.store.stock.infinite": "Stock: ∞",

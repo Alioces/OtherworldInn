@@ -282,6 +282,14 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
         return item.getRequiredFavorLevel() > this.getCurrentFavorLevel();
     }
 
+    private boolean isProgressLocked(StoreEntity.StoreItem item) {
+        return item.isViewerLocked();
+    }
+
+    private boolean isLocked(StoreEntity.StoreItem item) {
+        return this.isFavorLocked(item) || this.isProgressLocked(item);
+    }
+
     private int getDisplayPrice(StoreEntity.StoreItem item) {
         return StoreEntity.getDiscountedPriceForFavorLevel(
                 item.getPrice(), this.getCurrentFavorLevel());
@@ -636,10 +644,11 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             // 绘制物品
             StoreEntity.StoreItem storeItem = items.get(i);
             boolean isFavorLocked = this.isFavorLocked(storeItem);
+            boolean isProgressLocked = this.isProgressLocked(storeItem);
             boolean isOutOfStock =
                     storeItem.getMaxStock() != -1 && storeItem.getCurrentStock() <= 0;
 
-            if (isOutOfStock || isFavorLocked) {
+            if (isOutOfStock || isFavorLocked || isProgressLocked) {
                 // 绘制灰色遮罩
                 guiGraphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, ModColors.BLACK_ALPHA_62);
             }
@@ -672,7 +681,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                     color = ModColors.YELLOW;
                 }
             }
-            if (isFavorLocked) {
+            if (isFavorLocked || isProgressLocked) {
                 color = ModColors.ERROR;
             }
 
@@ -783,7 +792,7 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
             int y = startY + row * (SLOT_SIZE + SLOT_SPACING);
 
             if (mouseX >= x && mouseX < x + SLOT_SIZE && mouseY >= y && mouseY < y + SLOT_SIZE) {
-                if (this.isFavorLocked(items.get(i))) {
+                if (this.isLocked(items.get(i))) {
                     return false;
                 }
                 // 如果没有库存，不允许选择
@@ -930,6 +939,35 @@ public class StoreScreen extends AbstractContainerScreen<StoreMenu> {
                             Component.translatable(
                                             "gui.otherworldinn.store.favor_unlock",
                                             item.getRequiredFavorLevel())
+                                    .withStyle(style -> style.withColor(ModColors.ERROR)));
+                }
+                if (this.isProgressLocked(item)) {
+                    String advancementTitleKey = item.getRequiredAdvancementTitleKey();
+                    if (item.getRequiredAdvancementId() != null
+                            && !item.getRequiredAdvancementId().isBlank()) {
+                        net.minecraft.resources.ResourceLocation advancementId =
+                                net.minecraft.resources.ResourceLocation.tryParse(
+                                        item.getRequiredAdvancementId());
+                        if (advancementId != null) {
+                            String namespacePrefix =
+                                    "minecraft".equals(advancementId.getNamespace())
+                                            ? ""
+                                            : advancementId.getNamespace() + ".";
+                            advancementTitleKey =
+                                    "advancements."
+                                            + namespacePrefix
+                                            + advancementId.getPath().replace('/', '.')
+                                            + ".title";
+                        }
+                    }
+                    Component advancementTitle =
+                            advancementTitleKey == null || advancementTitleKey.isBlank()
+                                    ? Component.literal("????")
+                                    : Component.translatable(advancementTitleKey);
+                    tooltip.add(
+                            Component.translatable(
+                                            "gui.otherworldinn.store.progress_unlock",
+                                            advancementTitle)
                                     .withStyle(style -> style.withColor(ModColors.ERROR)));
                 }
                 guiGraphics.renderTooltip(

@@ -186,6 +186,7 @@
   "gui.otherworldinn.store.favor_unlock": "%s级好感度解锁",
   "gui.otherworldinn.store.limit_purchase": "限购%s个",
   "gui.otherworldinn.store.price": "价格: §f§r%s",
+  "gui.otherworldinn.store.progress_unlock": "取得[%s]进度后解锁",
   "gui.otherworldinn.store.purchase": "§f§r%s购买",
   "gui.otherworldinn.store.stock": "库存: %s/%s",
   "gui.otherworldinn.store.stock.infinite": "库存: ∞",

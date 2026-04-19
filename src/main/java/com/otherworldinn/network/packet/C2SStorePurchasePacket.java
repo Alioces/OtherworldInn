@@ -105,7 +105,7 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items)
                                         storeEntity.getStoreItems()) {
                                     if (ItemStack.isSameItemSameComponents(
                                             stockItem.getItemStack(), request.stack)) {
-                                        if (!storeEntity.canPurchase(stockItem)) {
+                                        if (!storeEntity.canPurchase(player, stockItem)) {
                                             return;
                                         }
                                         int aggregatedQuantity =

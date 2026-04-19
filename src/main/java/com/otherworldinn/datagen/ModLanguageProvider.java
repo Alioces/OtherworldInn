@@ -741,6 +741,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("gui.otherworldinn.store.favor_unlock")
                 .zh("%s级好感度解锁")
                 .en("Unlocks at Favor Level %s");
+        entry("gui.otherworldinn.store.progress_unlock")
+                .zh("取得[%s]进度后解锁")
+                .en("Unlocks after obtaining advancement [%s]");
         entry("gui.otherworldinn.store.favor.level").zh("好感度: %s").en("Favor Level: %s");
         entry("gui.otherworldinn.store.favor.progress")
                 .zh("进度: §f\uE001§r%s/%s")

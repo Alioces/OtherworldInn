@@ -26,6 +26,8 @@ public class MagicianEntity extends StoreEntity {
 
     private static final int RANDOM_BOOK_COUNT = 4;
     private static final int RANDOM_BOOK_BASE_PRICE = 32;
+    private static final ResourceLocation ADVANCEMENT_WE_NEED_TO_GO_DEEPER =
+            ResourceLocation.fromNamespaceAndPath("minecraft", "story/enter_the_nether");
 
     public MagicianEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
@@ -115,7 +117,16 @@ public class MagicianEntity extends StoreEntity {
         this.addFavorStoreItem(2, new ItemStack(Items.BOOK), 8, 64);
         this.addFavorStoreItem(4, new ItemStack(Items.DIAMOND), 64, 8);
         this.addFavorStoreItem(4, new ItemStack(Items.ENCHANTED_BOOK), 128, 2, this::applyMendingBook);
-        this.addFavorStoreItem(6, new ItemStack(Items.ENDER_PEARL), 64, 16);
+        this.addAchievementsStoreItem(
+                new ItemStack(Items.QUARTZ),
+                16,
+                32,
+                ADVANCEMENT_WE_NEED_TO_GO_DEEPER);
+        this.addAchievementsStoreItem(
+                new ItemStack(Items.ENDER_PEARL),
+                64,
+                16,
+                ADVANCEMENT_WE_NEED_TO_GO_DEEPER);
         this.addFavorStoreItem(
                 6, new ItemStack(Items.ENCHANTED_BOOK), 256, 2, this::applySwiftSneakBook);
         this.addFavorStoreItem(8, new ItemStack(Items.EXPERIENCE_BOTTLE), 32, 16);

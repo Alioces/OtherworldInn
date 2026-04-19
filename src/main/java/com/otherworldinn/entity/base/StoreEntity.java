@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -181,7 +182,7 @@ public abstract class StoreEntity extends PathfinderMob {
                         // 序列化商品列表
                         buf.writeInt(this.storeItems.size());
                         for (StoreItem item : this.storeItems) {
-                            buf.writeNbt(item.save(this.registryAccess()));
+                            buf.writeNbt(item.saveForNetwork(this.registryAccess(), serverPlayer, this));
                         }
                     });
         }
@@ -390,6 +391,32 @@ public abstract class StoreEntity extends PathfinderMob {
         return item.getRequiredFavorLevel() <= this.favorLevel;
     }
 
+    public boolean canPurchase(Player player, StoreItem item) {
+        if (!canPurchase(item)) {
+            return false;
+        }
+        if (player instanceof ServerPlayer serverPlayer) {
+            return isProgressRequirementMet(serverPlayer, item);
+        }
+        return true;
+    }
+
+    public boolean isProgressRequirementMet(ServerPlayer player, StoreItem item) {
+        String advancementId = item.getRequiredAdvancementId();
+        if (advancementId == null || advancementId.isBlank()) {
+            return true;
+        }
+        ResourceLocation id = ResourceLocation.tryParse(advancementId);
+        if (id == null) {
+            return true;
+        }
+        AdvancementHolder advancement = player.server.getAdvancements().get(id);
+        if (advancement == null) {
+            return true;
+        }
+        return player.getAdvancements().getOrStartProgress(advancement).isDone();
+    }
+
     public int getPurchasePrice(StoreItem item) {
         return getDiscountedPriceForFavorLevel(item.getPrice(), this.favorLevel);
     }
@@ -440,13 +467,89 @@ public abstract class StoreEntity extends PathfinderMob {
             modifier.accept(copy);
         }
         this.favorStoreItems.add(new FavorStoreItemData(requiredFavorLevel, copy, price, maxStock));
-        if (this.hasFixedItem(copy, price, maxStock, requiredFavorLevel)) {
+        if (this.hasFixedItem(copy, price, maxStock, requiredFavorLevel, null, null)) {
             return;
         }
         int insertIndex = Math.min(this.fixedItemsCount, this.storeItems.size());
         this.storeItems.add(
-                insertIndex, new StoreItem(copy, price, maxStock, maxStock, requiredFavorLevel));
+                insertIndex,
+                new StoreItem(copy, price, maxStock, maxStock, requiredFavorLevel, true, null, null));
         this.fixedItemsCount++;
+    }
+
+    public void addAchievementsStoreItem(
+            ItemStack item,
+            int price,
+            int maxStock,
+            ResourceLocation requiredAdvancementId,
+            String requiredAdvancementTitleKey) {
+        if (requiredAdvancementId == null) {
+            return;
+        }
+        ItemStack copy = item.copy();
+        String advancementId = requiredAdvancementId.toString();
+        String titleKey =
+                (requiredAdvancementTitleKey == null || requiredAdvancementTitleKey.isBlank())
+                        ? buildAdvancementTitleKey(requiredAdvancementId)
+                        : requiredAdvancementTitleKey;
+        if (this.hasFixedItem(copy, price, maxStock, 1, advancementId, titleKey)) {
+            return;
+        }
+        int insertIndex = Math.min(this.fixedItemsCount, this.storeItems.size());
+        this.storeItems.add(
+                insertIndex,
+                new StoreItem(
+                        copy,
+                        price,
+                        maxStock,
+                        maxStock,
+                        1,
+                        true,
+                        advancementId,
+                        titleKey));
+        this.fixedItemsCount++;
+    }
+
+    public void addAchievementsStoreItem(
+            ItemStack item, int price, int maxStock, ResourceLocation requiredAdvancementId) {
+        this.addAchievementsStoreItem(item, price, maxStock, requiredAdvancementId, null);
+    }
+
+    public void addAchievementsStoreItem(
+            String itemId,
+            int price,
+            int maxStock,
+            ResourceLocation requiredAdvancementId,
+            String requiredAdvancementTitleKey) {
+        ResourceLocation rl = ResourceLocation.tryParse(itemId);
+        if (rl != null) {
+            BuiltInRegistries.ITEM
+                    .getOptional(rl)
+                    .ifPresent(
+                            item ->
+                                    this.addAchievementsStoreItem(
+                                            new ItemStack(item),
+                                            price,
+                                            maxStock,
+                                            requiredAdvancementId,
+                                            requiredAdvancementTitleKey));
+        }
+    }
+
+    public void addAchievementsStoreItem(
+            String itemId, int price, int maxStock, ResourceLocation requiredAdvancementId) {
+        this.addAchievementsStoreItem(itemId, price, maxStock, requiredAdvancementId, null);
+    }
+
+    private static String buildAdvancementTitleKey(ResourceLocation advancementId) {
+        String namespacePrefix =
+                "minecraft".equals(advancementId.getNamespace())
+                        ? ""
+                        : advancementId.getNamespace() + ".";
+        return "advancements."
+                + namespacePrefix
+                + advancementId.getPath().replace('/', '.')
+                + ".title";
     }
 
     public void addFavorStoreItem(int requiredFavorLevel, String itemId, int price, int maxStock) {
@@ -503,7 +606,9 @@ public abstract class StoreEntity extends PathfinderMob {
                     favorItem.itemStack(),
                     favorItem.price(),
                     favorItem.maxStock(),
-                    favorItem.requiredFavorLevel())) {
+                    favorItem.requiredFavorLevel(),
+                    null,
+                    null)) {
                 continue;
             }
             int insertIndex = Math.min(this.fixedItemsCount, this.storeItems.size());
@@ -514,20 +619,32 @@ public abstract class StoreEntity extends PathfinderMob {
                             favorItem.price(),
                             favorItem.maxStock(),
                             favorItem.maxStock(),
-                            favorItem.requiredFavorLevel()));
+                            favorItem.requiredFavorLevel(),
+                            true,
+                            null,
+                            null));
             this.fixedItemsCount++;
         }
     }
 
     private boolean hasFixedItem(
-            ItemStack itemStack, int price, int maxStock, int requiredFavorLevel) {
+            ItemStack itemStack,
+            int price,
+            int maxStock,
+            int requiredFavorLevel,
+            @Nullable String requiredAdvancementId,
+            @Nullable String requiredAdvancementTitleKey) {
         for (int i = 0; i < this.fixedItemsCount && i < this.storeItems.size(); i++) {
             StoreItem existing = this.storeItems.get(i);
             if (ItemStack.isSameItemSameComponents(existing.getItemStack(), itemStack)
                     && existing.getPrice() == price
                     && existing.getMaxStock() == maxStock
                     && existing.isRestockable()
-                    && existing.getRequiredFavorLevel() == requiredFavorLevel) {
+                    && existing.getRequiredFavorLevel() == requiredFavorLevel
+                    && java.util.Objects.equals(
+                            existing.getRequiredAdvancementId(), requiredAdvancementId)
+                    && java.util.Objects.equals(
+                            existing.getRequiredAdvancementTitleKey(), requiredAdvancementTitleKey)) {
                 return true;
             }
         }
@@ -723,17 +840,20 @@ public abstract class StoreEntity extends PathfinderMob {
         private int currentStock;
         private final int requiredFavorLevel;
         private final boolean restockable;
+        @Nullable private final String requiredAdvancementId;
+        @Nullable private final String requiredAdvancementTitleKey;
+        private final boolean viewerLocked;
 
         public StoreItem(ItemStack itemStack, int price) {
-            this(itemStack, price, -1);
+            this(itemStack, price, -1, -1, 1, true, null, null, false);
         }
 
         public StoreItem(ItemStack itemStack, int price, int maxStock) {
-            this(itemStack, price, maxStock, maxStock, 1, true);
+            this(itemStack, price, maxStock, maxStock, 1, true, null, null, false);
         }
 
         public StoreItem(ItemStack itemStack, int price, int maxStock, int currentStock) {
-            this(itemStack, price, maxStock, currentStock, 1, true);
+            this(itemStack, price, maxStock, currentStock, 1, true, null, null, false);
         }
 
         public StoreItem(
@@ -742,7 +862,16 @@ public abstract class StoreEntity extends PathfinderMob {
                 int maxStock,
                 int currentStock,
                 int requiredFavorLevel) {
-            this(itemStack, price, maxStock, currentStock, requiredFavorLevel, true);
+            this(
+                    itemStack,
+                    price,
+                    maxStock,
+                    currentStock,
+                    requiredFavorLevel,
+                    true,
+                    null,
+                    null,
+                    false);
         }
 
         public StoreItem(
@@ -752,12 +881,64 @@ public abstract class StoreEntity extends PathfinderMob {
                 int currentStock,
                 int requiredFavorLevel,
                 boolean restockable) {
+            this(
+                    itemStack,
+                    price,
+                    maxStock,
+                    currentStock,
+                    requiredFavorLevel,
+                    restockable,
+                    null,
+                    null,
+                    false);
+        }
+
+        public StoreItem(
+                ItemStack itemStack,
+                int price,
+                int maxStock,
+                int currentStock,
+                int requiredFavorLevel,
+                boolean restockable,
+                @Nullable String requiredAdvancementId,
+                @Nullable String requiredAdvancementTitleKey) {
+            this(
+                    itemStack,
+                    price,
+                    maxStock,
+                    currentStock,
+                    requiredFavorLevel,
+                    restockable,
+                    requiredAdvancementId,
+                    requiredAdvancementTitleKey,
+                    false);
+        }
+
+        public StoreItem(
+                ItemStack itemStack,
+                int price,
+                int maxStock,
+                int currentStock,
+                int requiredFavorLevel,
+                boolean restockable,
+                @Nullable String requiredAdvancementId,
+                @Nullable String requiredAdvancementTitleKey,
+                boolean viewerLocked) {
             this.itemStack = itemStack;
             this.price = price;
             this.maxStock = maxStock;
             this.currentStock = currentStock;
             this.requiredFavorLevel = Math.max(1, requiredFavorLevel);
             this.restockable = restockable;
+            this.requiredAdvancementId =
+                    requiredAdvancementId == null || requiredAdvancementId.isBlank()
+                            ? null
+                            : requiredAdvancementId;
+            this.requiredAdvancementTitleKey =
+                    requiredAdvancementTitleKey == null || requiredAdvancementTitleKey.isBlank()
+                            ? null
+                            : requiredAdvancementTitleKey;
+            this.viewerLocked = viewerLocked;
         }
 
         public ItemStack getItemStack() {
@@ -790,6 +971,20 @@ public abstract class StoreEntity extends PathfinderMob {
 
         public boolean isRestockable() {
             return this.restockable;
+        }
+
+        @Nullable
+        public String getRequiredAdvancementId() {
+            return this.requiredAdvancementId;
+        }
+
+        @Nullable
+        public String getRequiredAdvancementTitleKey() {
+            return this.requiredAdvancementTitleKey;
+        }
+
+        public boolean isViewerLocked() {
+            return this.viewerLocked;
         }
 
         /** 是否无限库存 */
@@ -833,6 +1028,19 @@ public abstract class StoreEntity extends PathfinderMob {
             tag.putInt("CurrentStock", currentStock);
             tag.putInt("RequiredFavorLevel", requiredFavorLevel);
             tag.putBoolean("Restockable", restockable);
+            if (requiredAdvancementId != null) {
+                tag.putString("RequiredAdvancementId", requiredAdvancementId);
+            }
+            if (requiredAdvancementTitleKey != null) {
+                tag.putString("RequiredAdvancementTitleKey", requiredAdvancementTitleKey);
+            }
+            return tag;
+        }
+
+        public CompoundTag saveForNetwork(
+                HolderLookup.Provider provider, ServerPlayer viewer, StoreEntity storeEntity) {
+            CompoundTag tag = save(provider);
+            tag.putBoolean("ViewerLocked", !storeEntity.isProgressRequirementMet(viewer, this));
             return tag;
         }
 
@@ -847,8 +1055,25 @@ public abstract class StoreEntity extends PathfinderMob {
             int requiredFavorLevel =
                     tag.contains("RequiredFavorLevel") ? tag.getInt("RequiredFavorLevel") : 1;
             boolean restockable = !tag.contains("Restockable") || tag.getBoolean("Restockable");
+            String requiredAdvancementId =
+                    tag.contains("RequiredAdvancementId", Tag.TAG_STRING)
+                            ? tag.getString("RequiredAdvancementId")
+                            : null;
+            String requiredAdvancementTitleKey =
+                    tag.contains("RequiredAdvancementTitleKey", Tag.TAG_STRING)
+                            ? tag.getString("RequiredAdvancementTitleKey")
+                            : null;
+            boolean viewerLocked = tag.contains("ViewerLocked") && tag.getBoolean("ViewerLocked");
             return new StoreItem(
-                    stack, price, maxStock, currentStock, requiredFavorLevel, restockable);
+                    stack,
+                    price,
+                    maxStock,
+                    currentStock,
+                    requiredFavorLevel,
+                    restockable,
+                    requiredAdvancementId,
+                    requiredAdvancementTitleKey,
+                    viewerLocked);
         }
     }
 }
