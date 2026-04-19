@@ -265,6 +265,7 @@
   "message.otherworldinn.commission.line.submit_icon": "提交：",
   "message.otherworldinn.commission.no_new": "当前没有新的委托...",
   "message.otherworldinn.commission.overlay.submit": "交付物品",
+  "message.otherworldinn.commission.overlay.view": "查看委托",
   "message.otherworldinn.commission.remaining_day": "剩余: %s 天",
   "message.otherworldinn.commission.requirement": "目标",
   "message.otherworldinn.commission.reward": "奖励",

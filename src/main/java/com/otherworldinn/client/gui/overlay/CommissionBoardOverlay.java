@@ -41,7 +41,9 @@ public class CommissionBoardOverlay {
                 guiGraphics,
                 new ItemHudOverlay.MouseAction(
                         ItemHudOverlay.MouseButton.LEFT,
-                        Component.translatable("message.otherworldinn.commission.overlay.submit")));
+                        Component.translatable("message.otherworldinn.commission.overlay.submit")),
+                new ItemHudOverlay.MouseAction(
+                        ItemHudOverlay.MouseButton.RIGHT,
+                        Component.translatable("message.otherworldinn.commission.overlay.view")));
     }
 }
-

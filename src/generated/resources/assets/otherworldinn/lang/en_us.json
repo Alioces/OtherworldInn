@@ -265,6 +265,7 @@
   "message.otherworldinn.commission.line.submit_icon": "Submit: ",
   "message.otherworldinn.commission.no_new": "There are no new commissions right now...",
   "message.otherworldinn.commission.overlay.submit": "Submit Items",
+  "message.otherworldinn.commission.overlay.view": "View Commission",
   "message.otherworldinn.commission.remaining_day": "Remaining: %s days",
   "message.otherworldinn.commission.requirement": "Objectives",
   "message.otherworldinn.commission.reward": "Rewards",

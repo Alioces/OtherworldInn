@@ -468,6 +468,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.commission.overlay.submit")
                 .zh("交付物品")
                 .en("Submit Items");
+        entry("message.otherworldinn.commission.overlay.view")
+                .zh("查看委托")
+                .en("View Commission");
         entry("message.otherworldinn.commission.completed")
                 .zh("委托已完成！")
                 .en("Commission Completed!");
