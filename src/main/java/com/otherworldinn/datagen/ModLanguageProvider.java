@@ -585,8 +585,8 @@ public class ModLanguageProvider extends LanguageProvider {
                 .zh("当前条件不足或已达到最高星级，无法提升旅社评级")
                 .en("Current requirements are not met or already at max star rating. Inn rating cannot be upgraded.");
         entry("message.otherworldinn.inn_upgrade_voucher.success")
-                .zh("旅社评级提升成功：%s 星 → %s 星")
-                .en("Inn rating upgraded successfully: %s★ -> %s★");
+                .zh("旅社已升星！")
+                .en("Inn Rating Increased!");
         entry("message.otherworldinn.space_sphere.no_team")
                 .zh("你当前不在任何队伍中")
                 .en("You are not in any team");
