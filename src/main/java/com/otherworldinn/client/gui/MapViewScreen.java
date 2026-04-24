@@ -42,13 +42,13 @@ public class MapViewScreen extends Screen {
 
     /** 动画持续时间 (毫秒) */
     private static final long ANIMATION_DURATION = 300;
-    /** 边框贴图尺寸（3x3 图集） */
-    private static final int BORDER_ATLAS_SIZE = 48;
-    /** 边框源单元尺寸（图集中每格 16x16） */
-    private static final int BORDER_TILE_SIZE = 16;
-    /** 边框渲染尺寸（将边框放大 2 倍渲染） */
-    private static final int BORDER_RENDER_TILE_SIZE = BORDER_TILE_SIZE * 2;
-    /** 地图边框图集（48x48，3x3） */
+    /** 边框贴图尺寸（3x3 图集，96x96） */
+    private static final int BORDER_ATLAS_SIZE = 96;
+    /** 边框源单元尺寸（图集中每格 32x32） */
+    private static final int BORDER_TILE_SIZE = 32;
+    /** 边框渲染尺寸（保持现有屏幕大小不变） */
+    private static final int BORDER_RENDER_TILE_SIZE = BORDER_TILE_SIZE;
+    /** 地图边框图集（96x96，3x3） */
     private static final ResourceLocation MAP_BORDER_ATLAS =
             ResourceLocation.fromNamespaceAndPath(
                     "otherworldinn", "textures/gui/map/map_border_atlas.png");
@@ -239,7 +239,7 @@ public class MapViewScreen extends Screen {
     /**
      * 渲染可平铺边框（32px 宽度）
      *
-     * <p>图集布局（48x48）：
+     * <p>图集布局（96x96）：
      * [TL][T][TR]
      * [L ][C][R ]
      * [BL][B][BR]
@@ -255,25 +255,25 @@ public class MapViewScreen extends Screen {
 
         // Corners
         blitBorder(guiGraphics, 0, 0, 0, 0, t, t); // TL
-        blitBorder(guiGraphics, w - t, 0, 32, 0, t, t); // TR
-        blitBorder(guiGraphics, 0, h - t, 0, 32, t, t); // BL
-        blitBorder(guiGraphics, w - t, h - t, 32, 32, t, t); // BR
+        blitBorder(guiGraphics, w - t, 0, 64, 0, t, t); // TR
+        blitBorder(guiGraphics, 0, h - t, 0, 64, t, t); // BL
+        blitBorder(guiGraphics, w - t, h - t, 64, 64, t, t); // BR
 
-        // Top / Bottom edges (tile from x = 16)
+        // Top / Bottom edges (tile from x = 32)
         int x = t;
         while (x < w - t) {
             final int segment = Math.min(t, (w - t) - x);
-            blitBorder(guiGraphics, x, 0, 16, 0, segment, t); // Top
-            blitBorder(guiGraphics, x, h - t, 16, 32, segment, t); // Bottom
+            blitBorder(guiGraphics, x, 0, 32, 0, segment, t); // Top
+            blitBorder(guiGraphics, x, h - t, 32, 64, segment, t); // Bottom
             x += segment;
         }
 
-        // Left / Right edges (tile from y = 16)
+        // Left / Right edges (tile from y = 32)
         int y = t;
         while (y < h - t) {
             final int segment = Math.min(t, (h - t) - y);
-            blitBorder(guiGraphics, 0, y, 0, 16, t, segment); // Left
-            blitBorder(guiGraphics, w - t, y, 32, 16, t, segment); // Right
+            blitBorder(guiGraphics, 0, y, 0, 32, t, segment); // Left
+            blitBorder(guiGraphics, w - t, y, 64, 32, t, segment); // Right
             y += segment;
         }
     }
@@ -286,9 +286,6 @@ public class MapViewScreen extends Screen {
             final int v,
             final int width,
             final int height) {
-        // 目标是 2x 渲染：目标尺寸的一半对应源图采样尺寸
-        final int srcWidth = Math.max(1, width / 2);
-        final int srcHeight = Math.max(1, height / 2);
         guiGraphics.blit(
                 MAP_BORDER_ATLAS,
                 x,
@@ -297,8 +294,8 @@ public class MapViewScreen extends Screen {
                 height,
                 u,
                 v,
-                srcWidth,
-                srcHeight,
+                width,
+                height,
                 BORDER_ATLAS_SIZE,
                 BORDER_ATLAS_SIZE);
     }
@@ -759,19 +756,13 @@ public class MapViewScreen extends Screen {
     private class MapNavigationButton extends Button {
         final Direction direction;
 
-        // 导航贴图
-        private static final ResourceLocation ARROW_NORTH =
+        // 导航贴图图集（横向 4 列：北/南/东/西；纵向 3 行：默认/悬停/按下）
+        private static final ResourceLocation ARROW_ATLAS =
                 ResourceLocation.fromNamespaceAndPath(
-                        "otherworldinn", "textures/gui/map/arrow_north.png");
-        private static final ResourceLocation ARROW_SOUTH =
-                ResourceLocation.fromNamespaceAndPath(
-                        "otherworldinn", "textures/gui/map/arrow_south.png");
-        private static final ResourceLocation ARROW_EAST =
-                ResourceLocation.fromNamespaceAndPath(
-                        "otherworldinn", "textures/gui/map/arrow_east.png");
-        private static final ResourceLocation ARROW_WEST =
-                ResourceLocation.fromNamespaceAndPath(
-                        "otherworldinn", "textures/gui/map/arrow_west.png");
+                        "otherworldinn", "textures/gui/map/arrow_atlas.png");
+        private static final int ARROW_FRAME_SIZE = 16;
+        private static final int ARROW_STATE_COUNT = 3;
+        private static final int ARROW_DIRECTION_COUNT = 4;
 
         public MapNavigationButton(Direction dir, int targetX, int targetZ) {
             super(
@@ -796,40 +787,40 @@ public class MapViewScreen extends Screen {
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
             RenderSystem.disableDepthTest();
-
-            ResourceLocation texture =
+            int directionIndex =
                     switch (direction) {
-                        case NORTH -> ARROW_NORTH;
-                        case SOUTH -> ARROW_SOUTH;
-                        case EAST -> ARROW_EAST;
-                        case WEST -> ARROW_WEST;
-                        default -> ARROW_NORTH;
+                        case NORTH -> 0;
+                        case SOUTH -> 1;
+                        case EAST -> 2;
+                        case WEST -> 3;
+                        default -> 0;
                     };
+            int uOffset = directionIndex * ARROW_FRAME_SIZE;
 
             int vOffset = 0;
             if (isHovered) {
                 if (Minecraft.getInstance().mouseHandler.isLeftPressed()) {
-                    vOffset = 16 * 2;
+                    vOffset = ARROW_FRAME_SIZE * 2;
                 } else {
-                    vOffset = 16;
+                    vOffset = ARROW_FRAME_SIZE;
                 }
             }
-
-            int totalTextureHeight = 16 * 3;
+            int totalTextureWidth = ARROW_FRAME_SIZE * ARROW_DIRECTION_COUNT;
+            int totalTextureHeight = ARROW_FRAME_SIZE * ARROW_STATE_COUNT;
 
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, this.alpha);
 
             guiGraphics.blit(
-                    texture,
+                    ARROW_ATLAS,
                     getX(),
                     getY(),
                     getWidth(),
                     getHeight(),
-                    0,
+                    uOffset,
                     vOffset,
-                    16,
-                    16,
-                    16,
+                    ARROW_FRAME_SIZE,
+                    ARROW_FRAME_SIZE,
+                    totalTextureWidth,
                     totalTextureHeight);
 
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);

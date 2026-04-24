@@ -47,9 +47,9 @@ public class InnRenderer {
         Vec3 cameraPos = event.getCamera().getPosition();
         poseStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-        // 渲染旅社范围
-        InnData.InnState state = team.getInnData().getState();
-        renderInnZones(poseStack, regions, state);
+        // 暂时禁用地图视图下的旅社范围渲染
+        // InnData.InnState state = team.getInnData().getState();
+        // renderInnZones(poseStack, regions, state);
 
         poseStack.popPose();
     }
