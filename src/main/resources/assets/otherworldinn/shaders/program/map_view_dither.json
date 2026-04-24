@@ -1,0 +1,17 @@
+{
+  "vertex": "otherworldinn:map_view_dither",
+  "fragment": "otherworldinn:map_view_dither",
+  "samplers": [
+    { "name": "DiffuseSampler" }
+  ],
+  "uniforms": [
+    { "name": "FlatLightingStrength", "type": "float", "count": 1, "values": [0.50] },
+    { "name": "Contrast", "type": "float", "count": 1, "values": [1.12] },
+    { "name": "Brightness", "type": "float", "count": 1, "values": [0.01] },
+    { "name": "Saturation", "type": "float", "count": 1, "values": [0.92] },
+    { "name": "Warmth", "type": "float", "count": 1, "values": [0.65] },
+    { "name": "DitherPixelSize", "type": "float", "count": 1, "values": [3.0] },
+    { "name": "DitherStrength", "type": "float", "count": 1, "values": [1.35] },
+    { "name": "Levels", "type": "float", "count": 1, "values": [5.0] }
+  ]
+}

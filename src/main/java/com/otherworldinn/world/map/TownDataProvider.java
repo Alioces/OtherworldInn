@@ -32,8 +32,8 @@ public class TownDataProvider {
                         ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn"),
                         new Vec3(27, 71, 0),
                         new Vec2(-20, -40),
-                        ResourceLocation.fromNamespaceAndPath(
-                                OtherworldInn.MODID, "textures/gui/map/icon_inn.png"),
+                        MapIconAtlas.ATLAS_TEXTURE,
+                        MapIconAtlas.SLOT_INN,
                         Component.translatable("map_point.otherworldinn.inn"),
                         MapPoint.MapPointType.SHOP,
                         null // 默认解锁
@@ -45,8 +45,8 @@ public class TownDataProvider {
                         ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "blacksmith"),
                         new Vec3(17, 71, 3),
                         new Vec2(0, -40),
-                        ResourceLocation.fromNamespaceAndPath(
-                                OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
+                        MapIconAtlas.ATLAS_TEXTURE,
+                        MapIconAtlas.SLOT_BLACKSMITH,
                         Component.translatable("map_point.otherworldinn.blacksmith"),
                         MapPoint.MapPointType.SHOP,
                         null // 默认解锁
@@ -58,8 +58,8 @@ public class TownDataProvider {
                         ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "town_gate"),
                         new Vec3(-30, 71, 0),
                         new Vec2(30, 20),
-                        ResourceLocation.fromNamespaceAndPath(
-                                OtherworldInn.MODID, "textures/gui/map/icon_gate.png"),
+                        MapIconAtlas.ATLAS_TEXTURE,
+                        MapIconAtlas.SLOT_TOWN_GATE,
                         Component.translatable("map_point.otherworldinn.town_gate"),
                         MapPoint.MapPointType.EXIT_GATE,
                         null // 默认解锁
@@ -91,7 +91,8 @@ public class TownDataProvider {
                             pointId,
                             config.worldPosition(),
                             config.screenOffset(),
-                            config.iconTexture(),
+                            MapIconAtlas.ATLAS_TEXTURE,
+                            MapIconAtlas.slotForPointId(pointId),
                             Component.translatable(facility.translationKey()),
                             config.type(),
                             "facility_locked"));

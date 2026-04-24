@@ -8,6 +8,7 @@ import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.init.ModKeyBindings;
 import com.otherworldinn.network.ModMessages;
 import com.otherworldinn.network.packet.C2STeleportPacket;
+import com.otherworldinn.world.map.MapIconAtlas;
 import com.otherworldinn.world.map.MapPoint;
 import com.otherworldinn.world.map.TownDataProvider;
 import com.otherworldinn.world.team.TeamData;
@@ -41,6 +42,16 @@ public class MapViewScreen extends Screen {
 
     /** 动画持续时间 (毫秒) */
     private static final long ANIMATION_DURATION = 300;
+    /** 边框贴图尺寸（3x3 图集） */
+    private static final int BORDER_ATLAS_SIZE = 48;
+    /** 边框源单元尺寸（图集中每格 16x16） */
+    private static final int BORDER_TILE_SIZE = 16;
+    /** 边框渲染尺寸（将边框放大 2 倍渲染） */
+    private static final int BORDER_RENDER_TILE_SIZE = BORDER_TILE_SIZE * 2;
+    /** 地图边框图集（48x48，3x3） */
+    private static final ResourceLocation MAP_BORDER_ATLAS =
+            ResourceLocation.fromNamespaceAndPath(
+                    "otherworldinn", "textures/gui/map/map_border_atlas.png");
 
     // 控件列表
     private final List<MapPointButton> pointButtons = new ArrayList<>();
@@ -51,6 +62,7 @@ public class MapViewScreen extends Screen {
     private final long openTime;
     private long closeStartTime = -1;
     private boolean isClosing = false;
+    private boolean closeCommitted = false;
 
     // 页面切换动画状态
     private long switchStartTime = -1;
@@ -66,6 +78,11 @@ public class MapViewScreen extends Screen {
         if (!isClosing) {
             isClosing = true;
             closeStartTime = System.currentTimeMillis();
+            // 与已有的地图退出相机动画并行启动
+            if (!closeCommitted) {
+                closeCommitted = true;
+                CameraHandler.disableMapMode();
+            }
         }
     }
 
@@ -86,7 +103,7 @@ public class MapViewScreen extends Screen {
 
         // 初始化当前页面的地图点按钮
         for (MapPoint point : TownDataProvider.getPoints()) {
-            if (pagePoints.contains(point.id()) && teamData.isMapPointUnlocked(point.id())) {
+            if (pagePoints.contains(point.id())) {
                 MapPointButton button = new MapPointButton(point);
                 pointButtons.add(button);
                 this.addRenderableWidget(button);
@@ -140,7 +157,7 @@ public class MapViewScreen extends Screen {
         allPoints.addAll(prevPoints);
 
         for (MapPoint point : TownDataProvider.getPoints()) {
-            if (allPoints.contains(point.id()) && teamData.isMapPointUnlocked(point.id())) {
+            if (allPoints.contains(point.id())) {
                 MapPointButton button = new MapPointButton(point);
                 pointButtons.add(button);
                 this.addRenderableWidget(button);
@@ -209,12 +226,81 @@ public class MapViewScreen extends Screen {
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate(0, yOffset, 0);
 
+        renderMapBorder(guiGraphics);
+
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         guiGraphics.pose().popPose();
 
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         RenderSystem.disableBlend();
+    }
+
+    /**
+     * 渲染可平铺边框（32px 宽度）
+     *
+     * <p>图集布局（48x48）：
+     * [TL][T][TR]
+     * [L ][C][R ]
+     * [BL][B][BR]
+     */
+    private void renderMapBorder(final GuiGraphics guiGraphics) {
+        final int w = this.width;
+        final int h = this.height;
+        final int t = BORDER_RENDER_TILE_SIZE;
+
+        if (w <= 0 || h <= 0 || w < t * 2 || h < t * 2) {
+            return;
+        }
+
+        // Corners
+        blitBorder(guiGraphics, 0, 0, 0, 0, t, t); // TL
+        blitBorder(guiGraphics, w - t, 0, 32, 0, t, t); // TR
+        blitBorder(guiGraphics, 0, h - t, 0, 32, t, t); // BL
+        blitBorder(guiGraphics, w - t, h - t, 32, 32, t, t); // BR
+
+        // Top / Bottom edges (tile from x = 16)
+        int x = t;
+        while (x < w - t) {
+            final int segment = Math.min(t, (w - t) - x);
+            blitBorder(guiGraphics, x, 0, 16, 0, segment, t); // Top
+            blitBorder(guiGraphics, x, h - t, 16, 32, segment, t); // Bottom
+            x += segment;
+        }
+
+        // Left / Right edges (tile from y = 16)
+        int y = t;
+        while (y < h - t) {
+            final int segment = Math.min(t, (h - t) - y);
+            blitBorder(guiGraphics, 0, y, 0, 16, t, segment); // Left
+            blitBorder(guiGraphics, w - t, y, 32, 16, t, segment); // Right
+            y += segment;
+        }
+    }
+
+    private void blitBorder(
+            final GuiGraphics guiGraphics,
+            final int x,
+            final int y,
+            final int u,
+            final int v,
+            final int width,
+            final int height) {
+        // 目标是 2x 渲染：目标尺寸的一半对应源图采样尺寸
+        final int srcWidth = Math.max(1, width / 2);
+        final int srcHeight = Math.max(1, height / 2);
+        guiGraphics.blit(
+                MAP_BORDER_ATLAS,
+                x,
+                y,
+                width,
+                height,
+                u,
+                v,
+                srcWidth,
+                srcHeight,
+                BORDER_ATLAS_SIZE,
+                BORDER_ATLAS_SIZE);
     }
 
     /**
@@ -566,7 +652,7 @@ public class MapViewScreen extends Screen {
 
     @Override
     public void onClose() {
-        CameraHandler.disableMapMode();
+        startClosing();
         // 实际关闭操作由 render 中的动画逻辑触发
     }
 
@@ -582,18 +668,26 @@ public class MapViewScreen extends Screen {
 
         @Override
         public void onPress() {
+            Minecraft.getInstance()
+                    .getSoundManager()
+                    .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             if (canTeleport()) {
-                Minecraft.getInstance()
-                        .getSoundManager()
-                        .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 ModMessages.sendToServer(new C2STeleportPacket(point.id()));
                 MapViewScreen.this.onClose();
             }
         }
 
+        private boolean isFacilityLocked() {
+            if (!"facility_locked".equals(point.unlockCondition())) {
+                return false;
+            }
+            TeamData teamData = TeamManager.getInstance().getClientPlayerTeam();
+            return !teamData.isMapPointUnlocked(point.id());
+        }
+
         private boolean canTeleport() {
             TeamData teamData = TeamManager.getInstance().getClientPlayerTeam();
-            return teamData.isTeleportUnlocked();
+            return teamData.isTeleportUnlocked() && !isFacilityLocked();
         }
 
         @Override
@@ -605,16 +699,25 @@ public class MapViewScreen extends Screen {
 
             ResourceLocation texture = point.iconTexture();
 
-            int vOffset = 0;
-            if (isHovered) {
-                if (Minecraft.getInstance().mouseHandler.isLeftPressed()) {
-                    vOffset = TEXTURE_SIZE * 2;
-                } else {
-                    vOffset = TEXTURE_SIZE;
-                }
+            boolean hoveredOrPressed = isHovered;
+            boolean disabled = isFacilityLocked();
+            int stateIndex;
+            if (disabled) {
+                stateIndex =
+                        hoveredOrPressed
+                                ? MapIconAtlas.STATE_DISABLED_HOVER_OR_PRESSED
+                                : MapIconAtlas.STATE_DISABLED;
+            } else {
+                stateIndex =
+                        hoveredOrPressed
+                                ? MapIconAtlas.STATE_NORMAL_HOVER_OR_PRESSED
+                                : MapIconAtlas.STATE_NORMAL;
             }
+            int vOffset = stateIndex * TEXTURE_SIZE;
 
-            int totalTextureHeight = TEXTURE_SIZE * 3;
+            int totalTextureHeight = MapIconAtlas.ATLAS_HEIGHT;
+            int totalTextureWidth = MapIconAtlas.ATLAS_WIDTH;
+            int uOffset = Math.max(0, point.atlasSlot()) * TEXTURE_SIZE;
 
             // 应用按钮透明度
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, this.alpha);
@@ -625,11 +728,11 @@ public class MapViewScreen extends Screen {
                     getY(),
                     getWidth(),
                     getHeight(),
-                    0,
+                    uOffset,
                     vOffset,
                     TEXTURE_SIZE,
                     TEXTURE_SIZE,
-                    TEXTURE_SIZE,
+                    totalTextureWidth,
                     totalTextureHeight);
 
             // 悬停时显示名称
@@ -648,9 +751,7 @@ public class MapViewScreen extends Screen {
 
         @Override
         public void onClick(double mouseX, double mouseY) {
-            if (canTeleport()) {
-                super.onClick(mouseX, mouseY);
-            }
+            super.onClick(mouseX, mouseY);
         }
     }
 

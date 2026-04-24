@@ -11,7 +11,8 @@ import net.minecraft.world.phys.Vec3;
  * @param id 唯一标识符
  * @param worldPosition 世界坐标
  * @param screenOffset 屏幕显示偏移（相对于世界坐标映射后的屏幕位置），可用于微调图标位置
- * @param iconTexture 图标纹理路径
+ * @param iconTexture 图标纹理路径（图集）
+ * @param atlasSlot 图集中图标所在槽位（每槽 16x48，垂直三态）
  * @param displayName 显示名称
  * @param type 地图点类型
  * @param unlockCondition 解锁条件（例如任务ID或特定物品）
@@ -21,6 +22,7 @@ public record MapPoint(
         Vec3 worldPosition,
         Vec2 screenOffset,
         ResourceLocation iconTexture,
+        int atlasSlot,
         Component displayName,
         MapPointType type,
         String unlockCondition) {

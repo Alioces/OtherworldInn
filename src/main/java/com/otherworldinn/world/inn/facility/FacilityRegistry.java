@@ -221,7 +221,7 @@ public final class FacilityRegistry {
                         new Vec3(30, 62, -39),
                         new Vec2(70, 70),
                         ResourceLocation.fromNamespaceAndPath(
-                                OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
+                                OtherworldInn.MODID, "textures/gui/map/icon_boiler_room.png"),
                         MapPoint.MapPointType.SHOP,
                         0,
                         -1),
@@ -255,7 +255,7 @@ public final class FacilityRegistry {
                         new Vec3(2, 71, 52),
                         new Vec2(20, -40),
                         ResourceLocation.fromNamespaceAndPath(
-                                OtherworldInn.MODID, "textures/gui/map/icon_blacksmith.png"),
+                                OtherworldInn.MODID, "textures/gui/map/icon_greenhouse.png"),
                         MapPoint.MapPointType.SHOP,
                         0,
                         1),

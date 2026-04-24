@@ -64,7 +64,11 @@ public class CameraHandler {
 
         if (ModKeyBindings.TOGGLE_MAP_MODE.consumeClick()) {
             if (isMapMode) {
-                disableMapMode();
+                if (mc.screen instanceof MapViewScreen mapViewScreen) {
+                    mapViewScreen.startClosing();
+                } else {
+                    disableMapMode();
+                }
             } else {
                 enableMapMode();
             }
@@ -113,6 +117,7 @@ public class CameraHandler {
         mc.player.setInvisible(false);
 
         mc.setScreen(new MapViewScreen());
+        MapViewVisualEffects.enable();
 
         isMapMode = true;
     }
@@ -165,9 +170,7 @@ public class CameraHandler {
         targetYaw = startYaw;
         targetPitch = startPitch;
 
-        if (mc.screen instanceof MapViewScreen) {
-            mc.setScreen(null);
-        }
+        // MapViewScreen 会自行执行淡出并在动画结束后关闭界面
     }
 
     /** 获取当前页面中心目标位置 */
@@ -296,6 +299,10 @@ public class CameraHandler {
     /** 客户端每刻更新 */
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
+        if (!isMapMode && MapViewVisualEffects.isActive()) {
+            MapViewVisualEffects.disable();
+        }
+
         if (isTransitioning) {
             prevTransitionProgress = transitionProgress;
             transitionProgress += 1.0f / TRANSITION_DURATION;
@@ -365,6 +372,7 @@ public class CameraHandler {
     private static void finishDisableMapMode() {
         Minecraft mc = Minecraft.getInstance();
         isMapMode = false;
+        MapViewVisualEffects.disable();
 
         if (originalCameraEntity != null) {
             mc.setCameraEntity(originalCameraEntity);
