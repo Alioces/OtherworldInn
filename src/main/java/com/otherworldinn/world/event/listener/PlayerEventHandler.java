@@ -20,6 +20,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 @EventBusSubscriber(modid = OtherworldInn.MODID)
 public class PlayerEventHandler {
 
+
     /**
      * 处理玩家维度切换事件
      *
@@ -53,6 +54,7 @@ public class PlayerEventHandler {
     @SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+
             MinecraftServer server = player.getServer();
 
             // 确保玩家加入队伍
@@ -87,6 +89,7 @@ public class PlayerEventHandler {
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+
             // 检查重生维度是否是原版主世界
             if (player.getRespawnDimension() == Level.OVERWORLD) {
                 // 如果玩家没有设置具体的重生点（即使用的是世界出生点），或者强制重定向

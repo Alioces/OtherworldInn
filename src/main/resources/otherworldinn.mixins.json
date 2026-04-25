@@ -19,6 +19,9 @@
     "MixinReskillableRequestLevelUp",
     "MixinFTBUltimineServerConfig"
   ],
+  "client": [
+    "MixinPlayerRendererMapModeHidden"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

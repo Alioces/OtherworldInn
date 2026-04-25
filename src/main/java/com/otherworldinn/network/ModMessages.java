@@ -3,6 +3,7 @@ package com.otherworldinn.network;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.network.packet.C2SDialogueClosePacket;
 import com.otherworldinn.network.packet.C2SDialogueOptionPacket;
+import com.otherworldinn.network.packet.C2SMapModeSyncPacket;
 import com.otherworldinn.network.packet.C2SAcceptCommissionPacket;
 import com.otherworldinn.network.packet.C2SStorePurchasePacket;
 import com.otherworldinn.network.packet.C2STeleportOverworldPacket;
@@ -56,6 +57,11 @@ public class ModMessages {
                 C2STeleportOverworldPacket.TYPE,
                 C2STeleportOverworldPacket.STREAM_CODEC,
                 C2STeleportOverworldPacket::handle);
+
+        registrar.playToServer(
+                C2SMapModeSyncPacket.TYPE,
+                C2SMapModeSyncPacket.STREAM_CODEC,
+                C2SMapModeSyncPacket::handle);
 
         registrar.playToServer(
                 C2SStorePurchasePacket.TYPE,

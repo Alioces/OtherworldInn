@@ -7,6 +7,8 @@ import com.otherworldinn.client.gui.MapViewScreen;
 import com.otherworldinn.client.map.service.MapPageManager;
 import com.otherworldinn.foundation.ClientConfig;
 import com.otherworldinn.init.ModKeyBindings;
+import com.otherworldinn.network.ModMessages;
+import com.otherworldinn.network.packet.C2SMapModeSyncPacket;
 import com.otherworldinn.world.dimension.TownDimensions;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -101,6 +103,7 @@ public class CameraHandler {
         targetPos = getCurrentPageTargetPos();
         targetYaw = ClientConfig.INSTANCE.cameraYaw.get().floatValue();
         targetPitch = ClientConfig.INSTANCE.cameraPitch.get().floatValue();
+        sendMapModeSync(C2SMapModeSyncPacket.ACTION_ENTER, targetPos, targetYaw, targetPitch);
 
         double x = targetPos.x;
         double y = targetPos.y;
@@ -114,7 +117,6 @@ public class CameraHandler {
 
         mc.setCameraEntity(dummyCameraEntity);
         mc.options.setCameraType(CameraType.FIRST_PERSON);
-        mc.player.setInvisible(false);
 
         mc.setScreen(new MapViewScreen());
         MapViewVisualEffects.enable();
@@ -151,6 +153,8 @@ public class CameraHandler {
         // Yaw/Pitch remain same
         startYaw = targetYaw;
         startPitch = targetPitch;
+
+        sendMapModeSync(C2SMapModeSyncPacket.ACTION_MOVE, targetPos, targetYaw, targetPitch);
     }
 
     /** 关闭地图 */
@@ -373,6 +377,7 @@ public class CameraHandler {
         Minecraft mc = Minecraft.getInstance();
         isMapMode = false;
         MapViewVisualEffects.disable();
+        sendMapModeSync(C2SMapModeSyncPacket.ACTION_EXIT, Vec3.ZERO, 0.0f, 0.0f);
 
         if (originalCameraEntity != null) {
             mc.setCameraEntity(originalCameraEntity);
@@ -384,5 +389,15 @@ public class CameraHandler {
             dummyCameraEntity.remove(Entity.RemovalReason.DISCARDED);
             dummyCameraEntity = null;
         }
+    }
+
+    private static void sendMapModeSync(int action, Vec3 pos, float yaw, float pitch) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) {
+            return;
+        }
+
+        ModMessages.sendToServer(
+                new C2SMapModeSyncPacket(action, pos.x, pos.y, pos.z, yaw, pitch));
     }
 }
