@@ -6,6 +6,8 @@ import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.team.service.TeamManager;
 import com.otherworldinn.world.teleport.TeleportUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,10 +17,19 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /** 玩家事件处理器 */
 @EventBusSubscriber(modid = OtherworldInn.MODID)
 public class PlayerEventHandler {
+    private static final double TOWN_BOUNDARY_CENTER_X = -19.0D;
+    private static final double TOWN_BOUNDARY_CENTER_Z = 0.0D;
+    private static final double TOWN_BOUNDARY_MAX_DISTANCE = 150.0D;
+    private static final double TOWN_BOUNDARY_MAX_DISTANCE_SQR =
+            TOWN_BOUNDARY_MAX_DISTANCE * TOWN_BOUNDARY_MAX_DISTANCE;
+    private static final double TOWN_RELOCATE_X = 7.0D;
+    private static final double TOWN_RELOCATE_Y = 71.0D;
+    private static final double TOWN_RELOCATE_Z = 0.0D;
 
 
     /**
@@ -112,5 +123,37 @@ public class PlayerEventHandler {
                 }
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        if (player.tickCount % 20 != 0) {
+            return;
+        }
+        if (player.level().dimension() != TownDimensions.TOWN_LEVEL) {
+            return;
+        }
+        if (player.isCreative() || player.isSpectator()) {
+            return;
+        }
+
+        double dx = player.getX() - TOWN_BOUNDARY_CENTER_X;
+        double dz = player.getZ() - TOWN_BOUNDARY_CENTER_Z;
+        double distanceSqr = dx * dx + dz * dz;
+        if (distanceSqr <= TOWN_BOUNDARY_MAX_DISTANCE_SQR) {
+            return;
+        }
+
+        player.teleportTo(
+                player.serverLevel(),
+                TOWN_RELOCATE_X,
+                TOWN_RELOCATE_Y,
+                TOWN_RELOCATE_Z,
+                player.getYRot(),
+                player.getXRot());
+        player.sendSystemMessage(Component.literal("前面的区域，还是不要去探索了吧...").withStyle(ChatFormatting.RED));
     }
 }
