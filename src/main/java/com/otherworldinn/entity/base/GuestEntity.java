@@ -1,8 +1,16 @@
 package com.otherworldinn.entity.base;
 
 import com.github.tartaricacid.touhoulittlemaid.init.InitItems;
+import com.otherworldinn.entity.guest.AdvancedVipGuestEntity;
+import com.otherworldinn.entity.guest.HeavyPackGuestEntity;
+import com.otherworldinn.entity.guest.OrdinaryGuestEntity;
+import com.otherworldinn.entity.guest.OrdinaryVipGuestEntity;
+import com.otherworldinn.entity.guest.RichGuestEntity;
+import com.otherworldinn.entity.guest.SponsorGuestEntity;
+import com.otherworldinn.entity.guest.UltraRichGuestEntity;
 import com.otherworldinn.util.BlockEntitySearchUtils;
 import com.otherworldinn.util.service.GuestNameManager;
+import com.otherworldinn.world.dialogue.DialogueService;
 import com.otherworldinn.world.economy.service.ItemSellPriceManager;
 import com.otherworldinn.world.inn.GuestData;
 import com.otherworldinn.world.inn.InnData;
@@ -12,6 +20,7 @@ import com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import lombok.Getter;
@@ -78,6 +87,7 @@ public abstract class GuestEntity extends PathfinderMob {
     private static final double NAVIGATION_PROGRESS_THRESHOLD_SQR = 0.0625D;
     private static final ResourceLocation CREATE_DEPOT_ID =
             ResourceLocation.fromNamespaceAndPath("create", "depot");
+    private static final String TAG_ASSIGNED_DIALOGUE_ID = "AssignedDialogueId";
 
     /** 旅客数据 */
     @Getter private GuestData guestData;
@@ -89,6 +99,7 @@ public abstract class GuestEntity extends PathfinderMob {
     private int spawnDelay = 0;
 
     @Getter private int budget;
+    private String assignedDialogueId = "";
     private int navigationStuckTicks = 0;
     private double lastNavigationDistanceSqr = Double.MAX_VALUE;
     private long diningPlanDay = Long.MIN_VALUE;
@@ -128,6 +139,7 @@ public abstract class GuestEntity extends PathfinderMob {
         if (!this.hasCustomName()) {
             this.setCustomName(GuestNameManager.getRandomName(this.getRandom()));
         }
+        assignRandomDialogueIfAbsent();
 
         return spawnData;
     }
@@ -862,7 +874,18 @@ public abstract class GuestEntity extends PathfinderMob {
 
             return InteractionResult.SUCCESS;
         }
-        return super.mobInteract(player, hand);
+        InteractionResult fallback = super.mobInteract(player, hand);
+        if (fallback.consumesAction()) {
+            return fallback;
+        }
+        if (!this.level().isClientSide
+                && hand == InteractionHand.MAIN_HAND
+                && !player.isShiftKeyDown()
+                && player instanceof ServerPlayer serverPlayer
+                && DialogueService.tryStartDialogue(serverPlayer, this)) {
+            return InteractionResult.SUCCESS;
+        }
+        return fallback;
     }
 
     public int getSkinVariant() {
@@ -896,11 +919,18 @@ public abstract class GuestEntity extends PathfinderMob {
         CompoundTag guestTag = new CompoundTag();
         this.guestData.save(guestTag);
         compound.put("GuestData", guestTag);
+        if (!this.assignedDialogueId.isBlank()) {
+            compound.putString(TAG_ASSIGNED_DIALOGUE_ID, this.assignedDialogueId);
+        }
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag compound) {
         super.readAdditionalSaveData(compound);
+        this.assignedDialogueId = compound.getString(TAG_ASSIGNED_DIALOGUE_ID);
+        if (this.assignedDialogueId.isBlank() && !this.level().isClientSide) {
+            assignRandomDialogueIfAbsent();
+        }
         if (compound.contains("SkinVariant")) {
             this.setSkinVariant(compound.getInt("SkinVariant"));
         }
@@ -932,6 +962,21 @@ public abstract class GuestEntity extends PathfinderMob {
 
     private int generateInitialBudget() {
         return randomInRange(getBudgetRange());
+    }
+
+    @Nullable
+    public String getAssignedDialogueId() {
+        return this.assignedDialogueId.isBlank() ? null : this.assignedDialogueId;
+    }
+
+    private void assignRandomDialogueIfAbsent() {
+        if (!this.assignedDialogueId.isBlank()) {
+            return;
+        }
+        String picked = GuestDialogueRandomPool.pick(this);
+        if (picked != null) {
+            this.assignedDialogueId = picked;
+        }
     }
 
     private int getBudgetBasedDiningInterval() {
@@ -1059,6 +1104,52 @@ public abstract class GuestEntity extends PathfinderMob {
             return range.min();
         }
         return range.min() + this.getRandom().nextInt(range.max() - range.min() + 1);
+    }
+
+    private static final class GuestDialogueRandomPool {
+        private static final Map<Class<? extends GuestEntity>, List<String>> DIALOGUES_BY_GUEST_CLASS =
+                Map.of(
+                        OrdinaryGuestEntity.class,
+                        List.of(
+                                "guest_ordinary_welcome",
+                                "guest_ordinary_weather",
+                                "guest_ordinary_checkout"),
+                        RichGuestEntity.class,
+                        List.of("guest_rich_service", "guest_rich_wine", "guest_rich_tip"),
+                        HeavyPackGuestEntity.class,
+                        List.of(
+                                "guest_heavy_pack_route",
+                                "guest_heavy_pack_storage",
+                                "guest_heavy_pack_food"),
+                        UltraRichGuestEntity.class,
+                        List.of(
+                                "guest_ultra_rich_suite",
+                                "guest_ultra_rich_privacy",
+                                "guest_ultra_rich_guard"),
+                        OrdinaryVipGuestEntity.class,
+                        List.of(
+                                "guest_vip_ordinary_schedule",
+                                "guest_vip_ordinary_tea",
+                                "guest_vip_ordinary_review"),
+                        AdvancedVipGuestEntity.class,
+                        List.of(
+                                "guest_vip_advanced_security",
+                                "guest_vip_advanced_order",
+                                "guest_vip_advanced_reward"),
+                        SponsorGuestEntity.class,
+                        List.of(
+                                "guest_sponsor_photo",
+                                "guest_sponsor_renovation",
+                                "guest_sponsor_support"));
+
+        @Nullable
+        private static String pick(GuestEntity guest) {
+            List<String> pool = DIALOGUES_BY_GUEST_CLASS.get(guest.getClass());
+            if (pool == null || pool.isEmpty()) {
+                return null;
+            }
+            return pool.get(guest.getRandom().nextInt(pool.size()));
+        }
     }
 
     public record GuestProfile(

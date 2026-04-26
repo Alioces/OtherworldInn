@@ -1,5 +1,6 @@
 package com.otherworldinn.world.dialogue;
 
+import com.otherworldinn.entity.base.GuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
 import com.otherworldinn.entity.store.FarmerEntity;
 import com.otherworldinn.entity.store.MagicianEntity;
@@ -63,19 +64,137 @@ public final class DialogueRegistry {
                     LocalizedText.of(
                         "材料和书卷都在这，想要什么自己挑",
                         "Materials and tomes are ready. Mind the explosive stuff."));
+    private static final List<DialogueDefinition> GUEST_DIALOGUES =
+            List.of(
+                    buildGuestLineDialogue(
+                            "guest_ordinary_welcome",
+                            LocalizedText.of(
+                                    "这里比我想象中更温暖，今晚应该能睡个好觉。",
+                                    "This place feels warmer than I expected. I might sleep well tonight.")),
+                    buildGuestLineDialogue(
+                            "guest_ordinary_weather",
+                            LocalizedText.of(
+                                    "外面的风好大，幸好旅馆里很安静。",
+                                    "The wind outside is harsh. Glad it's calm in the inn.")),
+                    buildGuestLineDialogue(
+                            "guest_ordinary_checkout",
+                            LocalizedText.of(
+                                    "明天我就启程，今晚先好好休息。",
+                                    "I leave at dawn tomorrow. Tonight, I just need good rest.")),
+                    buildGuestLineDialogue(
+                            "guest_rich_service",
+                            LocalizedText.of(
+                                    "如果服务继续这么周到，我会常来。",
+                                    "If the service stays this refined, I'll return often.")),
+                    buildGuestLineDialogue(
+                            "guest_rich_wine",
+                            LocalizedText.of(
+                                    "要是晚餐再配点好酒，就更完美了。",
+                                    "A fine wine with dinner would make this place perfect.")),
+                    buildGuestLineDialogue(
+                            "guest_rich_tip",
+                            LocalizedText.of(
+                                    "照顾得不错，退房时我可能会留点小费。",
+                                    "Good care deserves a tip when I check out.")),
+                    buildGuestLineDialogue(
+                            "guest_heavy_pack_route",
+                            LocalizedText.of(
+                                    "我背着这么多货，能有个落脚点真不容易。",
+                                    "Traveling with this much cargo, a safe stop is priceless.")),
+                    buildGuestLineDialogue(
+                            "guest_heavy_pack_storage",
+                            LocalizedText.of(
+                                    "这些箱子先放这儿，别让它们淋雨了。",
+                                    "Let me stash these crates here. Keep them out of the rain.")),
+                    buildGuestLineDialogue(
+                            "guest_heavy_pack_food",
+                            LocalizedText.of(
+                                    "跑了一整天，先来份热乎的饭再说。",
+                                    "I've been on the road all day. A hot meal comes first.")),
+                    buildGuestLineDialogue(
+                            "guest_ultra_rich_suite",
+                            LocalizedText.of(
+                                    "这间套房勉强合格，希望夜里足够安静。",
+                                    "This suite is acceptable. I expect absolute quiet at night.")),
+                    buildGuestLineDialogue(
+                            "guest_ultra_rich_privacy",
+                            LocalizedText.of(
+                                    "我不喜欢被打扰，安排人手时请注意。",
+                                    "I dislike interruptions. Make sure your staff knows that.")),
+                    buildGuestLineDialogue(
+                            "guest_ultra_rich_guard",
+                            LocalizedText.of(
+                                    "我的行李很贵重，安保别出差错。",
+                                    "My luggage is valuable. Security must not fail.")),
+                    buildGuestLineDialogue(
+                            "guest_vip_ordinary_schedule",
+                            LocalizedText.of(
+                                    "我的行程很紧，麻烦按时叫醒我。",
+                                    "My schedule is tight. Wake me on time, please.")),
+                    buildGuestLineDialogue(
+                            "guest_vip_ordinary_tea",
+                            LocalizedText.of(
+                                    "如果能送一壶热茶到房间就更好了。",
+                                    "A pot of hot tea to the room would be lovely.")),
+                    buildGuestLineDialogue(
+                            "guest_vip_ordinary_review",
+                            LocalizedText.of(
+                                    "服务不错，我会给旅馆写个好评。",
+                                    "The service is excellent. I'll leave a positive review.")),
+                    buildGuestLineDialogue(
+                            "guest_vip_advanced_security",
+                            LocalizedText.of(
+                                    "我的随从稍后到，先把房门权限准备好。",
+                                    "My attendants arrive later. Prepare room access in advance.")),
+                    buildGuestLineDialogue(
+                            "guest_vip_advanced_order",
+                            LocalizedText.of(
+                                    "晚些时候我会点餐，记得用最好的食材。",
+                                    "I'll place an order later. Use your finest ingredients.")),
+                    buildGuestLineDialogue(
+                            "guest_vip_advanced_reward",
+                            LocalizedText.of(
+                                    "把事情办漂亮了，回头少不了赏金。",
+                                    "Do this properly, and there will be a reward.")),
+                    buildGuestLineDialogue(
+                            "guest_sponsor_photo",
+                            LocalizedText.of(
+                                    "这里氛围真棒，我想拍张照留念。",
+                                    "The vibe here is great. I want to take a commemorative photo.")),
+                    buildGuestLineDialogue(
+                            "guest_sponsor_renovation",
+                            LocalizedText.of(
+                                    "旅馆改造后舒服多了，辛苦你们了。",
+                                    "The renovations made this place so much nicer. Well done.")),
+                    buildGuestLineDialogue(
+                            "guest_sponsor_support",
+                            LocalizedText.of(
+                                    "继续加油，我会一直支持这家旅馆。",
+                                    "Keep it up. I'll keep supporting this inn.")));
 
-    private static final List<DialogueDefinition> ALL_DIALOGUES =
-            Collections.unmodifiableList(
-                    new ArrayList<>(
-                            List.of(BLACKSMITH_DIALOGUE, 
-                                    FARMER_DIALOGUE, 
-                                    MAGICIAN_DIALOGUE
-                                )));
+    private static final List<DialogueDefinition> ALL_DIALOGUES;
+
+    private static final Map<String, DialogueDefinition> DIALOGUE_BY_ID;
+
+    static {
+        List<DialogueDefinition> all =
+                new ArrayList<>(List.of(BLACKSMITH_DIALOGUE, FARMER_DIALOGUE, MAGICIAN_DIALOGUE));
+        all.addAll(GUEST_DIALOGUES);
+        ALL_DIALOGUES = Collections.unmodifiableList(all);
+        Map<String, DialogueDefinition> byId = new LinkedHashMap<>();
+        for (DialogueDefinition dialogue : ALL_DIALOGUES) {
+            byId.put(dialogue.id(), dialogue);
+        }
+        DIALOGUE_BY_ID = Collections.unmodifiableMap(byId);
+    }
 
     private DialogueRegistry() {}
 
     @Nullable
     public static DialogueDefinition resolve(Entity entity) {
+        if (entity instanceof GuestEntity guestEntity) {
+            return resolveById(guestEntity.getAssignedDialogueId());
+        }
         if (entity instanceof BlacksmithEntity) {
             return BLACKSMITH_DIALOGUE;
         }
@@ -88,8 +207,34 @@ public final class DialogueRegistry {
         return null;
     }
 
+    @Nullable
+    public static DialogueDefinition resolveById(@Nullable String dialogueId) {
+        if (dialogueId == null || dialogueId.isBlank()) {
+            return null;
+        }
+        return DIALOGUE_BY_ID.get(dialogueId);
+    }
+
     public static List<DialogueDefinition> allDialogues() {
         return ALL_DIALOGUES;
+    }
+
+    private static DialogueDefinition buildGuestLineDialogue(String id, LocalizedText lineText) {
+        String root = "root";
+        Map<String, DialogueNodeDef> nodes = new LinkedHashMap<>();
+        nodes.put(
+                root,
+                new DialogueNodeDef(
+                        root,
+                        lineText,
+                        List.of(
+                                new DialogueOptionDef(
+                                        "leave",
+                                        LocalizedText.of("祝您旅居愉快", "Enjoy Your Stay"),
+                                        DialogueOptionType.BRANCH,
+                                        null,
+                                        null))));
+        return new DialogueDefinition(id, root, nodes);
     }
 
     private static DialogueDefinition buildSimpleStoreDialogue(
