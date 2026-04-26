@@ -75,13 +75,17 @@ public class MapViewScreen extends Screen {
 
     /** 开始关闭屏幕的动画流程 */
     public void startClosing() {
+        startClosing(true);
+    }
+
+    public void startClosing(boolean restorePlayerPosition) {
         if (!isClosing) {
             isClosing = true;
             closeStartTime = System.currentTimeMillis();
             // 与已有的地图退出相机动画并行启动
             if (!closeCommitted) {
                 closeCommitted = true;
-                CameraHandler.disableMapMode();
+                CameraHandler.disableMapMode(restorePlayerPosition);
             }
         }
     }
@@ -670,7 +674,7 @@ public class MapViewScreen extends Screen {
                     .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             if (canTeleport()) {
                 ModMessages.sendToServer(new C2STeleportPacket(point.id()));
-                MapViewScreen.this.onClose();
+                MapViewScreen.this.startClosing(false);
             }
         }
 

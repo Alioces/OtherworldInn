@@ -46,7 +46,6 @@ public class MapPageManager {
 
         // 注册地图页面
         addPage(0, 0, Direction.EAST);
-        addPage(0, 1, Direction.EAST);
         addPage(0, -1, Direction.EAST);
 
         addPage(0, 0, Direction.SOUTH);

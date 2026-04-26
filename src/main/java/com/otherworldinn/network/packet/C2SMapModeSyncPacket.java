@@ -31,6 +31,7 @@ public record C2SMapModeSyncPacket(int action, double x, double y, double z, flo
     public static final int ACTION_ENTER = 0;
     public static final int ACTION_MOVE = 1;
     public static final int ACTION_EXIT = 2;
+    public static final int ACTION_EXIT_KEEP_POSITION = 3;
 
     public static final Type<C2SMapModeSyncPacket> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "map_mode_sync"));
@@ -68,7 +69,8 @@ public record C2SMapModeSyncPacket(int action, double x, double y, double z, flo
                     switch (packet.action()) {
                         case ACTION_ENTER -> enterMapMode(player, packet);
                         case ACTION_MOVE -> moveInMapMode(player, packet);
-                        case ACTION_EXIT -> exitMapMode(player);
+                        case ACTION_EXIT -> exitMapMode(player, true);
+                        case ACTION_EXIT_KEEP_POSITION -> exitMapMode(player, false);
                         default -> {}
                     }
                 });
@@ -88,14 +90,16 @@ public record C2SMapModeSyncPacket(int action, double x, double y, double z, flo
         teleportTo(player, packet);
     }
 
-    private static void exitMapMode(ServerPlayer player) {
+    private static void exitMapMode(ServerPlayer player, boolean restorePosition) {
         PlayerMapModeState state = ACTIVE_STATES.remove(player.getUUID());
         if (state == null) {
             return;
         }
 
         restoreAppearance(player, state);
-        restorePosition(player, state);
+        if (restorePosition) {
+            restorePosition(player, state);
+        }
     }
 
     @SubscribeEvent

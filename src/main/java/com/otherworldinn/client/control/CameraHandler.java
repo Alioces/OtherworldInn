@@ -51,6 +51,7 @@ public class CameraHandler {
     private static int currentGridZ = 0;
     private static int prevGridX = 0;
     private static int prevGridZ = 0;
+    private static boolean restorePlayerPositionOnExit = true;
 
     /**
      * 处理按键输入事件
@@ -159,6 +160,11 @@ public class CameraHandler {
 
     /** 关闭地图 */
     public static void disableMapMode() {
+        disableMapMode(true);
+    }
+
+    public static void disableMapMode(boolean restorePosition) {
+        restorePlayerPositionOnExit = restorePosition;
         isTransitioning = true;
         transitionProgress = 0.0f;
         prevTransitionProgress = 0.0f;
@@ -377,7 +383,12 @@ public class CameraHandler {
         Minecraft mc = Minecraft.getInstance();
         isMapMode = false;
         MapViewVisualEffects.disable();
-        sendMapModeSync(C2SMapModeSyncPacket.ACTION_EXIT, Vec3.ZERO, 0.0f, 0.0f);
+        int exitAction =
+                restorePlayerPositionOnExit
+                        ? C2SMapModeSyncPacket.ACTION_EXIT
+                        : C2SMapModeSyncPacket.ACTION_EXIT_KEEP_POSITION;
+        sendMapModeSync(exitAction, Vec3.ZERO, 0.0f, 0.0f);
+        restorePlayerPositionOnExit = true;
 
         if (originalCameraEntity != null) {
             mc.setCameraEntity(originalCameraEntity);
