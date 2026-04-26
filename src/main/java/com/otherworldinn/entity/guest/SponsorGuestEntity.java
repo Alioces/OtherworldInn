@@ -2,13 +2,18 @@ package com.otherworldinn.entity.guest;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.client.util.TextureUtils;
+import com.otherworldinn.util.service.MojangProfileService;
 import com.otherworldinn.entity.base.VipGuestEntity;
 import com.otherworldinn.util.service.SponsorNamePool;
 import com.otherworldinn.world.inn.GuestData;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
@@ -20,6 +25,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 public class SponsorGuestEntity extends VipGuestEntity {
+    private static final EntityDataAccessor<Boolean> SLIM_MODEL =
+            SynchedEntityData.defineId(SponsorGuestEntity.class, EntityDataSerializers.BOOLEAN);
     private static final ResourceLocation DEFAULT_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(
                     OtherworldInn.MODID, "textures/entity/guest/sponsor_guest/1.png");
@@ -43,6 +50,11 @@ public class SponsorGuestEntity extends VipGuestEntity {
         String name = this.getName().getString();
         ResourceLocation fallback = resolveLocalFallbackTexture();
         return TextureUtils.getMojangSkinTexture(name, fallback);
+    }
+
+    @Override
+    public String getModelType() {
+        return this.entityData.get(SLIM_MODEL) ? "slim" : "default";
     }
 
     private ResourceLocation resolveLocalFallbackTexture() {
@@ -75,7 +87,37 @@ public class SponsorGuestEntity extends VipGuestEntity {
         ServerLevel serverLevel = level instanceof ServerLevel server ? server : null;
         String sponsorName = SponsorNamePool.getRandomName(this.getRandom(), serverLevel);
         this.setCustomName(Component.literal(sponsorName));
+        this.entityData.set(SLIM_MODEL, false);
+        if (serverLevel != null) {
+            final String lockedName = sponsorName;
+            MojangProfileService.resolveSlimModelAsync(
+                    sponsorName,
+                    serverLevel.getServer(),
+                    slim -> {
+                        if (!this.isRemoved() && lockedName.equals(this.getName().getString())) {
+                            this.entityData.set(SLIM_MODEL, slim);
+                        }
+                    });
+        }
         this.setSkinVariant(this.getRandom().nextInt(10000));
         return spawnData;
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(SLIM_MODEL, false);
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag compound) {
+        super.addAdditionalSaveData(compound);
+        compound.putBoolean("SponsorSlimModel", this.entityData.get(SLIM_MODEL));
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag compound) {
+        super.readAdditionalSaveData(compound);
+        this.entityData.set(SLIM_MODEL, compound.getBoolean("SponsorSlimModel"));
     }
 }
