@@ -72,7 +72,7 @@ public final class DialogueRegistry {
                         "材料和书卷都在这，想要什么自己挑",
                         "Materials and tomes are ready. Mind the explosive stuff."));
     private static final DialogueDefinition GROCER_DIALOGUE =
-            buildSimpleStoreDialogue(
+            buildGrocerDialogue(
                     "grocer",
                     LocalizedText.of(
                             "要买什么？我这里什么都有",
@@ -485,6 +485,94 @@ public final class DialogueRegistry {
                 new DialogueNodeDef(
                         askGoods,
                         askGoodsText,
+                        List.of(
+                                new DialogueOptionDef(
+                                        "open_store",
+                                        LocalizedText.of("打开商店", "Open Shop"),
+                                        DialogueOptionType.FUNCTION,
+                                        null,
+                                        FUNCTION_OPEN_STORE),
+                                new DialogueOptionDef(
+                                        "leave",
+                                        LocalizedText.of("先告辞", "Leave"),
+                                        DialogueOptionType.BRANCH,
+                                        null,
+                                        null))));
+        return new DialogueDefinition(npcId, root, nodes);
+    }
+
+    private static DialogueDefinition buildGrocerDialogue(
+            String npcId, LocalizedText rootText, LocalizedText askGoodsText) {
+        String root = "root";
+        String askGoods = "ask_goods";
+        String fruitStallTopic = "topic_fruit_stall";
+        LocalizedText fruitStallLabel =
+                LocalizedText.of("对面的水果摊子怎么没人", "Why is the fruit stand across the street empty?");
+        LocalizedText fruitStallText =
+                LocalizedText.of("不知道，可能作者懒得做了", "No idea. Maybe the author was too lazy to make it.");
+
+        Map<String, DialogueNodeDef> nodes = new LinkedHashMap<>();
+        nodes.put(
+                root,
+                new DialogueNodeDef(
+                        root,
+                        rootText,
+                        List.of(
+                                new DialogueOptionDef(
+                                        "open_store",
+                                        LocalizedText.of("打开商店", "Open Shop"),
+                                        DialogueOptionType.FUNCTION,
+                                        null,
+                                        FUNCTION_OPEN_STORE),
+                                new DialogueOptionDef(
+                                        "ask_goods",
+                                        LocalizedText.of("这里卖什么", "What Do You Sell?"),
+                                        DialogueOptionType.BRANCH,
+                                        askGoods,
+                                        null),
+                                new DialogueOptionDef(
+                                        "about_fruit_stall",
+                                        fruitStallLabel,
+                                        DialogueOptionType.BRANCH,
+                                        fruitStallTopic,
+                                        null),
+                                new DialogueOptionDef(
+                                        "leave",
+                                        LocalizedText.of("先告辞", "Leave"),
+                                        DialogueOptionType.BRANCH,
+                                        null,
+                                        null))));
+
+        nodes.put(
+                askGoods,
+                new DialogueNodeDef(
+                        askGoods,
+                        askGoodsText,
+                        List.of(
+                                new DialogueOptionDef(
+                                        "open_store",
+                                        LocalizedText.of("打开商店", "Open Shop"),
+                                        DialogueOptionType.FUNCTION,
+                                        null,
+                                        FUNCTION_OPEN_STORE),
+                                new DialogueOptionDef(
+                                        "about_fruit_stall",
+                                        fruitStallLabel,
+                                        DialogueOptionType.BRANCH,
+                                        fruitStallTopic,
+                                        null),
+                                new DialogueOptionDef(
+                                        "leave",
+                                        LocalizedText.of("先告辞", "Leave"),
+                                        DialogueOptionType.BRANCH,
+                                        null,
+                                        null))));
+
+        nodes.put(
+                fruitStallTopic,
+                new DialogueNodeDef(
+                        fruitStallTopic,
+                        fruitStallText,
                         List.of(
                                 new DialogueOptionDef(
                                         "open_store",
