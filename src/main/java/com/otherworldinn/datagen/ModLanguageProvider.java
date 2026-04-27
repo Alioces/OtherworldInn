@@ -238,6 +238,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.reset.complete")
                 .zh("§a外部维度重置完成，准备迎接新的冒险")
                 .en("§aExternal dimension reset complete. Get ready for new adventures!");
+        entry("message.otherworldinn.town.boundary_warning")
+                .zh("前面的区域，还是不要去探索了吧...")
+                .en("You should not explore the area ahead...");
 
         // 保护提示
         entry("message.otherworldinn.protection.deny")

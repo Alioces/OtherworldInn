@@ -11,6 +11,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -24,12 +26,19 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public class PlayerEventHandler {
     private static final double TOWN_BOUNDARY_CENTER_X = -19.0D;
     private static final double TOWN_BOUNDARY_CENTER_Z = 0.0D;
-    private static final double TOWN_BOUNDARY_MAX_DISTANCE = 150.0D;
-    private static final double TOWN_BOUNDARY_MAX_DISTANCE_SQR =
-            TOWN_BOUNDARY_MAX_DISTANCE * TOWN_BOUNDARY_MAX_DISTANCE;
+    private static final double TOWN_BOUNDARY_WARNING_DISTANCE = 150.0D;
+    private static final double TOWN_BOUNDARY_WARNING_DISTANCE_SQR =
+            TOWN_BOUNDARY_WARNING_DISTANCE * TOWN_BOUNDARY_WARNING_DISTANCE;
+    private static final double TOWN_BOUNDARY_TELEPORT_DISTANCE = 170.0D;
+    private static final double TOWN_BOUNDARY_TELEPORT_DISTANCE_SQR =
+            TOWN_BOUNDARY_TELEPORT_DISTANCE * TOWN_BOUNDARY_TELEPORT_DISTANCE;
     private static final double TOWN_RELOCATE_X = 7.0D;
     private static final double TOWN_RELOCATE_Y = 71.0D;
     private static final double TOWN_RELOCATE_Z = 0.0D;
+    private static final String TOWN_BOUNDARY_WARNING_KEY =
+            "message.otherworldinn.town.boundary_warning";
+    private static final Component TOWN_BOUNDARY_WARNING_TEXT =
+            Component.translatable(TOWN_BOUNDARY_WARNING_KEY).withStyle(ChatFormatting.RED);
 
 
     /**
@@ -143,7 +152,13 @@ public class PlayerEventHandler {
         double dx = player.getX() - TOWN_BOUNDARY_CENTER_X;
         double dz = player.getZ() - TOWN_BOUNDARY_CENTER_Z;
         double distanceSqr = dx * dx + dz * dz;
-        if (distanceSqr <= TOWN_BOUNDARY_MAX_DISTANCE_SQR) {
+        if (distanceSqr <= TOWN_BOUNDARY_WARNING_DISTANCE_SQR) {
+            return;
+        }
+
+        player.displayClientMessage(TOWN_BOUNDARY_WARNING_TEXT, true);
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, 1, false, true));
+        if (distanceSqr <= TOWN_BOUNDARY_TELEPORT_DISTANCE_SQR) {
             return;
         }
 
@@ -154,6 +169,6 @@ public class PlayerEventHandler {
                 TOWN_RELOCATE_Z,
                 player.getYRot(),
                 player.getXRot());
-        player.sendSystemMessage(Component.literal("前面的区域，还是不要去探索了吧...").withStyle(ChatFormatting.RED));
+        player.displayClientMessage(TOWN_BOUNDARY_WARNING_TEXT, true);
     }
 }

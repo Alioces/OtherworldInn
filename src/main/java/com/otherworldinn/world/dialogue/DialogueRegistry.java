@@ -82,6 +82,53 @@ public final class DialogueRegistry {
                                     "明天我就启程，今晚先好好休息。",
                                     "I leave at dawn tomorrow. Tonight, I just need good rest.")),
                     buildGuestLineDialogue(
+                            "guest_ordinary_bed",
+                            LocalizedText.of(
+                                    "这张床看起来挺舒服的，希望被子够暖和。",
+                                    "This bed looks comfortable. Hope the blankets are warm enough.")),
+                    buildGuestLineDialogue(
+                            "guest_ordinary_food",
+                            LocalizedText.of(
+                                    "听说这里的家常菜不错，晚上得尝尝。",
+                                    "I heard the home-style cooking here is good. Should try it tonight.")),
+                    buildGuestLineDialogue(
+                            "guest_ordinary_bath",
+                            LocalizedText.of(
+                                    "赶了一天路，能洗个热水澡真是太好了。",
+                                    "After a long day's travel, a hot bath is exactly what I need.")),
+                    buildGuestLineDialogue(
+                            "guest_ordinary_fireplace",
+                            LocalizedText.of(
+                                    "壁炉里的火真暖和，坐在这儿看书应该不错。",
+                                    "The fireplace is so warm. Would be nice to read a book here.")),
+                    buildGuestLineDialogue(
+                            "guest_ordinary_morning",
+                            LocalizedText.of(
+                                    "早上空气真好，适合出去走走。",
+                                    "The morning air is refreshing. Good for a walk.")),
+                    buildGuestLineDialogue(
+                            "guest_ordinary_rain",
+                            LocalizedText.of(
+                                    "下雨天待在旅馆里真是明智的选择。",
+                                    "Staying at the inn during rain was a wise choice.")),
+                    buildGuestLineDialogue(
+                            "guest_ordinary_memory",
+                            LocalizedText.of(
+                                    "这地方让我想起小时候住过的老旅馆。",
+                                    "This place reminds me of an old inn from my childhood.")),
+                    buildGuestLineDialogue(
+                            "guest_ordinary_recommend",
+                            LocalizedText.of(
+                                    "朋友推荐我来这里的，果然没让我失望。",
+                                    "A friend recommended this place. It hasn't disappointed.")),
+                    buildGuestLineDialogue(
+                            "guest_ordinary_return",
+                            LocalizedText.of(
+                                    "下次路过这里，我还会再来住的。",
+                                    "I'll stay here again next time I pass through.")),
+
+
+                    buildGuestLineDialogue(
                             "guest_rich_service",
                             LocalizedText.of(
                                     "如果服务继续这么周到，我会常来。",
@@ -96,6 +143,42 @@ public final class DialogueRegistry {
                             LocalizedText.of(
                                     "照顾得不错，退房时我可能会留点小费。",
                                     "Good care deserves a tip when I check out.")),
+                    buildGuestLineDialogue(
+                            "guest_rich_room",
+                            LocalizedText.of(
+                                    "房间布置得还算雅致，就是缺个衣帽间。",
+                                    "The room is elegantly decorated, though it lacks a walk-in closet.")),
+                    buildGuestLineDialogue(
+                            "guest_rich_view",
+                            LocalizedText.of(
+                                    "窗外的景色不错，可惜不是海景。",
+                                    "The view from the window is nice, though not oceanfront.")),
+                    buildGuestLineDialogue(
+                            "guest_rich_business",
+                            LocalizedText.of(
+                                    "这里的环境适合谈生意，比较安静。",
+                                    "The atmosphere here is suitable for business discussions.")),
+                    buildGuestLineDialogue(
+                            "guest_rich_linen",
+                            LocalizedText.of(
+                                    "床品的质感还可以，是棉的吗？",
+                                    "The bedding has decent texture. Is it cotton?")),
+                    buildGuestLineDialogue(
+                            "guest_rich_quiet",
+                            LocalizedText.of(
+                                    "我付了高价就是图个清静，别让我失望。",
+                                    "I'm paying premium for peace and quiet. Don't disappoint.")),
+                    buildGuestLineDialogue(
+                            "guest_rich_referral",
+                            LocalizedText.of(
+                                    "我会把这里推荐给其他讲究的朋友。",
+                                    "I'll recommend this place to other discerning friends.")),
+                    buildGuestLineDialogue(
+                            "guest_rich_standard",
+                            LocalizedText.of(
+                                    "以这个价位来说，服务水准还算达标。",
+                                    "For this price range, the service standard is acceptable.")),
+
                     buildGuestLineDialogue(
                             "guest_heavy_pack_route",
                             LocalizedText.of(
@@ -112,6 +195,38 @@ public final class DialogueRegistry {
                                     "跑了一整天，先来份热乎的饭再说。",
                                     "I've been on the road all day. A hot meal comes first.")),
                     buildGuestLineDialogue(
+                            "guest_heavy_pack_road",
+                            LocalizedText.of(
+                                    "前面的路不好走，得养足精神再出发。",
+                                    "The road ahead is rough. Need to rest well before continuing.")),
+                    buildGuestLineDialogue(
+                            "guest_heavy_pack_repair",
+                            LocalizedText.of(
+                                    "车轮有点松了，附近有铁匠铺吗？",
+                                    "The wheel's loose. Is there a blacksmith nearby?")),
+                    buildGuestLineDialogue(
+                            "guest_heavy_pack_early",
+                            LocalizedText.of(
+                                    "明天天不亮就得走，麻烦早点准备早餐。",
+                                    "I leave before dawn tomorrow. Please prepare breakfast early.")),
+                    buildGuestLineDialogue(
+                            "guest_heavy_pack_weather",
+                            LocalizedText.of(
+                                    "看这天色要变，幸好找到地方落脚了。",
+                                    "The weather looks changing. Glad I found shelter.")),
+                    buildGuestLineDialogue(
+                            "guest_heavy_pack_rest",
+                            LocalizedText.of(
+                                    "肩膀都压麻了，得好好歇一晚。",
+                                    "My shoulders are numb from carrying. Need a good night's rest.")),
+                    buildGuestLineDialogue(
+                            "guest_heavy_pack_return",
+                            LocalizedText.of(
+                                    "回程的时候还会路过，记得给我留间房。",
+                                    "I'll pass through on the return trip. Save me a room.")),
+
+                    // Ultra Rich Guest Dialogues (12 total)
+                    buildGuestLineDialogue(
                             "guest_ultra_rich_suite",
                             LocalizedText.of(
                                     "这间套房勉强合格，希望夜里足够安静。",
@@ -126,6 +241,43 @@ public final class DialogueRegistry {
                             LocalizedText.of(
                                     "我的行李很贵重，安保别出差错。",
                                     "My luggage is valuable. Security must not fail.")),
+                    buildGuestLineDialogue(
+                            "guest_ultra_rich_staff",
+                            LocalizedText.of(
+                                    "让最经验丰富的员工来服务，新手不要。",
+                                    "Assign your most experienced staff. No trainees.")),
+                    buildGuestLineDialogue(
+                            "guest_ultra_rich_perfection",
+                            LocalizedText.of(
+                                    "细节决定品质，枕头的高度要刚刚好。",
+                                    "Details define quality. The pillow height must be perfect.")),
+                    buildGuestLineDialogue(
+                            "guest_ultra_rich_expectation",
+                            LocalizedText.of(
+                                    "我习惯的标准很高，希望你们跟得上。",
+                                    "My standards are exceptionally high. I hope you can meet them.")),
+                    buildGuestLineDialogue(
+                            "guest_ultra_rich_discretion",
+                            LocalizedText.of(
+                                    "我的行程要保密，不要对外透露。",
+                                    "My itinerary is confidential. Do not disclose it.")),
+                    buildGuestLineDialogue(
+                            "guest_ultra_rich_taste",
+                            LocalizedText.of(
+                                    "装饰品的品味还可以，是真品吗？",
+                                    "The decor shows some taste. Are these pieces authentic?")),
+                    buildGuestLineDialogue(
+                            "guest_ultra_rich_investment",
+                            LocalizedText.of(
+                                    "这家旅馆有投资潜力，我会关注一下。",
+                                    "This inn has investment potential. I'll keep an eye on it.")),
+                    buildGuestLineDialogue(
+                            "guest_ultra_rich_legacy",
+                            LocalizedText.of(
+                                    "老牌旅馆就是不一样，底蕴深厚。",
+                                    "Established inns are different. They have depth.")),
+
+                    // VIP Guest Dialogues (12 total)
                     buildGuestLineDialogue(
                             "guest_vip_ordinary_schedule",
                             LocalizedText.of(
@@ -157,6 +309,13 @@ public final class DialogueRegistry {
                                     "把事情办漂亮了，回头少不了赏金。",
                                     "Do this properly, and there will be a reward.")),
                     buildGuestLineDialogue(
+                            "guest_vip_feedback",
+                            LocalizedText.of(
+                                    "服务流程很规范，我会向上级汇报。",
+                                    "The service process is well-standardized. I'll report upward.")),
+
+                    // Sponsor Guest Dialogues (12 total)
+                    buildGuestLineDialogue(
                             "guest_sponsor_photo",
                             LocalizedText.of(
                                     "这里氛围真棒，我想拍张照留念。",
@@ -170,7 +329,42 @@ public final class DialogueRegistry {
                             "guest_sponsor_support",
                             LocalizedText.of(
                                     "继续加油，我会一直支持这家旅馆。",
-                                    "Keep it up. I'll keep supporting this inn.")));
+                                    "Keep it up. I'll keep supporting this inn.")),
+                    buildGuestLineDialogue(
+                            "guest_sponsor_growth",
+                            LocalizedText.of(
+                                    "看到旅馆越来越好，我很欣慰。",
+                                    "It's heartwarming to see the inn improving.")),
+                    buildGuestLineDialogue(
+                            "guest_sponsor_community",
+                            LocalizedText.of(
+                                    "这里有种家的感觉，旅客们都很友善。",
+                                    "This place feels like home. The guests are all friendly.")),
+                    buildGuestLineDialogue(
+                            "guest_sponsor_tradition",
+                            LocalizedText.of(
+                                    "老旅馆的味道保留得很好，有情怀。",
+                                    "The old inn charm is well preserved. It has character.")),
+                    buildGuestLineDialogue(
+                            "guest_sponsor_recommend",
+                            LocalizedText.of(
+                                    "我会向更多朋友推荐这里，好地方要分享。",
+                                    "I'll recommend this to more friends. Good places should be shared.")),
+                    buildGuestLineDialogue(
+                            "guest_sponsor_improvement",
+                            LocalizedText.of(
+                                    "还有什么需要改进的？我可以提供建议。",
+                                    "What else needs improvement? I can offer suggestions.")),
+                    buildGuestLineDialogue(
+                            "guest_sponsor_future",
+                            LocalizedText.of(
+                                    "期待旅馆未来的发展，我会持续关注。",
+                                    "Looking forward to the inn's future development. I'll keep watching.")),
+                    buildGuestLineDialogue(
+                            "guest_sponsor_appreciation",
+                            LocalizedText.of(
+                                    "感谢你们保持这里的原汁原味，很难得。",
+                                    "Thank you for maintaining the authentic feel. It's rare.")));
 
     private static final List<DialogueDefinition> ALL_DIALOGUES;
 

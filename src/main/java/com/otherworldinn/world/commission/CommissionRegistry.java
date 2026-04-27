@@ -61,6 +61,219 @@ public final class CommissionRegistry {
                 .submit("minecraft:diamond_sword", 1)
                 .rewardCoins(120)
                 .build();
+
+        register("magic_study_materials")
+                .stars(2, 3)
+                .weight(8)
+                .description(
+                        LocalizedText.of(
+                                "魔女需要一些稀有的魔法研究材料，帮忙收集一下。",
+                                "The magician needs rare materials for magical studies. Help gather them."))
+                .submit("minecraft:lapis_lazuli", 16)
+                .submit("minecraft:ender_pearl", 4)
+                .submit("minecraft:glowstone_dust", 8)
+                .rewardCoins(70)
+                .rewardFavor("otherworldinn:magician", 80)
+                .build();
+
+        register("farm_animal_feed")
+                .stars(1, 2)
+                .weight(10)
+                .description(
+                        LocalizedText.of(
+                                "农场需要额外的动物饲料，带些小麦和胡萝卜过来。",
+                                "The farm needs extra animal feed. Bring wheat and carrots."))
+                .submit("minecraft:wheat", 24)
+                .submit("minecraft:carrot", 16)
+                .rewardCoins(45)
+                .rewardFavor("otherworldinn:farmer", 70)
+                .build();
+
+        register("forge_tool_repair")
+                .stars(2, 4)
+                .weight(7)
+                .description(
+                        LocalizedText.of(
+                                "城外有需要修理的设施，需要材料和帮手。",
+                                "The forge has backlogged tool repairs. Needs materials and assistance."))
+                .submit("minecraft:iron_ingot", 8)
+                .submit("minecraft:stick", 16)
+                .kill("minecraft:zombie", 5)
+                .rewardCoins(95)
+                .rewardFavor("otherworldinn:blacksmith", 85)
+                .build();
+
+        register("magic_potion_supply")
+                .stars(3, 4)
+                .weight(6)
+                .description(
+                        LocalizedText.of(
+                                "魔女的药水库存不足了，需要一些基础药材补充。",
+                                "The magician's potion supplies are low. Needs basic ingredients."))
+                .submit("minecraft:nether_wart", 12)
+                .submit("minecraft:spider_eye", 8)
+                .submit("minecraft:ghast_tear", 2)
+                .rewardCoins(110)
+                .rewardFavor("otherworldinn:magician", 75)
+                .build();
+
+        register("forge_weapon_order")
+                .stars(4, 5)
+                .weight(5)
+                .description(
+                        LocalizedText.of(
+                                "铁匠接到一批武器订单，需要高级金属材料。",
+                                "The blacksmith received weapon orders. Needs premium metals."))
+                .submit("minecraft:diamond", 3)
+                .submit("minecraft:emerald", 6)
+                .submit("minecraft:netherite_ingot", 1)
+                .rewardCoins(280)
+                .rewardFavor("otherworldinn:blacksmith", 95)
+                .build();
+
+        register("magic_ritual_prep")
+                .stars(4, 5)
+                .weight(4)
+                .description(
+                        LocalizedText.of(
+                                "魔女有一个重要仪式要做，需要极其稀有的材料。",
+                                "The magician prepares for an important ritual. Needs extremely rare materials."))
+                .submit("minecraft:blaze_rod", 4)
+                .submit("minecraft:shulker_shell", 2)
+                .submit("minecraft:dragon_breath", 1)
+                .rewardCoins(250)
+                .rewardFavor("otherworldinn:magician", 100)
+                .build();
+
+        register("town_cleanup_spiders")
+                .stars(2, 3)
+                .weight(8)
+                .description(
+                        LocalizedText.of(
+                                "仓库里出现了蜘蛛，需要清理。",
+                                "Spiders have infested the town warehouse. Needs cleaning and drying."))
+                .kill("minecraft:spider", 8)
+                .submit("minecraft:string", 12)
+                .rewardCoins(65)
+                .build();
+
+        register("farm_seed_supply")
+                .stars(1, 2)
+                .weight(11)
+                .description(
+                        LocalizedText.of(
+                                "农场需要各种作物种子进行轮作种植。",
+                                "The farm needs various crop seeds for rotation planting."))
+                .submit("minecraft:wheat_seeds", 20)
+                .submit("minecraft:melon_seeds", 12)
+                .submit("minecraft:pumpkin_seeds", 12)
+                .rewardCoins(40)
+                .rewardFavor("otherworldinn:farmer", 60)
+                .build();
+
+        register("forge_fuel_supply")
+                .stars(1, 2)
+                .weight(10)
+                .description(
+                        LocalizedText.of(
+                                "铁匠铺的燃料快用完了，需要补充煤炭。",
+                                "The forge is running low on fuel. Needs coal replenishment."))
+                .submit("minecraft:coal", 32)
+                .rewardCoins(50)
+                .rewardFavor("otherworldinn:blacksmith", 55)
+                .build();
+
+        register("magic_library_organize")
+                .stars(2, 3)
+                .weight(7)
+                .description(
+                        LocalizedText.of(
+                                "魔女的图书馆需要整理，顺便收集一些古籍。",
+                                "The magician's library needs organizing. Also collect some ancient texts."))
+                .submit("minecraft:book", 8)
+                .submit("minecraft:paper", 24)
+                .rewardCoins(85)
+                .rewardFavor("otherworldinn:magician", 70)
+                .build();
+
+        register("forge_armor_order")
+                .stars(3, 4)
+                .weight(6)
+                .description(
+                        LocalizedText.of(
+                                "城镇卫队需要一批新护甲，铁匠需要材料。",
+                                "The town guard needs new armor. Blacksmith requires materials."))
+                .submit("minecraft:iron_ingot", 16)
+                .submit("minecraft:leather", 24)
+                .submit("minecraft:gold_ingot", 8)
+                .rewardCoins(130)
+                .rewardFavor("otherworldinn:blacksmith", 80)
+                .build();
+
+        register("town_festival_prep")
+                .stars(2, 3)
+                .weight(8)
+                .description(
+                        LocalizedText.of(
+                                "城镇准备举办庆典，需要食物和装饰材料。",
+                                "The town prepares for a festival. Needs food and decoration materials."))
+                .submit("minecraft:cake", 3)
+                .submit("minecraft:cookie", 24)
+                .submit("minecraft:flower", 16)
+                .rewardCoins(90)
+                .build();
+
+        register("town_road_repair")
+                .stars(1, 2)
+                .weight(10)
+                .description(
+                        LocalizedText.of(
+                                "城镇道路需要维修，收集些石材和木材。",
+                                "Town roads need repair. Collect some stone and wood."))
+                .submit("minecraft:cobblestone", 32)
+                .submit("minecraft:oak_planks", 24)
+                .rewardCoins(50)
+                .build();
+
+        register("farm_protection")
+                .stars(2, 3)
+                .weight(8)
+                .description(
+                        LocalizedText.of(
+                                "农场需要加强防护，清理周围的敌对生物。",
+                                "The farm needs better protection. Clear surrounding hostile mobs."))
+                .kill("minecraft:creeper", 4)
+                .kill("minecraft:skeleton", 6)
+                .kill("minecraft:zombie", 8)
+                .rewardCoins(85)
+                .rewardFavor("otherworldinn:farmer", 75)
+                .build();
+
+        register("forge_masterpiece")
+                .stars(5, 5)
+                .weight(3)
+                .description(
+                        LocalizedText.of(
+                                "铁匠要打造一件传世之作，需要最顶级的材料。",
+                                "The blacksmith aims to create a masterpiece. Needs the finest materials."))
+                .submit("minecraft:netherite_ingot", 2)
+                .submit("minecraft:diamond_block", 1)
+                .submit("minecraft:emerald_block", 1)
+                .rewardCoins(300)
+                .rewardFavor("otherworldinn:blacksmith", 100)
+                .build();
+
+        register("town_emergency_supplies")
+                .stars(1, 3)
+                .weight(9)
+                .description(
+                        LocalizedText.of(
+                                "城镇储备应急物资，需要食物和应急用品。",
+                                "Town stockpiles emergency supplies. Needs food and medical items."))
+                .submit("minecraft:bread", 20)
+                .submit("minecraft:golden_apple", 2)
+                .rewardCoins(70)
+                .build();
     }
 
     private CommissionRegistry() {}
