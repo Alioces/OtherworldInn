@@ -52,6 +52,19 @@ public class TownDataProvider {
                         null // 默认解锁
                         ));
 
+        // 魔女工坊 (Magician Workshop)
+        registerPoint(
+                new MapPoint(
+                        ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "magician_workshop"),
+                        new Vec3(-1, 71, 16),
+                        new Vec2(20, -40),
+                        MapIconAtlas.ATLAS_TEXTURE,
+                        MapIconAtlas.SLOT_MAGICIAN_WORKSHOP,
+                        Component.translatable("map_point.otherworldinn.magician_workshop"),
+                        MapPoint.MapPointType.SHOP,
+                        null // 默认解锁
+                        ));
+
         // 城镇大门 (Exit Gate)
         registerPoint(
                 new MapPoint(

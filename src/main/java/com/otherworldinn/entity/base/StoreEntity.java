@@ -133,17 +133,6 @@ public abstract class StoreEntity extends PathfinderMob {
         // 只有主手交互生效，防止触发两次
         if (hand == InteractionHand.MAIN_HAND) {
             if (!this.level().isClientSide) {
-                SoundEvent openSound = this.getOpenStoreSound();
-                if (openSound != null) {
-                    this.level()
-                            .playSound(
-                                    null,
-                                    this.blockPosition(),
-                                    openSound,
-                                    this.getSoundSource(),
-                                    1.0F,
-                                    1.0F);
-                }
                 if (player instanceof ServerPlayer serverPlayer
                         && DialogueService.tryStartDialogue(serverPlayer, this)) {
                     return InteractionResult.SUCCESS;
@@ -190,6 +179,23 @@ public abstract class StoreEntity extends PathfinderMob {
 
     public void openStoreForPlayer(Player player) {
         this.openStoreScreen(player);
+    }
+
+    public void playOpenStoreSound() {
+        if (this.level().isClientSide) {
+            return;
+        }
+        SoundEvent openSound = this.getOpenStoreSound();
+        if (openSound != null) {
+            this.level()
+                    .playSound(
+                            null,
+                            this.blockPosition(),
+                            openSound,
+                            this.getSoundSource(),
+                            1.0F,
+                            1.0F);
+        }
     }
 
     /**

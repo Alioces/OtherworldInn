@@ -75,6 +75,7 @@ public final class DialogueService {
         if (selected.type() == DialogueOptionType.FUNCTION) {
             if (DialogueRegistry.FUNCTION_OPEN_STORE.equals(selected.functionId())
                     && entity instanceof StoreEntity storeEntity) {
+                storeEntity.playOpenStoreSound();
                 storeEntity.openStoreForPlayer(player);
             } else if (DialogueRegistry.FUNCTION_OPEN_VIRTUAL_ANVIL.equals(selected.functionId())) {
                 openVirtualAnvil(player);

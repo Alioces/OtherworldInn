@@ -53,6 +53,7 @@ public class ModLanguageProvider extends LanguageProvider {
         // 地图点名称
         entry("map_point.otherworldinn.inn").zh("旅社").en("The Inn");
         entry("map_point.otherworldinn.blacksmith").zh("铁匠铺").en("Blacksmith");
+        entry("map_point.otherworldinn.magician_workshop").zh("魔女工坊").en("Magician Workshop");
         entry("map_point.otherworldinn.town_gate").zh("城镇大门").en("Town Gate");
         entry("map_point.otherworldinn.locked").zh("未解锁").en("Locked");
         entry("map_point.otherworldinn.cant_teleport").zh("无法传送至").en("Cannot teleport to");
