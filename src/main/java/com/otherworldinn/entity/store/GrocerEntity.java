@@ -15,7 +15,7 @@ import net.minecraft.world.level.Level;
 public class GrocerEntity extends StoreEntity {
     public GrocerEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
-        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WHEAT));
+        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.STICK));
         this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
         this.setDropChance(EquipmentSlot.OFFHAND, 0.0F);
         if (!level.isClientSide) {
@@ -61,7 +61,7 @@ public class GrocerEntity extends StoreEntity {
 
     @Override
     protected void applyCodeDefaultsAfterDebugReset() {
-        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WHEAT));
+        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.STICK));
         this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
         this.setDropChance(EquipmentSlot.OFFHAND, 0.0F);
         this.initDefaultStoreItems();
@@ -75,6 +75,6 @@ public class GrocerEntity extends StoreEntity {
 
     @Override
     protected SoundEvent getOpenStoreSound() {
-        return SoundEvents.UI_BUTTON_CLICK.value();
+        return SoundEvents.CHEST_OPEN;
     }
 }

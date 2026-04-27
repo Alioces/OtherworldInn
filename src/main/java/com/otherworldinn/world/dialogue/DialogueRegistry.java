@@ -78,8 +78,8 @@ public final class DialogueRegistry {
                             "要买什么？我这里什么都有",
                             "What do you want to buy? I have everything."),
                     LocalizedText.of(
-                            "先放了点临时货，你随时可以来补全清单。",
-                            "I only stocked temporary goods for now. Expand it anytime."));
+                            "一些乱七八糟的东西，随意看看吧",
+                            "A bunch of odds and ends. Feel free to browse."));
     private static final List<DialogueDefinition> GUEST_DIALOGUES =
             List.of(
                     buildGuestLineDialogue(
