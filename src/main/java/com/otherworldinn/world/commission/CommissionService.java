@@ -38,6 +38,8 @@ import net.minecraft.world.level.Level;
 public final class CommissionService {
     private static final int BOARD_SIZE = 1;
     private static final long UNACCEPTED_REFRESH_INTERVAL_DAYS = 3L;
+    private static final String TOWN_COMMISSION_TODO_TEXT_KEY =
+            "todo.otherworldinn.town_commission_pending";
 
     private CommissionService() {}
 
@@ -70,6 +72,8 @@ public final class CommissionService {
         data.setExpireDay(day + entry.getDurationDays());
         data.setRewardClaimed(false);
         data.getKillProgress().clear();
+        addTownCommissionTodo(player.serverLevel(), team);
+        notifyTeamCommissionAccepted(player.serverLevel(), team, player, entry.getDurationDays());
         TeamManager.getInstance().syncTeam(team, player.getServer());
         broadcastBoard(team, player.serverLevel(), null);
     }
@@ -217,6 +221,7 @@ public final class CommissionService {
         data.setRewardClaimed(true);
         data.setNextAutoRefreshDay(
                 currentDay(triggerPlayer.serverLevel()) + UNACCEPTED_REFRESH_INTERVAL_DAYS);
+        removeTownCommissionTodo(triggerPlayer.serverLevel(), team);
         notifyTeamCommissionCompleted(triggerPlayer.serverLevel(), team, active);
         TeamManager.getInstance().syncTeam(team, triggerPlayer.getServer());
         broadcastBoard(team, triggerPlayer.serverLevel(), null);
@@ -340,6 +345,7 @@ public final class CommissionService {
     private static void refreshBoard(ServerLevel level, TeamData team, long day) {
         TeamCommissionData data = team.getCommissionData();
         data.resetAcceptedState();
+        removeTownCommissionTodo(level, team);
         data.getBoardEntries().clear();
         long sequence = data.getRefreshSequence() + 1L;
         data.setRefreshSequence(sequence);
@@ -549,5 +555,31 @@ public final class CommissionService {
                 ModMessages.sendToPlayer(new S2CCommissionBoardPacket(payload.copy(), false), member);
             }
         }
+    }
+
+    private static void notifyTeamCommissionAccepted(
+            ServerLevel level, TeamData team, ServerPlayer acceptPlayer, long durationDays) {
+        Component message =
+                Component.translatable(
+                                "message.otherworldinn.commission.accepted_team_broadcast",
+                                acceptPlayer.getDisplayName(),
+                                durationDays)
+                        .withStyle(style -> style.withColor(ModColors.INFO));
+        for (UUID memberId : team.getMembers()) {
+            ServerPlayer member = level.getServer().getPlayerList().getPlayer(memberId);
+            if (member != null) {
+                member.sendSystemMessage(message);
+            }
+        }
+    }
+
+    private static void addTownCommissionTodo(ServerLevel level, TeamData team) {
+        String todoText = Component.translatable(TOWN_COMMISSION_TODO_TEXT_KEY).getString();
+        team.getInnData().addTodo(level, team, todoText);
+    }
+
+    private static void removeTownCommissionTodo(ServerLevel level, TeamData team) {
+        String todoText = Component.translatable(TOWN_COMMISSION_TODO_TEXT_KEY).getString();
+        team.getInnData().removeTodo(level, team, todoText);
     }
 }

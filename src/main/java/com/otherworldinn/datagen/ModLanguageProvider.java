@@ -341,6 +341,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("todo.otherworldinn.room_cleaning").zh("%s 号房间需要打扫").en("Room %s needs cleaning");
         entry("todo.otherworldinn.guest_waiting").zh("%s 正在等待办理入住").en("%s is waiting to check in");
         entry("todo.otherworldinn.vip_meal_order").zh("贵宾 %s 选订了餐品 %s").en("VIP %s ordered meal %s");
+        entry("todo.otherworldinn.town_commission_pending")
+                .zh("有待完成的居民委托")
+                .en("Pending town commission");
 
         // 生物群系
         entry("biome.otherworldinn.town").zh("城镇").en("Town");
@@ -452,6 +455,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("screen.otherworldinn.commission_board.title").zh("委托板").en("Commission Board");
         entry("message.otherworldinn.commission.accept").zh("接取委托").en("Accept");
         entry("message.otherworldinn.commission.accepted").zh("已接取").en("Accepted");
+        entry("message.otherworldinn.commission.accepted_team_broadcast")
+                .zh("%s玩家已接取居民委托，限时%s天")
+                .en("%s accepted a town commission, time limit: %s days");
         entry("message.otherworldinn.commission.empty").zh("暂无委托").en("Empty");
         entry("message.otherworldinn.commission.star").zh("%s星委托").en("%s-Star Commission");
         entry("message.otherworldinn.commission.difficulty").zh("难度：").en("Difficulty: ");
