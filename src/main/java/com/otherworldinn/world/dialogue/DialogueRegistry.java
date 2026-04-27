@@ -34,6 +34,10 @@ public final class DialogueRegistry {
                                      "No one has repaired the boiler room downstairs for a long time. I don't even know if it still works."),
                     LocalizedText.of("你把它修好了？太好了，我们的机器可以用了",
                                      "You repaired it? That's great."),
+                    LocalizedText.of("它在什么位置？", "Where is it?"),
+                    LocalizedText.of(
+                            "在前面右转，穿过集市再右转的小通道里。",
+                            "Turn right ahead, pass through the market, then take the small alley on the right."),
                     LocalizedText.of("借用一下铁砧", "Borrow the Anvil"),
                     FUNCTION_OPEN_VIRTUAL_ANVIL);
     private static final DialogueDefinition FARMER_DIALOGUE =
@@ -51,6 +55,8 @@ public final class DialogueRegistry {
                                      "That greenhouse across the way has been abandoned for ages... it used to be so useful."),
                     LocalizedText.of("你居然真的把它修好了，感谢你的付出，现在种地更方便了", 
                                      "You actually got it repaired. Thank you for putting in the work."),
+                    null,
+                    null,
                     null,
                     null,
                     null,
@@ -491,12 +497,15 @@ public final class DialogueRegistry {
             @Nullable LocalizedText greenhouseRepairedText,
             @Nullable LocalizedText boilerRoomUnrepairedText,
             @Nullable LocalizedText boilerRoomRepairedText,
+            @Nullable LocalizedText boilerRoomLocationLabel,
+            @Nullable LocalizedText boilerRoomLocationText,
             @Nullable LocalizedText extraFunctionLabel,
             @Nullable String extraFunctionId) {
         String root = "root";
         String askGoods = "ask_goods";
         String greenhouseTopic = "topic_greenhouse";
         String boilerTopic = "topic_boiler_room";
+        String boilerLocationTopic = "topic_boiler_room_location";
         boolean hasGreenhouseTopic =
                 aboutGreenhouseLabel != null
                         && greenhouseUnrepairedText != null
@@ -654,6 +663,15 @@ public final class DialogueRegistry {
                                 null,
                                 extraFunctionId));
             }
+            if (boilerRoomLocationLabel != null && boilerRoomLocationText != null) {
+                boilerOptions.add(
+                        new DialogueOptionDef(
+                                "boiler_room_location",
+                                boilerRoomLocationLabel,
+                                DialogueOptionType.BRANCH,
+                                boilerLocationTopic,
+                                null));
+            }
             boilerOptions.add(
                     new DialogueOptionDef(
                             "leave",
@@ -669,6 +687,38 @@ public final class DialogueRegistry {
                             List.copyOf(boilerOptions),
                             new DialogueNodeConditionalText(
                                     "boiler_room", boilerRoomUnrepairedText, boilerRoomRepairedText)));
+            if (boilerRoomLocationLabel != null && boilerRoomLocationText != null) {
+                List<DialogueOptionDef> boilerLocationOptions = new ArrayList<>();
+                boilerLocationOptions.add(
+                        new DialogueOptionDef(
+                                "open_store",
+                                LocalizedText.of("打开商店", "Open Shop"),
+                                DialogueOptionType.FUNCTION,
+                                null,
+                                FUNCTION_OPEN_STORE));
+                if (extraFunctionLabel != null && extraFunctionId != null && !extraFunctionId.isBlank()) {
+                    boilerLocationOptions.add(
+                            new DialogueOptionDef(
+                                    "extra_function",
+                                    extraFunctionLabel,
+                                    DialogueOptionType.FUNCTION,
+                                    null,
+                                    extraFunctionId));
+                }
+                boilerLocationOptions.add(
+                        new DialogueOptionDef(
+                                "leave",
+                                LocalizedText.of("先告辞", "Leave"),
+                                DialogueOptionType.BRANCH,
+                                null,
+                                null));
+                nodes.put(
+                        boilerLocationTopic,
+                        new DialogueNodeDef(
+                                boilerLocationTopic,
+                                boilerRoomLocationText,
+                                List.copyOf(boilerLocationOptions)));
+            }
         }
         return new DialogueDefinition(npcId, root, nodes);
     }

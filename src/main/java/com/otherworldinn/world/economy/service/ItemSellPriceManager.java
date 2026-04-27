@@ -22,8 +22,6 @@ public class ItemSellPriceManager {
     static {
         // 原版水果
         addPrice("minecraft:apple", 3);
-        addPrice("minecraft:sweet_berries", 2);
-        addPrice("minecraft:glow_berries", 3);
         addPrice("minecraft:melon_slice", 2);
 
         // 原版熟肉类

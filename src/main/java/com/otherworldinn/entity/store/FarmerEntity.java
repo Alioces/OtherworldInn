@@ -48,18 +48,18 @@ public class FarmerEntity extends StoreEntity {
     private static final List<SeasonalProduct> SEASONAL_PRODUCTS =
             List.of(
                     new SeasonalProduct(() -> new ItemStack(Items.SUGAR_CANE), 2, 64),
-                    new SeasonalProduct(() -> new ItemStack(Items.WHEAT_SEEDS), 1, 64),
-                    new SeasonalProduct(() -> new ItemStack(Items.BEETROOT_SEEDS), 1, 64),
+                    new SeasonalProduct(() -> new ItemStack(Items.WHEAT_SEEDS), 1, 16),
+                    new SeasonalProduct(() -> new ItemStack(Items.BEETROOT_SEEDS), 1, 16),
                     new SeasonalProduct(() -> new ItemStack(Items.CARROT), 2, 64),
                     new SeasonalProduct(() -> new ItemStack(Items.POTATO), 2, 64),
-                    new SeasonalProduct(() -> new ItemStack(Items.PUMPKIN_SEEDS), 4, 32),
-                    new SeasonalProduct(() -> new ItemStack(Items.MELON_SEEDS), 1, 64),
+                    new SeasonalProduct(() -> new ItemStack(Items.PUMPKIN_SEEDS), 4, 16),
+                    new SeasonalProduct(() -> new ItemStack(Items.MELON_SEEDS), 1, 16),
                     new SeasonalProduct(() -> new ItemStack(Items.GLOW_BERRIES), 2, 64),
                     new SeasonalProduct(() -> new ItemStack(Items.SWEET_BERRIES), 2, 64),
-                    new SeasonalProduct(() -> new ItemStack(ModItems.TOMATO_SEED.get()), 2, 64),
-                    new SeasonalProduct(() -> new ItemStack(ModItems.CHILI_SEED.get()), 2, 64),
-                    new SeasonalProduct(() -> new ItemStack(ModItems.LETTUCE_SEED.get()), 2, 64),
-                    new SeasonalProduct(() -> new ItemStack(ModItems.WILD_RICE_SEED.get()), 2, 64),
+                    new SeasonalProduct(() -> new ItemStack(ModItems.TOMATO_SEED.get()), 2, 16),
+                    new SeasonalProduct(() -> new ItemStack(ModItems.CHILI_SEED.get()), 2, 16),
+                    new SeasonalProduct(() -> new ItemStack(ModItems.LETTUCE_SEED.get()), 2, 16),
+                    new SeasonalProduct(() -> new ItemStack(ModItems.WILD_RICE_SEED.get()), 2, 16),
                     new SeasonalProduct(
                             () ->
                                     new ItemStack(

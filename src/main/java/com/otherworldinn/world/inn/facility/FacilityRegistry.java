@@ -219,7 +219,7 @@ public final class FacilityRegistry {
                                 3200)),
                 new FacilityMapPointConfig(
                         new Vec3(30, 62, -39),
-                        new Vec2(70, 70),
+                        new Vec2(70, 50),
                         ResourceLocation.fromNamespaceAndPath(
                                 OtherworldInn.MODID, "textures/gui/map/icon_boiler_room.png"),
                         MapPoint.MapPointType.SHOP,
