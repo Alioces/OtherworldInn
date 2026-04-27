@@ -28,6 +28,8 @@
   "command.otherworldinn.admin.facility.place_fail": "Level update failed: target level structure placement failed",
   "command.otherworldinn.admin.facility.town_unavailable": "Town dimension is not loaded, cannot modify facility level",
   "command.otherworldinn.admin.reset_dimensions.start": "§c[Admin] Triggering forced dimension reset...",
+  "command.otherworldinn.admin.store.reset_all.success": "Reset %s store NPC(s): favor progress cleared and data rebuilt from code defaults.",
+  "command.otherworldinn.admin.store.reset_all.town_unavailable": "Town dimension is not loaded, cannot reset store NPC data",
   "command.otherworldinn.team.already_in_team": "You are already in a team!",
   "command.otherworldinn.team.coins.add": "Added §f§r %d to team %s (Current: §f§r %d)",
   "command.otherworldinn.team.coins.get": "Team %s current balance: §f§r %d",

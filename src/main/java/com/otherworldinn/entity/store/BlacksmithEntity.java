@@ -190,6 +190,18 @@ public class BlacksmithEntity extends StoreEntity {
     }
 
     @Override
+    protected void applyCodeDefaultsAfterDebugReset() {
+        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_INGOT));
+        this.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.COPPER_INGOT));
+        this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+        this.setDropChance(EquipmentSlot.OFFHAND, 0.0F);
+        if (TOOL_POOL.isEmpty()) {
+            initToolPool();
+        }
+        this.initDefaultStoreItems();
+    }
+
+    @Override
     public ResourceLocation getStoreBackground() {
         return ResourceLocation.fromNamespaceAndPath(
                 OtherworldInn.MODID, "textures/gui/store/blacksmith.png");

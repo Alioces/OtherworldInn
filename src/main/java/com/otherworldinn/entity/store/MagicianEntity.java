@@ -134,6 +134,18 @@ public class MagicianEntity extends StoreEntity {
                 8, new ItemStack(Items.ENCHANTED_BOOK), 256, 2, this::applyWindBurstBook);
     }
 
+    @Override
+    protected void applyCodeDefaultsAfterDebugReset() {
+        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.REDSTONE));
+        BuiltInRegistries.ITEM
+                .getOptional(ResourceLocation.parse("majobroom:majo_hat"))
+                .ifPresent(item -> this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(item)));
+        this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+        this.setDropChance(EquipmentSlot.HEAD, 0.0F);
+        this.setDropChance(EquipmentSlot.OFFHAND, 0.0F);
+        this.initDefaultStoreItems();
+    }
+
     private void applyMendingBook(ItemStack stack) {
         this.registryAccess()
                 .lookup(Registries.ENCHANTMENT)

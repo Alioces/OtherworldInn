@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.otherworldinn.entity.base.StoreEntity;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.commission.CommissionService;
 import com.otherworldinn.world.event.TownStructurePlacer;
@@ -18,6 +19,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.AABB;
 
 /**
  * 管理员命令
@@ -25,6 +27,8 @@ import net.minecraft.server.level.ServerPlayer;
  * <p>/innadmin reset_dimensions - 强制触发维度重置
  */
 public class AdminCommands {
+    private static final AABB TOWN_STORE_SCAN_AREA = new AABB(-1024, -64, -1024, 1024, 384, 1024);
+
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
                 Commands.literal("innadmin")
@@ -79,7 +83,12 @@ public class AdminCommands {
                                                                 Commands.argument("target", EntityArgument.player())
                                                                         .executes(
                                                                                 AdminCommands
-                                                                                        ::refreshCommissionBoard)))));
+                                                                                        ::refreshCommissionBoard))))
+                        .then(
+                                Commands.literal("store")
+                                        .then(
+                                                Commands.literal("reset_all_npcs")
+                                                        .executes(AdminCommands::resetAllStoreNpcs))));
     }
 
     private static int resetDimensions(CommandContext<CommandSourceStack> context) {
@@ -215,6 +224,34 @@ public class AdminCommands {
                                         "已刷新 "
                                                 + target.getName().getString()
                                                 + " 所在队伍的委托板"),
+                        true);
+        return 1;
+    }
+
+    private static int resetAllStoreNpcs(CommandContext<CommandSourceStack> context) {
+        ServerLevel townLevel = context.getSource().getServer().getLevel(TownDimensions.TOWN_LEVEL);
+        if (townLevel == null) {
+            context.getSource()
+                    .sendFailure(
+                            Component.translatable(
+                                    "command.otherworldinn.admin.store.reset_all.town_unavailable"));
+            return 0;
+        }
+
+        int resetCount = 0;
+        for (StoreEntity storeEntity :
+                townLevel.getEntitiesOfClass(StoreEntity.class, TOWN_STORE_SCAN_AREA)) {
+            storeEntity.debugResetToCodeDefaults();
+            resetCount++;
+        }
+
+        final int finalResetCount = resetCount;
+        context.getSource()
+                .sendSuccess(
+                        () ->
+                                Component.translatable(
+                                        "command.otherworldinn.admin.store.reset_all.success",
+                                        finalResetCount),
                         true);
         return 1;
     }

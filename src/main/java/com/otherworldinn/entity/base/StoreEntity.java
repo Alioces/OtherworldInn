@@ -23,6 +23,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -678,6 +679,43 @@ public abstract class StoreEntity extends PathfinderMob {
         if (this.storeItems.size() > this.fixedItemsCount) {
             this.storeItems.subList(this.fixedItemsCount, this.storeItems.size()).clear();
         }
+    }
+
+    /**
+     * 调试用：重置商店 NPC 的可持久化状态，并按代码默认配置重建数据。
+     *
+     * <p>会清空历史存档中残留的商品/好感等状态，随后调用子类重新写入默认装备与商品配置。
+     */
+    public final void debugResetToCodeDefaults() {
+        if (this.level().isClientSide) {
+            return;
+        }
+        this.totalSpentCoins = 0;
+        this.favorLevel = 1;
+        this.lastRestockDay = this.level().getGameTime() / 24000L;
+        this.storeItems.clear();
+        this.favorStoreItems.clear();
+        this.fixedItemsCount = 0;
+        this.clearAllEquipmentForReset();
+        this.applyCodeDefaultsAfterDebugReset();
+        this.restockAll();
+    }
+
+    protected abstract void applyCodeDefaultsAfterDebugReset();
+
+    private void clearAllEquipmentForReset() {
+        this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+        this.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+        this.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
+        this.setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
+        this.setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
+        this.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
+        this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+        this.setDropChance(EquipmentSlot.OFFHAND, 0.0F);
+        this.setDropChance(EquipmentSlot.HEAD, 0.0F);
+        this.setDropChance(EquipmentSlot.CHEST, 0.0F);
+        this.setDropChance(EquipmentSlot.LEGS, 0.0F);
+        this.setDropChance(EquipmentSlot.FEET, 0.0F);
     }
 
     /**

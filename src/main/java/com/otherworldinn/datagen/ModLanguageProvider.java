@@ -225,6 +225,13 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("command.otherworldinn.admin.facility.downgrade_success")
                 .zh("已将队伍 %s 的设施 %s 修改为 %s 级")
                 .en("Updated team %s facility %s to level %s");
+        entry("command.otherworldinn.admin.store.reset_all.town_unavailable")
+                .zh("城镇维度未加载，无法重置商店NPC数据")
+                .en("Town dimension is not loaded, cannot reset store NPC data");
+        entry("command.otherworldinn.admin.store.reset_all.success")
+                .zh("已重置 %s 个商店NPC数据（好感进度归零，并按代码默认值重建）")
+                .en(
+                        "Reset %s store NPC(s): favor progress cleared and data rebuilt from code defaults.");
 
         entry("message.otherworldinn.reset.warning")
                 .zh("§c[注意] §e外部维度还有%d分钟重置，请尽快回到城镇")

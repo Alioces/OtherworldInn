@@ -93,6 +93,16 @@ public class FarmerEntity extends StoreEntity {
     }
 
     @Override
+    protected void applyCodeDefaultsAfterDebugReset() {
+        this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WHEAT));
+        equipDefaultStrawHat();
+        this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+        this.setDropChance(EquipmentSlot.HEAD, 0.0F);
+        this.setDropChance(EquipmentSlot.OFFHAND, 0.0F);
+        this.initDefaultStoreItems();
+    }
+
+    @Override
     protected void refreshRandomItems() {
         super.refreshRandomItems();
         boolean useSeasonRules = this.shouldUseSeasonRules();
