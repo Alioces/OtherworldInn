@@ -54,6 +54,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("map_point.otherworldinn.inn").zh("旅社").en("The Inn");
         entry("map_point.otherworldinn.blacksmith").zh("铁匠铺").en("Blacksmith");
         entry("map_point.otherworldinn.magician_workshop").zh("魔女工坊").en("Magician Workshop");
+        entry("map_point.otherworldinn.market").zh("集市").en("Market");
         entry("map_point.otherworldinn.town_gate").zh("城镇大门").en("Town Gate");
         entry("map_point.otherworldinn.locked").zh("未解锁").en("Locked");
         entry("map_point.otherworldinn.cant_teleport").zh("无法传送至").en("Cannot teleport to");
@@ -747,6 +748,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry(ModEntities.BLACKSMITH.get()).zh("铁匠").en("Blacksmith");
         entry(ModEntities.MAGICIAN.get()).zh("魔法使").en("Magician");
         entry(ModEntities.FARMER.get()).zh("农夫").en("Farmer");
+        entry(ModEntities.GROCER.get()).zh("杂货店老板").en("Grocer");
 
         // 商店 GUI
         entry("gui.otherworldinn.store.confirm").zh("确定").en("Confirm");

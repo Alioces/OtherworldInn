@@ -6,6 +6,8 @@ import com.otherworldinn.client.renderer.BlacksmithModel;
 import com.otherworldinn.client.renderer.BlacksmithRenderer;
 import com.otherworldinn.client.renderer.FarmerModel;
 import com.otherworldinn.client.renderer.FarmerRenderer;
+import com.otherworldinn.client.renderer.GrocerModel;
+import com.otherworldinn.client.renderer.GrocerRenderer;
 import com.otherworldinn.client.renderer.GuestRenderer;
 import com.otherworldinn.client.renderer.MagicianModel;
 import com.otherworldinn.client.renderer.MagicianRenderer;
@@ -62,6 +64,7 @@ public class ModClientEvents {
         event.registerEntityRenderer(ModEntities.BLACKSMITH.get(), BlacksmithRenderer::new);
         event.registerEntityRenderer(ModEntities.MAGICIAN.get(), MagicianRenderer::new);
         event.registerEntityRenderer(ModEntities.FARMER.get(), FarmerRenderer::new);
+        event.registerEntityRenderer(ModEntities.GROCER.get(), GrocerRenderer::new);
         event.registerEntityRenderer(ModEntities.COIN_PROJECTILE.get(), ThrownItemRenderer::new);
     }
 
@@ -73,6 +76,7 @@ public class ModClientEvents {
         event.registerLayerDefinition(
                 MagicianModel.LAYER_LOCATION, MagicianModel::createBodyLayer);
         event.registerLayerDefinition(FarmerModel.LAYER_LOCATION, FarmerModel::createBodyLayer);
+        event.registerLayerDefinition(GrocerModel.LAYER_LOCATION, GrocerModel::createBodyLayer);
     }
 
     @SubscribeEvent

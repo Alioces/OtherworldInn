@@ -10,6 +10,7 @@ import com.otherworldinn.entity.guest.SponsorGuestEntity;
 import com.otherworldinn.entity.guest.UltraRichGuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
 import com.otherworldinn.entity.store.FarmerEntity;
+import com.otherworldinn.entity.store.GrocerEntity;
 import com.otherworldinn.entity.store.MagicianEntity;
 import com.otherworldinn.world.entity.projectile.CoinProjectileEntity;
 import java.util.function.Supplier;
@@ -138,6 +139,19 @@ public class ModEntities {
                                     .updateInterval(2)
                                     .setShouldReceiveVelocityUpdates(true)
                                     .build("farmer"));
+
+    public static final Supplier<EntityType<GrocerEntity>> GROCER =
+            ENTITY_TYPES.register(
+                    "grocer",
+                    () ->
+                            EntityType.Builder.of(
+                                            GrocerEntity::new,
+                                            MobCategory.MISC)
+                                    .sized(0.6F, 1.95F)
+                                    .clientTrackingRange(80)
+                                    .updateInterval(2)
+                                    .setShouldReceiveVelocityUpdates(true)
+                                    .build("grocer"));
 
     public static final Supplier<EntityType<CoinProjectileEntity>> COIN_PROJECTILE =
             ENTITY_TYPES.register(

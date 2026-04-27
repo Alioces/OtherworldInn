@@ -65,6 +65,19 @@ public class TownDataProvider {
                         null // 默认解锁
                         ));
 
+        // 集市 (Market)
+        registerPoint(
+                new MapPoint(
+                        ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "market"),
+                        new Vec3(3, 71, -21),
+                        new Vec2(10, -10),
+                        MapIconAtlas.ATLAS_TEXTURE,
+                        MapIconAtlas.SLOT_MARKET,
+                        Component.translatable("map_point.otherworldinn.market"),
+                        MapPoint.MapPointType.SHOP,
+                        null // 默认解锁
+                        ));
+
         // 城镇大门 (Exit Gate)
         registerPoint(
                 new MapPoint(

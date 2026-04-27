@@ -16,8 +16,21 @@ public abstract class StoreHumanoidModel<T extends StoreEntity> extends Humanoid
     }
 
     public static LayerDefinition createBodyLayer() {
+        return createBodyLayer(false);
+    }
+
+    public static LayerDefinition createSlimBodyLayer() {
+        return createBodyLayer(true);
+    }
+
+    private static LayerDefinition createBodyLayer(boolean slimArms) {
         MeshDefinition meshdefinition = HumanoidModel.createMesh(CubeDeformation.NONE, 0.0F);
         PartDefinition partdefinition = meshdefinition.getRoot();
+        float armWidth = slimArms ? 3.0F : 4.0F;
+        float rightArmX = slimArms ? -4.0F : -5.0F;
+        float leftArmX = slimArms ? 4.0F : 5.0F;
+        float rightArmMinX = slimArms ? -3.0F : -4.0F;
+        float leftArmMinX = 0.0F;
 
         partdefinition.addOrReplaceChild(
                 "head",
@@ -43,18 +56,46 @@ public abstract class StoreHumanoidModel<T extends StoreEntity> extends Humanoid
                 "right_arm",
                 CubeListBuilder.create()
                         .texOffs(40, 16)
-                        .addBox(-3.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, CubeDeformation.NONE)
+                        .addBox(
+                                rightArmMinX,
+                                -2.0F,
+                                -2.0F,
+                                armWidth,
+                                12.0F,
+                                4.0F,
+                                CubeDeformation.NONE)
                         .texOffs(40, 32)
-                        .addBox(-3.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, new CubeDeformation(0.25F)),
-                PartPose.offset(-4.0F, 2.0F, 0.0F));
+                        .addBox(
+                                rightArmMinX,
+                                -2.0F,
+                                -2.0F,
+                                armWidth,
+                                12.0F,
+                                4.0F,
+                                new CubeDeformation(0.25F)),
+                PartPose.offset(rightArmX, 2.0F, 0.0F));
         partdefinition.addOrReplaceChild(
                 "left_arm",
                 CubeListBuilder.create()
                         .texOffs(32, 48)
-                        .addBox(0.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, CubeDeformation.NONE)
+                        .addBox(
+                                leftArmMinX,
+                                -2.0F,
+                                -2.0F,
+                                armWidth,
+                                12.0F,
+                                4.0F,
+                                CubeDeformation.NONE)
                         .texOffs(48, 48)
-                        .addBox(0.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, new CubeDeformation(0.25F)),
-                PartPose.offset(4.0F, 2.0F, 0.0F));
+                        .addBox(
+                                leftArmMinX,
+                                -2.0F,
+                                -2.0F,
+                                armWidth,
+                                12.0F,
+                                4.0F,
+                                new CubeDeformation(0.25F)),
+                PartPose.offset(leftArmX, 2.0F, 0.0F));
         partdefinition.addOrReplaceChild(
                 "right_leg",
                 CubeListBuilder.create()

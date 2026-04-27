@@ -274,6 +274,98 @@ public final class CommissionRegistry {
                 .submit("minecraft:golden_apple", 2)
                 .rewardCoins(70)
                 .build();
+
+        register("grocer_shelf_restock")
+                .stars(1, 2)
+                .weight(10)
+                .description(
+                        LocalizedText.of(
+                                "杂货铺木材见底了，先送一批常用木板过来补货。",
+                                "The grocer is running low on lumber. Deliver common planks for shelf restock."))
+                .submit("minecraft:oak_planks", 24)
+                .submit("minecraft:spruce_planks", 24)
+                .rewardCoins(55)
+                .rewardFavor("otherworldinn:grocer", 65)
+                .build();
+
+        register("grocer_masonry_supply")
+                .stars(2, 3)
+                .weight(8)
+                .description(
+                        LocalizedText.of(
+                                "杂货铺收一批石材。",
+                                "The grocer is expanding the masonry aisle. Bring cobblestone, diorite, andesite, and granite."))
+                .submit("minecraft:cobblestone", 32)
+                .submit("minecraft:diorite", 16)
+                .submit("minecraft:andesite", 16)
+                .submit("minecraft:granite", 16)
+                .rewardCoins(90)
+                .rewardFavor("otherworldinn:grocer", 85)
+                .build();
+
+        register("grocer_stone_assortment")
+                .stars(3, 4)
+                .weight(6)
+                .description(
+                        LocalizedText.of(
+                                "有建筑队要一套杂石样品，帮杂货铺备齐凝灰岩和深板岩石料。",
+                                "A building crew requested mixed stone samples. Help the grocer prepare tuff and deepslate stock."))
+                .submit("minecraft:tuff", 24)
+                .submit("minecraft:cobbled_deepslate", 24)
+                .submit("minecraft:calcite", 12)
+                .rewardCoins(130)
+                .rewardFavor("otherworldinn:grocer", 105)
+                .build();
+
+        register("adventurers_guild_warden_hunt")
+                .stars(5, 5)
+                .weight(2)
+                .description(
+                        LocalizedText.of(
+                                "冒险家协会发布高危委托：前往深暗之域并击杀 1 只监守者。",
+                                "Adventurers Guild high-risk request: enter the Deep Dark and kill 1 Warden."))
+                .kill("minecraft:warden", 1)
+                .rewardCoins(280)
+                .rewardItem("minecraft:echo_shard", 2)
+                .build();
+
+        register("adventurers_guild_enderman_expedition")
+                .stars(4, 5)
+                .weight(4)
+                .description(
+                        LocalizedText.of(
+                                "冒险家协会发布远征委托：清理游荡末影人并回收样本。",
+                                "Adventurers Guild expedition request: clear roaming Endermen and recover samples."))
+                .kill("minecraft:enderman", 20)
+                .rewardCoins(260)
+                .rewardItem("minecraft:ender_pearl", 8)
+                .build();
+
+        register("adventurers_guild_nether_suppression")
+                .stars(5, 5)
+                .weight(3)
+                .description(
+                        LocalizedText.of(
+                                "冒险家协会发布下界清剿委托：击杀烈焰人并顺带清理凋灵骷髅。",
+                                "Adventurers Guild Nether operation: defeat Blazes and clear Wither Skeletons."))
+                .kill("minecraft:blaze", 12)
+                .kill("minecraft:wither_skeleton", 16)
+                .rewardCoins(360)
+                .rewardItem("minecraft:blaze_rod", 10)
+                .build();
+
+        register("adventurers_guild_raid_breaker")
+                .stars(4, 5)
+                .weight(3)
+                .description(
+                        LocalizedText.of(
+                                "冒险家协会发布防务委托：击杀袭击者与唤魔者，降低村庄威胁。",
+                                "Adventurers Guild defense request: eliminate Raiders and Evokers to reduce village threats."))
+                .kill("minecraft:pillager", 18)
+                .kill("minecraft:evoker", 2)
+                .rewardCoins(320)
+                .rewardItem("minecraft:totem_of_undying", 1)
+                .build();
     }
 
     private CommissionRegistry() {}

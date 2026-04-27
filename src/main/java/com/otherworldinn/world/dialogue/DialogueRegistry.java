@@ -3,6 +3,7 @@ package com.otherworldinn.world.dialogue;
 import com.otherworldinn.entity.base.GuestEntity;
 import com.otherworldinn.entity.store.BlacksmithEntity;
 import com.otherworldinn.entity.store.FarmerEntity;
+import com.otherworldinn.entity.store.GrocerEntity;
 import com.otherworldinn.entity.store.MagicianEntity;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,6 +71,15 @@ public final class DialogueRegistry {
                     LocalizedText.of(
                         "材料和书卷都在这，想要什么自己挑",
                         "Materials and tomes are ready. Mind the explosive stuff."));
+    private static final DialogueDefinition GROCER_DIALOGUE =
+            buildSimpleStoreDialogue(
+                    "grocer",
+                    LocalizedText.of(
+                            "要买什么？我这里什么都有",
+                            "What do you want to buy? I have everything."),
+                    LocalizedText.of(
+                            "先放了点临时货，你随时可以来补全清单。",
+                            "I only stocked temporary goods for now. Expand it anytime."));
     private static final List<DialogueDefinition> GUEST_DIALOGUES =
             List.of(
                     buildGuestLineDialogue(
@@ -378,7 +388,8 @@ public final class DialogueRegistry {
 
     static {
         List<DialogueDefinition> all =
-                new ArrayList<>(List.of(BLACKSMITH_DIALOGUE, FARMER_DIALOGUE, MAGICIAN_DIALOGUE));
+                new ArrayList<>(
+                        List.of(BLACKSMITH_DIALOGUE, FARMER_DIALOGUE, MAGICIAN_DIALOGUE, GROCER_DIALOGUE));
         all.addAll(GUEST_DIALOGUES);
         ALL_DIALOGUES = Collections.unmodifiableList(all);
         Map<String, DialogueDefinition> byId = new LinkedHashMap<>();
@@ -403,6 +414,9 @@ public final class DialogueRegistry {
         }
         if (entity instanceof MagicianEntity) {
             return MAGICIAN_DIALOGUE;
+        }
+        if (entity instanceof GrocerEntity) {
+            return GROCER_DIALOGUE;
         }
         return null;
     }

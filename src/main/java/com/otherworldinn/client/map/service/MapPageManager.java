@@ -61,6 +61,8 @@ public class MapPageManager {
                 0, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "town_gate"));
         registerPoint(
                 0, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "magician_workshop"));
+        registerPoint(
+                0, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "market"));
 
         // 旅社方向页
         registerPoint(1, 0, ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn"));
