@@ -1,14 +1,14 @@
 {
-  "parent": "otherworldinn:serve_first_guest",
+  "parent": "otherworldinn:inn_rating_1",
   "display": {
     "icon": {
-      "id": "kaleidoscope_cookery:braised_pork_ribs"
+      "id": "otherworldinn:commission_board"
     },
     "title": {
-      "translate": "advancements.otherworldinn.serve_one_vip.title"
+      "translate": "advancements.otherworldinn.complete_1_commission.title"
     },
     "description": {
-      "translate": "advancements.otherworldinn.serve_one_vip.description"
+      "translate": "advancements.otherworldinn.complete_1_commission.description"
     },
     "frame": "task",
     "show_toast": true,

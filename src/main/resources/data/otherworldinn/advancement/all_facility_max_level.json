@@ -1,0 +1,23 @@
+{
+  "parent": "otherworldinn:greenhouse_max_level",
+  "display": {
+    "icon": {
+      "id": "minecraft:beacon"
+    },
+    "title": {
+      "translate": "advancements.otherworldinn.all_facility_max_level.title"
+    },
+    "description": {
+      "translate": "advancements.otherworldinn.all_facility_max_level.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "unlock": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

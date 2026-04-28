@@ -1,0 +1,23 @@
+{
+  "parent": "otherworldinn:complete_1_commission",
+  "display": {
+    "icon": {
+      "id": "minecraft:writable_book"
+    },
+    "title": {
+      "translate": "advancements.otherworldinn.complete_20_commissions.title"
+    },
+    "description": {
+      "translate": "advancements.otherworldinn.complete_20_commissions.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "unlock": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

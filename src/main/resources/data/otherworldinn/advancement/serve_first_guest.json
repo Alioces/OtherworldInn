@@ -1,14 +1,14 @@
 {
-  "parent": "otherworldinn:serve_first_guest",
+  "parent": "otherworldinn:create_first_room",
   "display": {
     "icon": {
-      "id": "kaleidoscope_cookery:braised_pork_ribs"
+      "id": "minecraft:emerald"
     },
     "title": {
-      "translate": "advancements.otherworldinn.serve_one_vip.title"
+      "translate": "advancements.otherworldinn.serve_first_guest.title"
     },
     "description": {
-      "translate": "advancements.otherworldinn.serve_one_vip.description"
+      "translate": "advancements.otherworldinn.serve_first_guest.description"
     },
     "frame": "task",
     "show_toast": true,

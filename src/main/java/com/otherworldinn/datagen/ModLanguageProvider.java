@@ -106,6 +106,78 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("advancements.otherworldinn.serve_one_vip.description")
                 .zh("成功完成一位贵宾的点单餐品")
                 .en("Successfully complete one VIP guest meal order");
+        entry("advancements.otherworldinn.create_first_room.title")
+                .zh("第一个房间")
+                .en("First Room");
+        entry("advancements.otherworldinn.create_first_room.description")
+                .zh("使用房间登记册创建你的第一间客房")
+                .en("Use the Room Register to create your first guest room");
+        entry("advancements.otherworldinn.serve_first_guest.title")
+                .zh("欢迎光临！")
+                .en("Welcome!");
+        entry("advancements.otherworldinn.serve_first_guest.description")
+                .zh("接待第一位旅客入住你的旅社")
+                .en("Receive your very first guest at the inn");
+        entry("advancements.otherworldinn.blacksmith_max_favor.title")
+                .zh("铁匠的挚友")
+                .en("Blacksmith's Bosom Friend");
+        entry("advancements.otherworldinn.blacksmith_max_favor.description")
+                .zh("铁匠对你的好感达到了最高")
+                .en("The Blacksmith holds you in the highest regard");
+        entry("advancements.otherworldinn.farmer_max_favor.title")
+                .zh("农夫的挚友")
+                .en("Farmer's Bosom Friend");
+        entry("advancements.otherworldinn.farmer_max_favor.description")
+                .zh("农夫对你的好感达到了最高")
+                .en("The Farmer holds you in the highest regard");
+        entry("advancements.otherworldinn.magician_max_favor.title")
+                .zh("魔法使的挚友")
+                .en("Magician's Bosom Friend");
+        entry("advancements.otherworldinn.magician_max_favor.description")
+                .zh("魔法使对你的好感达到了最高")
+                .en("The Magician holds you in the highest regard");
+        entry("advancements.otherworldinn.grocer_max_favor.title")
+                .zh("杂货店老板的挚友")
+                .en("Grocer's Bosom Friend");
+        entry("advancements.otherworldinn.grocer_max_favor.description")
+                .zh("杂货店老板对你的好感达到了最高")
+                .en("The Grocer holds you in the highest regard");
+        entry("advancements.otherworldinn.all_npc_max_favor.title")
+                .zh("人见人爱")
+                .en("Everyone's Favorite");
+        entry("advancements.otherworldinn.all_npc_max_favor.description")
+                .zh("所有 NPC 的好感度都达到了最高")
+                .en("All NPCs hold you in the highest regard");
+        entry("advancements.otherworldinn.boiler_room_max_level.title")
+                .zh("锅炉房完全运转")
+                .en("Boiler Room Fully Operational");
+        entry("advancements.otherworldinn.boiler_room_max_level.description")
+                .zh("将锅炉房设施升级至满级")
+                .en("Upgrade the Boiler Room facility to max level");
+        entry("advancements.otherworldinn.greenhouse_max_level.title")
+                .zh("温室满园春色")
+                .en("Greenhouse in Full Bloom");
+        entry("advancements.otherworldinn.greenhouse_max_level.description")
+                .zh("将温室设施升级至满级")
+                .en("Upgrade the Greenhouse facility to max level");
+        entry("advancements.otherworldinn.all_facility_max_level.title")
+                .zh("设施全精通")
+                .en("Master of Facilities");
+        entry("advancements.otherworldinn.all_facility_max_level.description")
+                .zh("将所有设施升级至满级")
+                .en("Upgrade all facilities to max level");
+        entry("advancements.otherworldinn.complete_1_commission.title")
+                .zh("初次委托")
+                .en("First Commission");
+        entry("advancements.otherworldinn.complete_1_commission.description")
+                .zh("完成你的第一个委托任务")
+                .en("Complete your first commission");
+        entry("advancements.otherworldinn.complete_20_commissions.title")
+                .zh("委托达人")
+                .en("Commission Expert");
+        entry("advancements.otherworldinn.complete_20_commissions.description")
+                .zh("累计完成 20 个委托任务")
+                .en("Complete a total of 20 commissions");
         entry("facility.otherworldinn.overlay.title").zh("设施状态").en("Facility Status");
         entry("facility.otherworldinn.overlay.name").zh("名称: %s").en("Name: %s");
         entry("facility.otherworldinn.overlay.level").zh("等级: %s/%s").en("Level: %s/%s");

@@ -1,0 +1,23 @@
+{
+  "parent": "otherworldinn:repair_greenhouse",
+  "display": {
+    "icon": {
+      "id": "kaleidoscope_cookery:straw_hat_flower"
+    },
+    "title": {
+      "translate": "advancements.otherworldinn.greenhouse_max_level.title"
+    },
+    "description": {
+      "translate": "advancements.otherworldinn.greenhouse_max_level.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "unlock": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

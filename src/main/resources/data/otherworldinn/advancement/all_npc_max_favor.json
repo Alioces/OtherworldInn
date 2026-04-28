@@ -1,19 +1,19 @@
 {
-  "parent": "otherworldinn:root",
+  "parent": "otherworldinn:grocer_max_favor",
   "display": {
     "icon": {
-      "id": "yuushya:washing_machine"
+      "id": "minecraft:nether_star"
     },
     "title": {
-      "translate": "advancements.otherworldinn.maimai_hidden.title"
+      "translate": "advancements.otherworldinn.all_npc_max_favor.title"
     },
     "description": {
-      "translate": "advancements.otherworldinn.maimai_hidden.description"
+      "translate": "advancements.otherworldinn.all_npc_max_favor.description"
     },
     "frame": "challenge",
     "show_toast": true,
     "announce_to_chat": true,
-    "hidden": true
+    "hidden": false
   },
   "criteria": {
     "unlock": {

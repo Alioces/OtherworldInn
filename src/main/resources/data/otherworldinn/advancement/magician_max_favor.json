@@ -1,0 +1,23 @@
+{
+  "parent": "otherworldinn:farmer_max_favor",
+  "display": {
+    "icon": {
+      "id": "minecraft:enchanting_table"
+    },
+    "title": {
+      "translate": "advancements.otherworldinn.magician_max_favor.title"
+    },
+    "description": {
+      "translate": "advancements.otherworldinn.magician_max_favor.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "unlock": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

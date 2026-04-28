@@ -2,15 +2,15 @@
   "parent": "otherworldinn:repair_boiler_room",
   "display": {
     "icon": {
-      "id": "kaleidoscope_cookery:scarecrow"
+      "id": "create:steam_whistle"
     },
     "title": {
-      "translate": "advancements.otherworldinn.repair_greenhouse.title"
+      "translate": "advancements.otherworldinn.boiler_room_max_level.title"
     },
     "description": {
-      "translate": "advancements.otherworldinn.repair_greenhouse.description"
+      "translate": "advancements.otherworldinn.boiler_room_max_level.description"
     },
-    "frame": "task",
+    "frame": "goal",
     "show_toast": true,
     "announce_to_chat": true,
     "hidden": false

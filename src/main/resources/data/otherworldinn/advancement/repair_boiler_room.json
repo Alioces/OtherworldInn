@@ -1,8 +1,8 @@
 {
-  "parent": "otherworldinn:root",
+  "parent": "otherworldinn:inn_rating_1",
   "display": {
     "icon": {
-      "id": "minecraft:furnace"
+      "id": "create:steam_engine"
     },
     "title": {
       "translate": "advancements.otherworldinn.repair_boiler_room.title"

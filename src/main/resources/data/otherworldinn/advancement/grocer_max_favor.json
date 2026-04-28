@@ -1,16 +1,16 @@
 {
-  "parent": "otherworldinn:serve_first_guest",
+  "parent": "otherworldinn:magician_max_favor",
   "display": {
     "icon": {
-      "id": "minecraft:oak_planks"
+      "id": "minecraft:chest"
     },
     "title": {
-      "translate": "advancements.otherworldinn.inn_rating_1.title"
+      "translate": "advancements.otherworldinn.grocer_max_favor.title"
     },
     "description": {
-      "translate": "advancements.otherworldinn.inn_rating_1.description"
+      "translate": "advancements.otherworldinn.grocer_max_favor.description"
     },
-    "frame": "task",
+    "frame": "goal",
     "show_toast": true,
     "announce_to_chat": true,
     "hidden": false
