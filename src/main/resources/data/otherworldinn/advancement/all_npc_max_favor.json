@@ -1,5 +1,5 @@
 {
-  "parent": "otherworldinn:grocer_max_favor",
+  "parent": "otherworldinn:inn_rating_1",
   "display": {
     "icon": {
       "id": "minecraft:nether_star"

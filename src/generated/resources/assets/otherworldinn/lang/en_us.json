@@ -432,6 +432,7 @@
   "message.otherworldinn.land_deed.pos2_set_with_cost_fail": "Insufficient balance to expand the selected area! Need §f§r %d, have §f§r %d",
   "message.otherworldinn.land_deed.selection_cleared": "Selection cleared.",
   "message.otherworldinn.land_deed.success": "Inn area expanded successfully!",
+  "message.otherworldinn.map.teleport_not_unlocked": "Map teleport is not unlocked. Please use a Space Sphere first.",
   "message.otherworldinn.messy_bed_sheet.overlay.wash": "Wash Sheet",
   "message.otherworldinn.nether_space_sphere.overlay.use": "Teleport to Nether",
   "message.otherworldinn.protection.banned_item": "This item is banned in the Town dimension.",

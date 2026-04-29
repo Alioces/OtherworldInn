@@ -17,7 +17,8 @@
     "MixinReskillableSkillScreen",
     "MixinReskillableSkillModel",
     "MixinReskillableRequestLevelUp",
-    "MixinFTBUltimineServerConfig"
+    "MixinFTBUltimineServerConfig",
+    "MixinSeasonalCropGrowthHandler"
   ],
   "client": [
     "MixinPlayerRendererMapModeHidden"

@@ -1,5 +1,5 @@
 {
-  "parent": "otherworldinn:repair_boiler_room",
+  "parent": "otherworldinn:inn_rating_1",
   "display": {
     "icon": {
       "id": "kaleidoscope_cookery:scarecrow"

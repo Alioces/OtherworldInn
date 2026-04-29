@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -675,6 +677,19 @@ public class MapViewScreen extends Screen {
             if (canTeleport()) {
                 ModMessages.sendToServer(new C2STeleportPacket(point.id()));
                 MapViewScreen.this.startClosing(false);
+                return;
+            }
+            TeamData teamData = TeamManager.getInstance().getClientPlayerTeam();
+            if (!teamData.isTeleportUnlocked() && !isFacilityLocked()) {
+                if (Minecraft.getInstance().player != null) {
+                    Minecraft.getInstance()
+                            .player
+                            .displayClientMessage(
+                                    Component.translatable(
+                                                    "message.otherworldinn.map.teleport_not_unlocked")
+                                            .withStyle(ChatFormatting.RED),
+                                    true);
+                }
             }
         }
 

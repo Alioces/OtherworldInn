@@ -706,6 +706,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.space_sphere.overlay.use")
                 .zh("激活地图点传送")
                 .en("Activate map point teleport");
+        entry("message.otherworldinn.map.teleport_not_unlocked")
+                .zh("未解锁地图传送功能，请先使用空间球解锁")
+                .en("Map teleport is not unlocked. Please use a Space Sphere first.");
         entry("message.otherworldinn.space_sphere.target_unavailable")
                 .zh("目标维度当前不可用")
                 .en("Target dimension is currently unavailable");

@@ -507,7 +507,7 @@ public final class DialogueRegistry {
         String askGoods = "ask_goods";
         String fruitStallTopic = "topic_fruit_stall";
         LocalizedText fruitStallLabel =
-                LocalizedText.of("对面的水果摊子怎么没人", "Why is the fruit stand across the street empty?");
+                LocalizedText.of("对面的摊子怎么没人", "Why is the fruit stand across the street empty?");
         LocalizedText fruitStallText =
                 LocalizedText.of("不知道，可能作者懒得做了", "No idea. Maybe the author was too lazy to make it.");
 
