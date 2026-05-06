@@ -18,7 +18,9 @@
     "MixinReskillableSkillModel",
     "MixinReskillableRequestLevelUp",
     "MixinFTBUltimineServerConfig",
-    "MixinSeasonalCropGrowthHandler"
+    "MixinSeasonalCropGrowthHandler",
+    "MixinCropBlockTownDecorSurvival",
+    "MixinBushBlockTownDecorSurvival"
   ],
   "client": [
     "MixinPlayerRendererMapModeHidden"

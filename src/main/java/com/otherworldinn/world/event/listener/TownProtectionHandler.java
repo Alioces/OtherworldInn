@@ -229,6 +229,49 @@ public class TownProtectionHandler {
                 || state.is(net.minecraft.world.level.block.Blocks.SWEET_BERRY_BUSH);
     }
 
+    private static boolean isNormalTownDecorArea(ServerLevel level, BlockPos pos) {
+        return isTownDimension(level) && !isInnZonePos(level, pos) && getGreenhouseLevelAtPos(level, pos) <= 0;
+    }
+
+    private static boolean willSelfUpdateDestroyBlock(
+            ServerLevel level, BlockPos pos, BlockState currentState, Direction notifiedSide) {
+        BlockPos neighborPos = pos.relative(notifiedSide);
+        BlockState neighborState = level.getBlockState(neighborPos);
+        BlockState updatedState =
+                currentState.updateShape(notifiedSide, neighborState, level, pos, neighborPos);
+        return updatedState.isAir();
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onPreventDestructiveNeighborUpdate(BlockEvent.NeighborNotifyEvent event) {
+        if (!(event.getLevel() instanceof ServerLevel level) || !isTownDimension(level)) {
+            return;
+        }
+
+        BlockPos pos = event.getPos();
+        if (!isNormalTownDecorArea(level, pos)) {
+            return;
+        }
+        BlockState currentState = level.getBlockState(pos);
+        if (currentState.isAir()) {
+            return;
+        }
+
+        // 场景 1：当前方块已失去生存条件，更新将导致其被破坏。
+        if (!currentState.canSurvive(level, pos)) {
+            event.setCanceled(true);
+            return;
+        }
+
+        // 场景 2：物理更新结算会把当前方块更新为空气（被破坏）。
+        for (Direction side : event.getNotifiedSides()) {
+            if (willSelfUpdateDestroyBlock(level, pos, currentState, side)) {
+                event.setCanceled(true);
+                return;
+            }
+        }
+    }
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockGrowFeature(BlockGrowFeatureEvent event) {
         if (!(event.getLevel() instanceof ServerLevel level) || !isTownDimension(level)) {
