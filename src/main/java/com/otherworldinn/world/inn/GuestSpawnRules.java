@@ -2,6 +2,7 @@ package com.otherworldinn.world.inn;
 
 import com.otherworldinn.entity.base.GuestEntity;
 import com.otherworldinn.init.ModEntities;
+import com.otherworldinn.init.ModGameRules;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.server.level.ServerLevel;
@@ -48,16 +49,19 @@ final class GuestSpawnRules {
     private GuestSpawnRules() {}
 
     static GuestEntity createGuestForRating(int rating, RandomSource random, ServerLevel level) {
-        Rule selectedRule = selectRuleByRating(rating, random);
+        Rule selectedRule = selectRuleByRating(rating, random, level);
         if (selectedRule == null) {
             return null;
         }
         return selectedRule.create(level);
     }
 
-    private static Rule selectRuleByRating(int rating, RandomSource random) {
+    private static Rule selectRuleByRating(int rating, RandomSource random, ServerLevel level) {
         int clampedRating = Math.max(MIN_RATING, Math.min(MAX_RATING, rating));
         List<Rule> availableRules = RULES_BY_RATING.get(clampedRating - MIN_RATING);
+        if (!isSponsorGuestEnabled(level)) {
+            availableRules = availableRules.stream().filter(rule -> !rule.isSponsorRule()).toList();
+        }
         int totalWeight = 0;
         for (Rule rule : availableRules) {
             totalWeight += rule.weight();
@@ -79,6 +83,10 @@ final class GuestSpawnRules {
         return availableRules.get(availableRules.size() - 1);
     }
 
+    private static boolean isSponsorGuestEnabled(ServerLevel level) {
+        return level.getGameRules().getBoolean(ModGameRules.RULE_ENABLE_SPONSOR_GUEST);
+    }
+
     private record Rule(
             Supplier<? extends EntityType<? extends GuestEntity>> entityTypeSupplier, int weight) {
         private Rule {
@@ -88,6 +96,10 @@ final class GuestSpawnRules {
         private GuestEntity create(ServerLevel level) {
             EntityType<? extends GuestEntity> entityType = entityTypeSupplier.get();
             return entityType.create(level);
+        }
+
+        private boolean isSponsorRule() {
+            return entityTypeSupplier.get() == ModEntities.SPONSOR_GUEST.get();
         }
     }
 }

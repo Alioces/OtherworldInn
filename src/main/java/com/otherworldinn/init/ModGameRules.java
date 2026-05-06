@@ -8,6 +8,11 @@ public final class ModGameRules {
                     "worldReset",
                     GameRules.Category.UPDATES,
                     GameRules.BooleanValue.create(true));
+    public static final GameRules.Key<GameRules.BooleanValue> RULE_ENABLE_SPONSOR_GUEST =
+            GameRules.register(
+                    "enableSponsorGuest",
+                    GameRules.Category.SPAWNING,
+                    GameRules.BooleanValue.create(false));
 
     private ModGameRules() {}
 

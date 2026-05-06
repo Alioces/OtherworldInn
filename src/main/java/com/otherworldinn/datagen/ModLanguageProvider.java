@@ -718,6 +718,14 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.end_space_sphere.overlay.use")
                 .zh("传送至末地")
                 .en("Teleport to End");
+        entry("jei.otherworldinn.npc_store.title").zh("商店商品").en("Store Products");
+        entry("jei.otherworldinn.npc_store.store").zh("店主: %s").en("Store: %s");
+        entry("jei.otherworldinn.npc_store.price").zh("价格: %s 金币").en("Price: %s coins");
+        entry("jei.otherworldinn.npc_store.stock").zh("库存: %s").en("Stock: %s");
+        entry("jei.otherworldinn.npc_store.favor").zh("好感需求: Lv.%s").en("Favor Required: Lv.%s");
+        entry("jei.otherworldinn.npc_store.advancement").zh("进度需求: %s").en("Advancement Required: %s");
+        entry("jei.otherworldinn.npc_store.random").zh("每日随机商品").en("Daily Random Offer");
+        entry("jei.otherworldinn.npc_store.infinite").zh("无限").en("Infinite");
 
         // 床单
         entry("message.otherworldinn.bed_sheet.overlay.replace")
