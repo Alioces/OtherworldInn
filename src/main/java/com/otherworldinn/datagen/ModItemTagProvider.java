@@ -33,7 +33,11 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(Items.FLINT_AND_STEEL)
                 .add(Items.LAVA_BUCKET)
                 .add(Items.END_CRYSTAL)
-                .add(Items.FIRE_CHARGE);
+                .add(Items.FIRE_CHARGE)
+                .add(Items.FIREWORK_ROCKET)
+                .add(Items.WIND_CHARGE)
+                .add(Items.SPLASH_POTION)
+                .add(Items.LINGERING_POTION);
 
         // 定义“仅城镇维度可用”标签
         tag(OtherworldInn.ONLY_IN_TOWN)

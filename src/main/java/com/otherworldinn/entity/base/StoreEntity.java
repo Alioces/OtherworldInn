@@ -20,6 +20,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -30,12 +31,13 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * 商店实体抽象父类
  *
- * <p>特性： 1. 右键打开商店界面 (子类实现) 2. 原地不动，无 AI 3. 不受重力影响 4. 免疫绝大部分伤害 (除了 /kill 和创造模式玩家) 5. 无受伤变红效果 6.
+ * <p>特性： 1. 右键打开商店界面 (子类实现) 2. 原地不动，无 AI 3. 不受重力影响 4. 仅允许创造模式攻击和虚空伤害生效 5. 无受伤变红效果 6.
  * 持续播放循环动画 (客户端逻辑) 7. 存储商品列表 (物品、数量、售价)
  */
 public abstract class StoreEntity extends PathfinderMob {
@@ -81,6 +83,10 @@ public abstract class StoreEntity extends PathfinderMob {
     private int totalSpentCoins = 0;
     private int favorLevel = 1;
     private final List<FavorStoreItemData> favorStoreItems = new ArrayList<>();
+    private boolean positionLockInitialized = false;
+    private double lockedX;
+    private double lockedY;
+    private double lockedZ;
 
     /**
      * 待机/循环动画状态
@@ -115,6 +121,7 @@ public abstract class StoreEntity extends PathfinderMob {
             // 确保持续播放待机动画
             this.idleAnimationState.startIfStopped(this.tickCount);
         } else {
+            this.enforceLockedPosition();
             // 服务端逻辑：每天早上重置库存
             // 计算当前天数
             long currentDay = this.level().getGameTime() / 24000L;
@@ -228,6 +235,11 @@ public abstract class StoreEntity extends PathfinderMob {
     }
 
     @Override
+    public void knockback(double strength, double x, double z) {
+        // 覆盖为空，防止任何击退来源改变位置
+    }
+
+    @Override
     protected void doPush(Entity entity) {
         // 覆盖为空，防止被推动
     }
@@ -240,12 +252,8 @@ public abstract class StoreEntity extends PathfinderMob {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        // 仅允许创造模式玩家或 /kill (BYPASSES_INVULNERABILITY) 造成伤害
-        if (source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-            return super.hurt(source, amount);
-        }
-
-        if (source.getEntity() instanceof Player player && player.isCreative()) {
+        // 仅放行：创造模式攻击 / 虚空伤害；其余一律免疫（含药水等）
+        if (source.isCreativePlayer() || source.is(DamageTypes.FELL_OUT_OF_WORLD)) {
             return super.hurt(source, amount);
         }
 
@@ -261,9 +269,28 @@ public abstract class StoreEntity extends PathfinderMob {
     @Override
     public void travel(net.minecraft.world.phys.Vec3 travelVector) {
         if (this.isNoGravity()) {
-            this.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+            this.setDeltaMovement(Vec3.ZERO);
         }
         super.travel(travelVector);
+    }
+
+    @Override
+    public void lerpMotion(double x, double y, double z) {
+        // 覆盖为空，防止网络同步动量导致位移
+    }
+
+    private void enforceLockedPosition() {
+        if (!this.positionLockInitialized) {
+            this.positionLockInitialized = true;
+            this.lockedX = this.getX();
+            this.lockedY = this.getY();
+            this.lockedZ = this.getZ();
+        }
+        if (this.getX() != this.lockedX || this.getY() != this.lockedY || this.getZ() != this.lockedZ) {
+            this.setPos(this.lockedX, this.lockedY, this.lockedZ);
+        }
+        this.setDeltaMovement(Vec3.ZERO);
+        this.hasImpulse = false;
     }
 
     // 拦截受伤变红效果 (EntityEvent ID 2)

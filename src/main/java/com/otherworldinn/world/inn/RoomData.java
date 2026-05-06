@@ -223,6 +223,20 @@ public class RoomData {
         return new int[] {cleanBedCount, cleanliness};
     }
 
+    /** 统计区域内床头数量（包含干净床和脏乱床） */
+    public static int countAllBeds(BlockPos minPos, BlockPos maxPos, Level level) {
+        int bedCount = 0;
+        for (BlockPos pos : BlockPos.betweenClosed(minPos, maxPos)) {
+            BlockState state = level.getBlockState(pos);
+            if (state.is(BlockTags.BEDS)
+                    && state.hasProperty(BedBlock.PART)
+                    && state.getValue(BedBlock.PART) == BedPart.HEAD) {
+                bedCount++;
+            }
+        }
+        return bedCount;
+    }
+
     /** 仅统计有效床位数量（向后兼容） */
     public static int countBeds(BlockPos minPos, BlockPos maxPos, Level level) {
         return calculateBedStats(minPos, maxPos, level)[0];

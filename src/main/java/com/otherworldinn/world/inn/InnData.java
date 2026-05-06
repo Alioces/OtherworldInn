@@ -542,7 +542,13 @@ public class InnData {
             RoomData.ValidationResult result =
                     RoomData.validate(
                             room.getMinPos(), room.getMaxPos(), level, team, room.getId());
-            if (!result.isSuccess()) {
+            boolean keepRoom = result.isSuccess();
+            if (!keepRoom && result == RoomData.ValidationResult.MISSING_BED) {
+                // 装修模式自动检测时：只要房间内仍有床（无论干净或脏乱）就保留房间。
+                keepRoom = RoomData.countAllBeds(room.getMinPos(), room.getMaxPos(), level) > 0;
+            }
+
+            if (!keepRoom) {
                 removedRooms.add(room.getId());
                 failureReasons.put(room.getId(), result);
             } else {

@@ -34,12 +34,12 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
@@ -434,8 +434,8 @@ public abstract class GuestEntity extends PathfinderMob {
 
     @Override
     public boolean isInvulnerableTo(DamageSource source) {
-        // 旅客不可被伤害，除非是创造模式玩家、虚空伤害或指令kill
-        return !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !source.isCreativePlayer();
+        // 仅放行：创造模式攻击 / 虚空伤害；其余一律免疫（含药水等）
+        return !source.isCreativePlayer() && !source.is(DamageTypes.FELL_OUT_OF_WORLD);
     }
 
     @Override
