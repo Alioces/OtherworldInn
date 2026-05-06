@@ -13,7 +13,9 @@ import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -62,6 +64,8 @@ public class TownProtectionHandler {
     private static final double TOWN_CROP_GROWTH_MULTIPLIER = 0.3D;
     private static final double GREENHOUSE_CROP_GROWTH_MULTIPLIER = 1.5D;
     private static final String GREENHOUSE_FACILITY_ID = "greenhouse";
+    private static final ResourceLocation CREATE_DEPOT_ID =
+            ResourceLocation.fromNamespaceAndPath("create", "depot");
 
     /**
      * 检查是否可以在指定位置建筑（针对玩家），如果不可以则返回拒绝原因
@@ -130,6 +134,10 @@ public class TownProtectionHandler {
 
     private static boolean isIgnitionFireBlock(BlockState state) {
         return state != null && state.is(BlockTags.FIRE);
+    }
+
+    private static boolean isDepotDisplayBlock(BlockState state) {
+        return state != null && CREATE_DEPOT_ID.equals(BuiltInRegistries.BLOCK.getKey(state.getBlock()));
     }
 
     private static boolean isInnZonePos(ServerLevel level, BlockPos pos) {
@@ -639,6 +647,12 @@ public class TownProtectionHandler {
         }
 
         // --- 以下为城镇维度内的检查 ---
+        BlockState clickedState = level.getBlockState(pos);
+
+        // 允许任意玩家在置物台上进行“右键上架手持物品”。
+        if (isDepotDisplayBlock(clickedState)) {
+            return;
+        }
 
         // 2. 检查禁用物品
         if (stack.is(OtherworldInn.BANNED_IN_TOWN)) {
@@ -652,7 +666,6 @@ public class TownProtectionHandler {
         }
 
         // 2.5 拦截农作物右键交互（覆盖 FTB Ultimine 右键收获路径）
-        BlockState clickedState = level.getBlockState(pos);
         if (isFarmingBlock(clickedState)) {
             Component denyReason = getBuildDenyReason(player, pos, level);
             if (denyReason != null) {

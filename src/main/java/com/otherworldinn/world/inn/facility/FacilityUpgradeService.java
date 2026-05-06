@@ -62,6 +62,16 @@ public final class FacilityUpgradeService {
             return false;
         }
         if (context.nextLevelDefinition() == null) {
+            if (context.currentLevel() >= context.facility().maxLevel()) {
+                if ("boiler_room".equals(context.facility().id())) {
+                    AdvancementUtils.award(player, AdvancementUtils.BOILER_ROOM_MAX_LEVEL);
+                } else if ("greenhouse".equals(context.facility().id())) {
+                    AdvancementUtils.award(player, AdvancementUtils.GREENHOUSE_MAX_LEVEL);
+                }
+                if (isAllFacilitiesAtMaxLevel(context.team())) {
+                    AdvancementUtils.award(player, AdvancementUtils.ALL_FACILITY_MAX_LEVEL);
+                }
+            }
             player.displayClientMessage(
                     Component.translatable("facility.otherworldinn.upgrade_max_level"),
                     true);
@@ -121,6 +131,16 @@ public final class FacilityUpgradeService {
                 hand,
                 isRepair);
         team.getInnData().setFacilityLevel(context.facility().id(), next.level());
+        if (next.level() >= context.facility().maxLevel()) {
+            if ("boiler_room".equals(context.facility().id())) {
+                AdvancementUtils.award(player, AdvancementUtils.BOILER_ROOM_MAX_LEVEL);
+            } else if ("greenhouse".equals(context.facility().id())) {
+                AdvancementUtils.award(player, AdvancementUtils.GREENHOUSE_MAX_LEVEL);
+            }
+        }
+        if (isAllFacilitiesAtMaxLevel(team)) {
+            AdvancementUtils.award(player, AdvancementUtils.ALL_FACILITY_MAX_LEVEL);
+        }
         if (isRepair) {
             TeamManager.getInstance()
                     .unlockMapPoint(team, context.facility().mapPointId(), player.getServer());
@@ -142,6 +162,18 @@ public final class FacilityUpgradeService {
                         next.level()),
                 true);
         applyToolCooldown(player, toolStack);
+        return true;
+    }
+
+    private static boolean isAllFacilitiesAtMaxLevel(TeamData team) {
+        if (team == null) {
+            return false;
+        }
+        for (FacilityRegistry.FacilityDefinition definition : FacilityRegistry.getAll()) {
+            if (team.getInnData().getFacilityLevel(definition.id()) < definition.maxLevel()) {
+                return false;
+            }
+        }
         return true;
     }
 

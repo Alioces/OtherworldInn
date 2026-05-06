@@ -2,6 +2,7 @@ package com.otherworldinn.item;
 
 import com.otherworldinn.entity.base.GuestEntity;
 import com.otherworldinn.foundation.ModColors;
+import com.otherworldinn.util.AdvancementUtils;
 import com.otherworldinn.world.inn.GuestData;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.RoomData;
@@ -157,6 +158,9 @@ public class RoomKeyItem extends Item {
 
             // 执行入住
             if (innData.checkIn(guestData.getUuid(), roomId, serverPlayer.serverLevel())) {
+                if (innData.getTotalCheckInCount() >= 1) {
+                    AdvancementUtils.award(serverPlayer, AdvancementUtils.SERVE_FIRST_GUEST);
+                }
                 // 消耗钥匙
                 stack.shrink(1);
 

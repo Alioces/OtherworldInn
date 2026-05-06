@@ -2,6 +2,7 @@ package com.otherworldinn.network.packet;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.entity.base.StoreEntity;
+import com.otherworldinn.util.AdvancementUtils;
 import com.otherworldinn.world.inventory.StoreMenu;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
@@ -14,6 +15,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -160,6 +162,10 @@ public record C2SStorePurchasePacket(int entityId, List<PurchaseItem> items)
                                 // 提交交易：扣费、扣库存、发货
                                 team.removeCoins(totalPrice, player.getServer());
                                 storeEntity.addSpentCoins(totalPrice);
+                                if (storeEntity.level() instanceof ServerLevel serverLevel) {
+                                    AdvancementUtils.awardStoreFavorProgress(
+                                            player, storeEntity, serverLevel);
+                                }
                                 manager.syncTeam(team, player.getServer());
 
                                 // 扣除库存

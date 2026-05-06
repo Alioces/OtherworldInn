@@ -53,6 +53,8 @@ public class InnData {
 
     @Setter(AccessLevel.NONE)
     private int totalLodgingIncome = 0;
+    @Setter(AccessLevel.NONE)
+    private int totalCheckInCount = 0;
 
     @Setter(AccessLevel.NONE)
     private int totalDiningIncome = 0;
@@ -635,6 +637,7 @@ public class InnData {
                 }
             }
 
+            totalCheckInCount++;
             return true;
         }
 
@@ -1331,6 +1334,7 @@ public class InnData {
         tag.putInt("Rating", rating);
         tag.putInt("Reputation", reputation);
         tag.putInt("TotalLodgingIncome", totalLodgingIncome);
+        tag.putInt("TotalCheckInCount", totalCheckInCount);
         tag.putInt("TotalDiningIncome", totalDiningIncome);
         tag.putInt("TotalOtherIncome", totalOtherIncome);
         tag.putInt("TodayLodgingIncome", todayLodgingIncome);
@@ -1392,6 +1396,11 @@ public class InnData {
             totalLodgingIncome = tag.getInt("TotalLodgingIncome");
         } else {
             totalLodgingIncome = 0;
+        }
+        if (tag.contains("TotalCheckInCount")) {
+            totalCheckInCount = Math.max(0, tag.getInt("TotalCheckInCount"));
+        } else {
+            totalCheckInCount = 0;
         }
         if (tag.contains("TotalDiningIncome")) {
             totalDiningIncome = tag.getInt("TotalDiningIncome");

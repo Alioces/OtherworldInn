@@ -4,6 +4,7 @@ import com.otherworldinn.entity.base.StoreEntity;
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.network.ModMessages;
 import com.otherworldinn.network.packet.S2CCommissionBoardPacket;
+import com.otherworldinn.util.AdvancementUtils;
 import com.otherworldinn.world.commission.CommissionRegistry.CommissionTemplate;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.team.TeamData;
@@ -218,9 +219,16 @@ public final class CommissionService {
             return;
         }
         grantRewards(triggerPlayer, team, active);
+        data.setCompletedCount(Math.max(0, data.getCompletedCount()) + 1);
         data.setRewardClaimed(true);
         data.setNextAutoRefreshDay(
                 currentDay(triggerPlayer.serverLevel()) + UNACCEPTED_REFRESH_INTERVAL_DAYS);
+        if (data.getCompletedCount() >= 1) {
+            AdvancementUtils.award(triggerPlayer, AdvancementUtils.COMPLETE_1_COMMISSION);
+        }
+        if (data.getCompletedCount() >= 20) {
+            AdvancementUtils.award(triggerPlayer, AdvancementUtils.COMPLETE_20_COMMISSIONS);
+        }
         removeTownCommissionTodo(triggerPlayer.serverLevel(), team);
         notifyTeamCommissionCompleted(triggerPlayer.serverLevel(), team, active);
         TeamManager.getInstance().syncTeam(team, triggerPlayer.getServer());
@@ -336,6 +344,7 @@ public final class CommissionService {
                                 StoreEntity.class, new net.minecraft.world.phys.AABB(-1024, -64, -1024, 1024, 384, 1024))) {
                     if (storeEntity.getType() == type) {
                         storeEntity.addFavorProgress(reward.favorProgress());
+                        AdvancementUtils.awardStoreFavorProgress(triggerPlayer, storeEntity, townLevel);
                     }
                 }
             }

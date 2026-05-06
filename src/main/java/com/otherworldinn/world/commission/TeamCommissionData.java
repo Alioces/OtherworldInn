@@ -20,6 +20,7 @@ public class TeamCommissionData {
     private long nextAutoRefreshDay = 0L;
     private long refreshSequence = 0L;
     private boolean rewardClaimed = false;
+    private int completedCount = 0;
 
     public boolean hasAccepted() {
         return acceptedIndex >= 0 && acceptedIndex < boardEntries.size();
@@ -64,6 +65,7 @@ public class TeamCommissionData {
         tag.putLong("NextAutoRefreshDay", nextAutoRefreshDay);
         tag.putLong("RefreshSequence", refreshSequence);
         tag.putBoolean("RewardClaimed", rewardClaimed);
+        tag.putInt("CompletedCount", Math.max(0, completedCount));
         return tag;
     }
 
@@ -104,6 +106,7 @@ public class TeamCommissionData {
                         ? tag.getLong("RefreshSequence")
                         : 0L;
         rewardClaimed = tag.getBoolean("RewardClaimed");
+        completedCount = tag.contains("CompletedCount", Tag.TAG_INT) ? Math.max(0, tag.getInt("CompletedCount")) : 0;
 
         if (!hasAccepted()) {
             resetAcceptedState();

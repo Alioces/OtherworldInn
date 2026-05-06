@@ -2,6 +2,7 @@ package com.otherworldinn.item;
 
 import com.otherworldinn.client.ClientHooks;
 import com.otherworldinn.foundation.ModColors;
+import com.otherworldinn.util.AdvancementUtils;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.RoomData;
 import com.otherworldinn.world.team.TeamData;
@@ -91,6 +92,7 @@ public class RoomRegisterItem extends Item {
                 RoomData.ValidationResult result =
                         RoomData.validate(minPos, maxPos, level, team, null);
                 if (result.isSuccess()) {
+                    boolean isFirstRoom = innData.getRoomCount() == 0;
                     // 生成新ID
                     int newId =
                             innData.getRooms().keySet().stream().max(Integer::compareTo).orElse(0)
@@ -106,6 +108,9 @@ public class RoomRegisterItem extends Item {
 
                     // 立即同步队伍数据
                     TeamManager.getInstance().syncTeam(team, serverPlayer.getServer());
+                    if (isFirstRoom) {
+                        AdvancementUtils.award(serverPlayer, AdvancementUtils.CREATE_FIRST_ROOM);
+                    }
 
                     player.displayClientMessage(
                             Component.translatable(

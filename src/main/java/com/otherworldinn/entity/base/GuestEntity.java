@@ -880,6 +880,7 @@ public abstract class GuestEntity extends PathfinderMob {
         }
         if (!this.level().isClientSide
                 && hand == InteractionHand.MAIN_HAND
+                && stack.isEmpty()
                 && !player.isShiftKeyDown()
                 && player instanceof ServerPlayer serverPlayer
                 && DialogueService.tryStartDialogue(serverPlayer, this)) {

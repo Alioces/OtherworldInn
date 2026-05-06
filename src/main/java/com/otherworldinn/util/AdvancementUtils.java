@@ -1,9 +1,17 @@
 package com.otherworldinn.util;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.entity.base.StoreEntity;
+import com.otherworldinn.entity.store.BlacksmithEntity;
+import com.otherworldinn.entity.store.FarmerEntity;
+import com.otherworldinn.entity.store.GrocerEntity;
+import com.otherworldinn.entity.store.MagicianEntity;
+import java.util.List;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.phys.AABB;
 
 public final class AdvancementUtils {
     public static final ResourceLocation REPAIR_BOILER_ROOM =
@@ -22,6 +30,31 @@ public final class AdvancementUtils {
             ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "inn_rating_5");
     public static final ResourceLocation SERVE_ONE_VIP =
             ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "serve_one_vip");
+    public static final ResourceLocation CREATE_FIRST_ROOM =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "create_first_room");
+    public static final ResourceLocation SERVE_FIRST_GUEST =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "serve_first_guest");
+    public static final ResourceLocation COMPLETE_1_COMMISSION =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "complete_1_commission");
+    public static final ResourceLocation COMPLETE_20_COMMISSIONS =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "complete_20_commissions");
+    public static final ResourceLocation BLACKSMITH_MAX_FAVOR =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "blacksmith_max_favor");
+    public static final ResourceLocation FARMER_MAX_FAVOR =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "farmer_max_favor");
+    public static final ResourceLocation MAGICIAN_MAX_FAVOR =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "magician_max_favor");
+    public static final ResourceLocation GROCER_MAX_FAVOR =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "grocer_max_favor");
+    public static final ResourceLocation ALL_NPC_MAX_FAVOR =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "all_npc_max_favor");
+    public static final ResourceLocation BOILER_ROOM_MAX_LEVEL =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "boiler_room_max_level");
+    public static final ResourceLocation GREENHOUSE_MAX_LEVEL =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "greenhouse_max_level");
+    public static final ResourceLocation ALL_FACILITY_MAX_LEVEL =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "all_facility_max_level");
+    private static final AABB TOWN_NPC_SCAN_BOX = new AABB(-1024, -64, -1024, 1024, 384, 1024);
 
     private AdvancementUtils() {}
 
@@ -54,5 +87,47 @@ public final class AdvancementUtils {
         if (rating >= 5) {
             award(player, INN_RATING_5);
         }
+    }
+
+    public static void awardStoreFavorProgress(
+            ServerPlayer player, StoreEntity storeEntity, ServerLevel townLevel) {
+        if (player == null || storeEntity == null || townLevel == null) {
+            return;
+        }
+        int maxFavor = StoreEntity.getMaxFavorLevelValue();
+        if (storeEntity.getFavorLevel() >= maxFavor) {
+            if (storeEntity instanceof BlacksmithEntity) {
+                award(player, BLACKSMITH_MAX_FAVOR);
+            } else if (storeEntity instanceof FarmerEntity) {
+                award(player, FARMER_MAX_FAVOR);
+            } else if (storeEntity instanceof MagicianEntity) {
+                award(player, MAGICIAN_MAX_FAVOR);
+            } else if (storeEntity instanceof GrocerEntity) {
+                award(player, GROCER_MAX_FAVOR);
+            }
+        }
+        if (isAllCoreStoreNpcAtMaxFavor(townLevel, maxFavor)) {
+            award(player, ALL_NPC_MAX_FAVOR);
+        }
+    }
+
+    private static boolean isAllCoreStoreNpcAtMaxFavor(ServerLevel townLevel, int maxFavor) {
+        List<StoreEntity> stores = townLevel.getEntitiesOfClass(StoreEntity.class, TOWN_NPC_SCAN_BOX);
+        boolean blacksmithMax = false;
+        boolean farmerMax = false;
+        boolean magicianMax = false;
+        boolean grocerMax = false;
+        for (StoreEntity store : stores) {
+            if (store instanceof BlacksmithEntity && store.getFavorLevel() >= maxFavor) {
+                blacksmithMax = true;
+            } else if (store instanceof FarmerEntity && store.getFavorLevel() >= maxFavor) {
+                farmerMax = true;
+            } else if (store instanceof MagicianEntity && store.getFavorLevel() >= maxFavor) {
+                magicianMax = true;
+            } else if (store instanceof GrocerEntity && store.getFavorLevel() >= maxFavor) {
+                grocerMax = true;
+            }
+        }
+        return blacksmithMax && farmerMax && magicianMax && grocerMax;
     }
 }
