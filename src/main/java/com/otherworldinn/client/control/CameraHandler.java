@@ -6,17 +6,21 @@ import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.client.gui.MapViewScreen;
 import com.otherworldinn.client.map.service.MapPageManager;
 import com.otherworldinn.foundation.ClientConfig;
+import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModKeyBindings;
 import com.otherworldinn.network.ModMessages;
 import com.otherworldinn.network.packet.C2SMapModeSyncPacket;
 import com.otherworldinn.world.dimension.TownDimensions;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -52,6 +56,7 @@ public class CameraHandler {
     private static int prevGridX = 0;
     private static int prevGridZ = 0;
     private static boolean restorePlayerPositionOnExit = true;
+    private static ResourceKey<Level> lastClientDimension = null;
 
     /**
      * 处理按键输入事件
@@ -82,6 +87,7 @@ public class CameraHandler {
     public static void enableMapMode() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
+        if (isNearPortal(mc.player)) return;
 
         isTransitioning = true;
         transitionProgress = 0.0f;
@@ -309,6 +315,17 @@ public class CameraHandler {
     /** 客户端每刻更新 */
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null) {
+            ResourceKey<Level> currentDimension = mc.level.dimension();
+            if (lastClientDimension != null && currentDimension != lastClientDimension) {
+                forceExitMapViewOnDimensionChange();
+            }
+            lastClientDimension = currentDimension;
+        } else {
+            lastClientDimension = null;
+        }
+
         if (!isMapMode && MapViewVisualEffects.isActive()) {
             MapViewVisualEffects.disable();
         }
@@ -343,7 +360,6 @@ public class CameraHandler {
 
             updateDummyEntity(new Vec3(x, y, z), yaw, pitch);
         } else if (isMapMode) {
-            Minecraft mc = Minecraft.getInstance();
             if (dummyCameraEntity != null) {
                 Vec3 target = getCurrentPageTargetPos();
 
@@ -357,6 +373,48 @@ public class CameraHandler {
                 }
             }
         }
+    }
+
+    private static void forceExitMapViewOnDimensionChange() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) {
+            return;
+        }
+
+        if (isMapMode) {
+            sendMapModeSync(C2SMapModeSyncPacket.ACTION_EXIT_KEEP_POSITION, Vec3.ZERO, 0.0f, 0.0f);
+        }
+        isTransitioning = false;
+        transitionProgress = 0.0f;
+        prevTransitionProgress = 0.0f;
+        isMapMode = false;
+        restorePlayerPositionOnExit = true;
+        MapViewVisualEffects.disable();
+
+        if (mc.screen instanceof MapViewScreen) {
+            mc.setScreen(null);
+        }
+
+        if (originalCameraEntity != null) {
+            mc.setCameraEntity(originalCameraEntity);
+        } else {
+            mc.setCameraEntity(mc.player);
+        }
+
+        if (dummyCameraEntity != null) {
+            dummyCameraEntity.remove(Entity.RemovalReason.DISCARDED);
+            dummyCameraEntity = null;
+        }
+    }
+
+    private static boolean isNearPortal(Entity player) {
+        BlockPos center = player.blockPosition();
+        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-1, -1, -1), center.offset(1, 1, 1))) {
+            if (player.level().getBlockState(pos).is(ModBlocks.OVERWORLD_PORTAL)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

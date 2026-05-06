@@ -123,6 +123,14 @@ public record C2SMapModeSyncPacket(int action, double x, double y, double z, flo
         }
     }
 
+    @SubscribeEvent
+    public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            // 维度切换兜底：强制退出地图模式，但保留当前新维度位置
+            exitMapMode(player, false);
+        }
+    }
+
     private static PlayerMapModeState captureState(ServerPlayer player) {
         return new PlayerMapModeState(
                 player.serverLevel().dimension(),
