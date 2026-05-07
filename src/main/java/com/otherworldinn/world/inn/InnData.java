@@ -166,7 +166,7 @@ public class InnData {
         double starMultiplier = getRatingReputationMultiplier();
         int scaled = (int) Math.round(rawAmount * guestMultiplier * starMultiplier);
         if (scaled == 0) {
-            if (guestMultiplier <= 0.0D || starMultiplier <= 0.0D) {
+            if (guestMultiplier <= 0.0D) {
                 return 0;
             }
             return rawAmount > 0 ? 1 : -1;
@@ -176,7 +176,7 @@ public class InnData {
 
     private double getRatingReputationMultiplier() {
         int clampedRating = Math.max(0, Math.min(5, this.rating));
-        return clampedRating * (3.0D / 5.0D);
+        return 1.0D + clampedRating * (2.0D / 5.0D);
     }
 
     public int getTotalIncome() {
