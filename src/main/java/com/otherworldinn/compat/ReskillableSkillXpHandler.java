@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -31,6 +32,12 @@ public final class ReskillableSkillXpHandler {
     private static final double FISHING_TRIPLE_DROP_MAX_CHANCE = 0.5D;
     private static final double FISHING_DOUBLE_DROP_MAX_CHANCE = 0.9D;
     private static final double AGILITY_DISTANCE_PER_XP = 6.0D;
+    private static final int ORE_BONUS_XP_TIER_1 = 1;
+    private static final int ORE_BONUS_XP_TIER_2 = 2;
+    private static final int ORE_BONUS_XP_TIER_3 = 3;
+    private static final int ORE_BONUS_XP_TIER_4 = 4;
+    private static final int ORE_BONUS_XP_TIER_5 = 5;
+    private static final int ORE_BONUS_XP_TIER_6 = 6;
     private static final Map<UUID, Integer> LAST_SPRINT_STATS = new ConcurrentHashMap<>();
     private static final Map<UUID, Double> SPRINT_DISTANCE_PROGRESS = new ConcurrentHashMap<>();
 
@@ -66,6 +73,10 @@ public final class ReskillableSkillXpHandler {
         if (isCrop(broken)) {
             ReskillableCompat.addSkillExperience(player, "farming", FARMING_XP_PER_CROP_ACTION);
             return;
+        }
+        int oreBonus = getOreBonusMiningXp(broken);
+        if (oreBonus > 0) {
+            ReskillableCompat.addSkillExperience(player, "mining", oreBonus);
         }
         awardScaledExperience(player, "mining", MINING_XP_NUMERATOR, MINING_XP_DENOMINATOR);
     }
@@ -162,6 +173,28 @@ public final class ReskillableSkillXpHandler {
 
     private static boolean isCrop(BlockState state) {
         return state.is(BlockTags.CROPS) || state.getBlock() instanceof CropBlock;
+    }
+
+    private static int getOreBonusMiningXp(BlockState state) {
+        if (state.is(BlockTags.COAL_ORES) || state.is(BlockTags.COPPER_ORES)) {
+            return ORE_BONUS_XP_TIER_1;
+        }
+        if (state.is(BlockTags.IRON_ORES) || state.is(Blocks.NETHER_QUARTZ_ORE)) {
+            return ORE_BONUS_XP_TIER_2;
+        }
+        if (state.is(BlockTags.LAPIS_ORES) || state.is(BlockTags.REDSTONE_ORES)) {
+            return ORE_BONUS_XP_TIER_3;
+        }
+        if (state.is(BlockTags.GOLD_ORES)) {
+            return ORE_BONUS_XP_TIER_4;
+        }
+        if (state.is(BlockTags.DIAMOND_ORES) || state.is(BlockTags.EMERALD_ORES)) {
+            return ORE_BONUS_XP_TIER_5;
+        }
+        if (state.is(Blocks.ANCIENT_DEBRIS)) {
+            return ORE_BONUS_XP_TIER_6;
+        }
+        return 0;
     }
 
     private static void awardScaledExperience(
