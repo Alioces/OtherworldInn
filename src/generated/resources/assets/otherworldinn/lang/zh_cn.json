@@ -452,6 +452,7 @@
   "message.otherworldinn.reset.start": "§c[警告] 外部维度重置中，请暂时不要离开城镇",
   "message.otherworldinn.reset.teleported": "§a你已被传送到城镇安全区域",
   "message.otherworldinn.reset.warning": "§c[注意] §e外部维度还有%d分钟重置，请尽快回到城镇",
+  "message.otherworldinn.reskillable.auto_level_up": "技能 %s 已升级至等级 %s",
   "message.otherworldinn.room_key.bound": "成功绑定到 %d 号房间",
   "message.otherworldinn.room_key.checkin_fail_checked_out": "该旅客已经退房，准备离开了",
   "message.otherworldinn.room_key.checkin_fail_full": "这间房似乎满了...",

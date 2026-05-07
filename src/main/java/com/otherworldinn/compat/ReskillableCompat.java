@@ -1,6 +1,7 @@
 package com.otherworldinn.compat;
 
 import com.otherworldinn.OtherworldInn;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.fml.ModList;
 
@@ -34,10 +35,20 @@ public final class ReskillableCompat {
     }
 
     public static void addSkillExperience(ServerPlayer player, String skillId, int experience) {
-        if (!isLoaded() || player == null || player.level().isClientSide) {
+        if (!isLoaded() || player == null || player.level().isClientSide || experience <= 0) {
             return;
         }
+        int beforeLevel = Api.getSkillLevel(player, skillId);
         Api.addExperience(player, skillId, experience);
+        int afterLevel = Api.getSkillLevel(player, skillId);
+        if (afterLevel > beforeLevel) {
+            player.displayClientMessage(
+                    Component.translatable(
+                            "message.otherworldinn.reskillable.auto_level_up",
+                            Component.translatable("skill." + skillId),
+                            afterLevel),
+                    false);
+        }
         Api.sync(player);
     }
 

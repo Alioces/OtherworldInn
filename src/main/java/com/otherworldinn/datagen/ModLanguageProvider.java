@@ -339,6 +339,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.coin.no_team")
                 .zh("你还没有队伍，无法存入金币")
                 .en("You are not in a team, cannot deposit coin.");
+        entry("message.otherworldinn.reskillable.auto_level_up")
+                .zh("技能 %s 已升级至等级 %s")
+                .en("Skill %s has been upgraded to level %s");
 
         // 物品提示
         entry("tooltip.otherworldinn.sell_price")

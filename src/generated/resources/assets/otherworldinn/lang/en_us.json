@@ -452,6 +452,7 @@
   "message.otherworldinn.reset.start": "§c[WARNING] External dimensions resetting... Please do not leave Town.",
   "message.otherworldinn.reset.teleported": "§aYou have been teleported to the Town safe zone.",
   "message.otherworldinn.reset.warning": "§c[Notice] §eExternal dimensions will reset in %d minutes! Please return to Town ASAP.",
+  "message.otherworldinn.reskillable.auto_level_up": "Skill %s has been upgraded to level %s",
   "message.otherworldinn.room_key.bound": "Successfully bound to Room %d",
   "message.otherworldinn.room_key.checkin_fail_checked_out": "This guest has checked out and is preparing to leave.",
   "message.otherworldinn.room_key.checkin_fail_full": "This room seems full...",
