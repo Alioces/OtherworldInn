@@ -20,7 +20,8 @@
     "MixinFTBUltimineServerConfig",
     "MixinSeasonalCropGrowthHandler",
     "MixinCropBlockTownDecorSurvival",
-    "MixinBushBlockTownDecorSurvival"
+    "MixinBushBlockTownDecorSurvival",
+    "MixinServerLevel"
   ],
   "client": [
     "MixinPlayerRendererMapModeHidden"

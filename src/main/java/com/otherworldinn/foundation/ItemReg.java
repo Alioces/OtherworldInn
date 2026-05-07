@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -59,6 +60,11 @@ public class ItemReg<T extends Item> {
 
     public ItemReg<T> fireResistant() {
         this.properties.fireResistant();
+        return this;
+    }
+
+    public <V> ItemReg<T> component(DataComponentType<V> type, V value) {
+        this.properties.component(type, value);
         return this;
     }
 

@@ -301,14 +301,10 @@ public class CameraHandler {
         }
     }
 
-    /** 隐藏准星 */
     @SubscribeEvent
     public static void onRenderGuiLayer(RenderGuiLayerEvent.Pre event) {
         if (isMapMode) {
-            String layerName = event.getName().getPath();
-            if (layerName.equals("crosshair") || layerName.equals("experience_bar")) {
-                event.setCanceled(true);
-            }
+            event.setCanceled(true);
         }
     }
 

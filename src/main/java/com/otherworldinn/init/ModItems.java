@@ -16,10 +16,17 @@ import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.item.RoomRegisterItem;
 import com.otherworldinn.item.SpaceSphereItem;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -62,7 +69,21 @@ public class ModItems {
                     .rarity(Rarity.COMMON)
                     .stacksTo(16)
                     .lang("Room Key", "房间钥匙")
-                    .tooltip("Right click room to bind", "右键房间绑定，左键解绑");
+                    .tooltip("Right click room to bind", "右键房间绑定，左键解绑")
+                    .component(
+                            DataComponents.ATTRIBUTE_MODIFIERS,
+                            new ItemAttributeModifiers(
+                                    List.of(
+                                            new ItemAttributeModifiers.Entry(
+                                                    Attributes.ENTITY_INTERACTION_RANGE,
+                                                    new AttributeModifier(
+                                                            ResourceLocation.fromNamespaceAndPath(
+                                                                    OtherworldInn.MODID,
+                                                                    "room_key_entity_interaction_range"),
+                                                            3.0,
+                                                            AttributeModifier.Operation.ADD_VALUE),
+                                                    EquipmentSlotGroup.MAINHAND)),
+                                    true));
     public static final DeferredItem<RoomKeyItem> ROOM_KEY = ROOM_KEY_REG.register();
 
     public static final ItemReg<BedSheetItem> BED_SHEET_REG =

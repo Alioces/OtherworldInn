@@ -181,9 +181,12 @@ public abstract class GuestEntity extends PathfinderMob {
                                 GuestEntity.this.navigationTarget.getY(),
                                 GuestEntity.this.navigationTarget.getZ() + 0.5);
 
-                // 如果距离小于 2 格 (平方 < 4)，认为到达
                 if (distSqr < 4.0D) {
-                    GuestEntity.this.clearNavigationTarget();
+                    if (GuestEntity.this.guestData.getState() == GuestData.GuestState.WAITING) {
+                        GuestEntity.this.getNavigation().stop();
+                    } else {
+                        GuestEntity.this.clearNavigationTarget();
+                    }
                     return;
                 }
                 if (GuestEntity.this.lastNavigationDistanceSqr - distSqr
