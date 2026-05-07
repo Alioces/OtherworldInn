@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -24,6 +25,9 @@ public class ModBlockTagProvider extends BlockTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
+        tag(OtherworldInn.INN_FREE_INTERACT)
+                .add(Blocks.CAKE);
+
         for (Map.Entry<DeferredBlock<?>, BlockDataGenInfo> entry :
                 ModBlocks.BLOCK_INFOS.entrySet()) {
             DeferredBlock<?> block = entry.getKey();

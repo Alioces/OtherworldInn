@@ -1,5 +1,6 @@
 package com.otherworldinn.world.event.listener;
 
+import com.github.ysbbbbbb.kaleidoscopecookery.block.food.FoodBlock;
 import com.github.ysbbbbbb.kaleidoscopecookery.block.kitchen.StoveBlock;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModBlocks;
 import com.otherworldinn.OtherworldInn;
@@ -145,6 +146,23 @@ public class TownProtectionHandler {
 
     private static boolean isDepotDisplayBlock(BlockState state) {
         return state != null && CREATE_DEPOT_ID.equals(BuiltInRegistries.BLOCK.getKey(state.getBlock()));
+    }
+
+    private static boolean isInnFreeInteractBlock(BlockState state) {
+        if (state == null || state.isAir()) {
+            return false;
+        }
+        if (state.is(OtherworldInn.INN_FREE_INTERACT)) {
+            return true;
+        }
+        if (state.getBlock() instanceof FoodBlock) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isInnFreeInteractBlockItem(BlockItem blockItem) {
+        return isInnFreeInteractBlock(blockItem.getBlock().defaultBlockState());
     }
 
     /**
@@ -520,6 +538,15 @@ public class TownProtectionHandler {
 
         // 如果是真实玩家
         if (player instanceof ServerPlayer && !(player instanceof FakePlayer)) {
+            if (isInnFreeInteractBlock(event.getState())
+                    && level instanceof ServerLevel serverLevel) {
+                TeamData team =
+                        TeamManager.getInstance().getTeamAt(event.getPos(), serverLevel.getServer());
+                if (team != null
+                        && team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
+                    return;
+                }
+            }
             Component denyReason = getBuildDenyReason(player, event.getPos(), level);
             if (denyReason != null) {
                 event.setCanceled(true);
@@ -596,6 +623,16 @@ public class TownProtectionHandler {
             }
             // 如果是真实玩家
             if (player instanceof ServerPlayer serverPlayer && !(player instanceof FakePlayer)) {
+                if (isInnFreeInteractBlock(event.getState())
+                        && event.getLevel() instanceof ServerLevel serverLevel) {
+                    TeamData team =
+                            TeamManager.getInstance()
+                                    .getTeamAt(event.getPos(), serverLevel.getServer());
+                    if (team != null
+                            && team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
+                        return;
+                    }
+                }
                 Component denyReason =
                         getBuildDenyReason(player, event.getPos(), (Level) event.getLevel());
                 if (denyReason != null) {
@@ -718,6 +755,19 @@ public class TownProtectionHandler {
                     denyRightClickBlock(event, player, denyReason);
                 }
                 return;
+            }
+
+            if (isInnFreeInteractBlockItem(blockItem)) {
+                BlockPos placePos = pos.relative(event.getFace());
+                if (level instanceof ServerLevel serverLevel) {
+                    TeamData team =
+                            TeamManager.getInstance()
+                                    .getTeamAt(placePos, serverLevel.getServer());
+                    if (team != null
+                            && team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
+                        return;
+                    }
+                }
             }
 
             // 计算拟放置位置
