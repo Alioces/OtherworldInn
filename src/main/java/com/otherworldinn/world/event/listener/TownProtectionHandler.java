@@ -1,5 +1,7 @@
 package com.otherworldinn.world.event.listener;
 
+import com.github.ysbbbbbb.kaleidoscopecookery.block.kitchen.StoveBlock;
+import com.github.ysbbbbbb.kaleidoscopecookery.init.ModBlocks;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.foundation.ModBlockProperties;
@@ -29,8 +31,12 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AttachedStemBlock;
+import net.minecraft.world.level.block.CampfireBlock;
+import net.minecraft.world.level.block.CandleBlock;
+import net.minecraft.world.level.block.CandleCakeBlock;
 import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.FarmBlock;
@@ -40,6 +46,7 @@ import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.piston.PistonStructureResolver;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -138,6 +145,24 @@ public class TownProtectionHandler {
 
     private static boolean isDepotDisplayBlock(BlockState state) {
         return state != null && CREATE_DEPOT_ID.equals(BuiltInRegistries.BLOCK.getKey(state.getBlock()));
+    }
+
+    /**
+     * 打火石特判：允许对“功能方块点火”（如营火、蜡烛、含 LIT 属性的可点燃方块），
+     * 但不允许以此在空气位生成火焰方块。
+     */
+    private static boolean isAllowedFlintAndSteelFunctionalUse(ItemStack stack, BlockState clickedState) {
+        if (!stack.is(Items.FLINT_AND_STEEL) || clickedState == null) {
+            return false;
+        }
+        if (CampfireBlock.canLight(clickedState)
+                || CandleBlock.canLight(clickedState)
+                || CandleCakeBlock.canLight(clickedState)
+            ) {
+            return true;
+        }
+        return clickedState.hasProperty(BlockStateProperties.LIT)
+                && !clickedState.getValue(BlockStateProperties.LIT);
     }
 
     private static boolean isInnZonePos(ServerLevel level, BlockPos pos) {
@@ -385,7 +410,11 @@ public class TownProtectionHandler {
         public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
             if (event.getLevel().dimension() == TownDimensions.TOWN_LEVEL) {
                 ItemStack stack = event.getItemStack();
+                BlockState clickedState = event.getLevel().getBlockState(event.getPos());
                 if (stack.is(OtherworldInn.BANNED_IN_TOWN)) {
+                    if (isAllowedFlintAndSteelFunctionalUse(stack, clickedState)) {
+                        return;
+                    }
                     event.setCanceled(true);
                     event.setUseItem(TriState.FALSE);
                     event.setUseBlock(TriState.FALSE);
@@ -656,6 +685,9 @@ public class TownProtectionHandler {
 
         // 2. 检查禁用物品
         if (stack.is(OtherworldInn.BANNED_IN_TOWN)) {
+            if (isAllowedFlintAndSteelFunctionalUse(stack, clickedState)) {
+                return;
+            }
             denyRightClickBlock(event, player);
             if (player instanceof ServerPlayer serverPlayer) {
                 player.displayClientMessage(
