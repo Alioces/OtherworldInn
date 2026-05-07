@@ -109,9 +109,9 @@ public class InnData {
     private static final double SPAWN_DELAY_JITTER_RATIO = 0.20D;
     private static final int MIN_SPAWN_DELAY_TICKS = 600;
     private static final int MAX_SPAWN_DELAY_TICKS = 7200;
-    private static final int[] REPUTATION_REQUIREMENTS_BY_RATING = {100, 250, 450, 700, 1000, 1350};
+    private static final int[] REPUTATION_REQUIREMENTS_BY_RATING = {100, 250, 350, 500, 750, 900};
     private static final int[] ROOM_REQUIREMENTS_BY_RATING = {2, 4, 6, 8, 10, 12};
-    private static final int[] TOTAL_INCOME_REQUIREMENTS_BY_RATING = {200, 800, 2000, 4500, 9000, 15000};
+    private static final int[] TOTAL_INCOME_REQUIREMENTS_BY_RATING = {200, 400, 1000, 2500, 6000, 10000};
 
     public InnData() {}
 

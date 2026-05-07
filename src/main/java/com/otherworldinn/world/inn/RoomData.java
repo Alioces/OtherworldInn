@@ -122,7 +122,10 @@ public class RoomData {
     /**
      * 计算床位价格
      *
-     * <p>根据旅社星级和房间水平面积计算。 最低 8 金币，最高 96 金币。 权重：星级 60%，面积 40%。
+     * <p>先计算“单床基准价”（根据旅社星级和房间水平面积，最低 8 金币，最高 96 金币，权重：星级 60%，面积 40%）。
+     * 然后按床位数做分段衰减：
+     *
+     * <p>1) 1~4 床：单床价线性下降，4 床时降到单床基准价的 1/3。 2) 5~6 床：单床价快速线性下降，6 床时降到 1。 3) 大于 6 床：单床价固定为 1。
      *
      * @param innRating 旅社评级 (0-5)
      * @return 单个床位的价格
@@ -139,8 +142,30 @@ public class RoomData {
 
         int minPrice = 8;
         int maxPrice = 96;
+        int singleBedBasePrice = minPrice + (int) Math.round(score * (maxPrice - minPrice));
 
-        return minPrice + (int) Math.round(score * (maxPrice - minPrice));
+        int beds = Math.max(1, this.maxGuests);
+
+        if (beds <= 1) {
+            return singleBedBasePrice;
+        }
+
+        if (beds <= 4) {
+            // 1 床 -> 1.0, 4 床 -> 1/3（线性）
+            double t = (beds - 1) / 3.0D;
+            double multiplier = 1.0D - (2.0D / 3.0D) * t;
+            return Math.max(1, (int) Math.round(singleBedBasePrice * multiplier));
+        }
+
+        if (beds <= 6) {
+            // 4 床价格作为起点，6 床线性降到 1
+            int priceAtFourBeds = Math.max(1, (int) Math.round(singleBedBasePrice / 3.0D));
+            double t = (beds - 4) / 2.0D; // 5 床:0.5, 6 床:1.0
+            double price = priceAtFourBeds + (1.0D - priceAtFourBeds) * t;
+            return Math.max(1, (int) Math.round(price));
+        }
+
+        return 1;
     }
 
     public enum ValidationResult {
