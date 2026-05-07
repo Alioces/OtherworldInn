@@ -7,6 +7,7 @@ import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.RoomData;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -93,10 +94,11 @@ public class RoomRegisterItem extends Item {
                         RoomData.validate(minPos, maxPos, level, team, null);
                 if (result.isSuccess()) {
                     boolean isFirstRoom = innData.getRoomCount() == 0;
-                    // 生成新ID
-                    int newId =
-                            innData.getRooms().keySet().stream().max(Integer::compareTo).orElse(0)
-                                    + 1;
+                    Set<Integer> existingIds = innData.getRooms().keySet();
+                    int newId = 1;
+                    while (existingIds.contains(newId)) {
+                        newId++;
+                    }
 
                     RoomData newRoom = new RoomData(newId, minPos, maxPos);
                     // 统计床位并设置最大旅客数

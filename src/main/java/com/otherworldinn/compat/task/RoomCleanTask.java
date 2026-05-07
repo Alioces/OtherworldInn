@@ -6,19 +6,25 @@ import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToP
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
 import com.github.tartaricacid.touhoulittlemaid.init.InitItems;
+import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.foundation.ModBlockProperties;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.item.BedSheetItem;
 import com.otherworldinn.item.MessyBedSheetItem;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import javax.annotation.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -28,55 +34,32 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 public class RoomCleanTask implements IMaidTask{
-        /**
-     * 唯一标识符，用于区分不同的任务
-     * <p>
-     * Unique identifier for distinguishing different tasks
-     */
+
     private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "clean_room");
 
-    /**
-     * 任务图标
-     */
     private static final ItemStack ICON = new ItemStack(InitItems.BROOM.get());
 
-    /**
-     * 获取任务的 ID
-     * <p>
-     * Get the unique identifier of the task
-     */
+    private static final Map<UUID, Long> WASH_COOLDOWN = new HashMap<>();
+
     @Override
     public ResourceLocation getUid() {
         return UID;
     }
 
-    /**
-     * 获取任务的图标
-     * <p>
-     * Get the icon of the task
-     */
     @Override
     public ItemStack getIcon() {
         return ICON;
     }
 
-    /**
-     * 获取女仆在该任务时的音效，可以为 null
-     * <p>
-     * Get the sound when the maid in this task, can be null
-     */
     @Override
     @Nullable
     public SoundEvent getAmbientSound(EntityMaid maid) {
         return null;
     }
 
-    /**
-     * 创建女仆 AI，这一块通过 Minecraft 原版的 BehaviorControl 来实现
-     */
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
-        return List.of(
+        return Lists.newArrayList(
                 Pair.of(
                         5,
                         new MaidMoveToPredicateBlockTask(
@@ -107,7 +90,20 @@ public class RoomCleanTask implements IMaidTask{
         return hasCleanSheet(maid) && !shouldWashDirtySheets(maid);
     }
 
+    private static boolean isWashOnCooldown(EntityMaid maid) {
+        Long expiry = WASH_COOLDOWN.get(maid.getUUID());
+        return expiry != null && maid.level().getGameTime() < expiry;
+    }
+
+    private static void setWashCooldown(EntityMaid maid) {
+        long cd = 20 + maid.getRandom().nextInt(21);
+        WASH_COOLDOWN.put(maid.getUUID(), maid.level().getGameTime() + cd);
+    }
+
     private static boolean shouldWashDirtySheets(EntityMaid maid) {
+        if (isWashOnCooldown(maid)) {
+            return false;
+        }
         int dirtyCount = countItem(maid.getMaidInv(), ModItems.MESSY_BED_SHEET.get());
         if (dirtyCount <= 0) {
             return false;
@@ -169,6 +165,8 @@ public class RoomCleanTask implements IMaidTask{
         insertOrDrop(maid, cleanSheet);
         MessyBedSheetItem.consumeCauldronWaterIfNeeded(level, pos);
         maid.swing(InteractionHand.MAIN_HAND, true);
+        level.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.PLAYERS, 0.8F, 1.0F);
+        setWashCooldown(maid);
         clearTarget(maid);
     }
 

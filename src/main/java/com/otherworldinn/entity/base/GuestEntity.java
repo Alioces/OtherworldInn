@@ -62,6 +62,7 @@ import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.entity.schedule.Activity;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 
@@ -110,6 +111,8 @@ public abstract class GuestEntity extends PathfinderMob {
     private int dailyPurchaseAttemptCount = 0;
     // 下一次尝试“用餐购买”的时间戳（游戏刻）
     private long nextDiningAttemptTime = 0L;
+    // 行为树活动状态（对齐原版 Activity 概念）
+    private Activity activeActivity = Activity.IDLE;
 
     @Nullable
     // 当前已经锁定、正在前往的餐台坐标
@@ -160,7 +163,7 @@ public abstract class GuestEntity extends PathfinderMob {
 
         @Override
         public boolean canUse() {
-            return GuestEntity.this.navigationTarget != null;
+            return GuestEntity.this.navigationTarget != null && !GuestEntity.this.isSleeping();
         }
 
         @Override
@@ -296,6 +299,9 @@ public abstract class GuestEntity extends PathfinderMob {
     }
 
     public void setNavigationTarget(BlockPos pos) {
+        if (this.isSleeping()) {
+            return;
+        }
         this.navigationTarget = pos;
         this.navigationStuckTicks = 0;
         this.lastNavigationDistanceSqr = Double.MAX_VALUE;
@@ -682,6 +688,10 @@ public abstract class GuestEntity extends PathfinderMob {
         }
         if (this.isSleeping()) {
             if (this.getSleepingPos().isPresent() && bedHeadPos.equals(this.getSleepingPos().get())) {
+                // 睡眠维持态：确保没有残留导航导致位置漂移
+                if (this.navigationTarget != null || !this.getNavigation().isDone()) {
+                    this.clearNavigationTarget();
+                }
                 return true;
             }
             this.stopSleeping();
@@ -699,6 +709,59 @@ public abstract class GuestEntity extends PathfinderMob {
             this.setNavigationTarget(approachPos);
         }
         return true;
+    }
+
+    private Activity resolveBehaviorActivity(ServerLevel level) {
+        if (this.guestData.getState() == GuestData.GuestState.CHECKED_IN && level.isNight()) {
+            BlockPos assignedBed = this.guestData.getAssignedBedPos();
+            if (assignedBed != null && normalizeBedHeadPos(level, assignedBed) != null) {
+                return Activity.REST;
+            }
+        }
+        return Activity.IDLE;
+    }
+
+    private void syncBrainActivity(Activity targetActivity) {
+        // 不直接依赖具体 Brain API 签名，避免版本差异导致编译失败
+        Object brain = this.getBrain();
+        if (brain == null) {
+            return;
+        }
+        try {
+            java.lang.reflect.Method setActive =
+                    brain.getClass().getMethod("setActiveActivityIfPossible", Activity.class);
+            setActive.invoke(brain, targetActivity);
+            return;
+        } catch (ReflectiveOperationException ignored) {
+            // 继续尝试兼容其他签名
+        }
+        try {
+            java.lang.reflect.Method setDefault =
+                    brain.getClass().getMethod("setDefaultActivity", Activity.class);
+            setDefault.invoke(brain, targetActivity);
+        } catch (ReflectiveOperationException ignored) {
+            // 若 Brain API 变动，则退化为仅使用本地 activity 状态
+        }
+    }
+
+    private void tickBehaviorTree(ServerLevel level) {
+        Activity nextActivity = resolveBehaviorActivity(level);
+        if (nextActivity != this.activeActivity) {
+            this.activeActivity = nextActivity;
+            syncBrainActivity(nextActivity);
+            if (nextActivity != Activity.REST && this.isSleeping()) {
+                this.stopSleeping();
+            }
+        }
+
+        if (this.activeActivity == Activity.REST) {
+            handleSleepBehavior(level);
+            return;
+        }
+
+        if (shouldRunBudgetDiningBehavior()) {
+            handleDiningPurchase(level);
+        }
     }
 
     @Nullable
@@ -773,10 +836,7 @@ public abstract class GuestEntity extends PathfinderMob {
             }
 
             if (this.level() instanceof ServerLevel serverLevel) {
-                boolean sleepingHandled = handleSleepBehavior(serverLevel);
-                if (!sleepingHandled && shouldRunBudgetDiningBehavior()) {
-                    handleDiningPurchase(serverLevel);
-                }
+                tickBehaviorTree(serverLevel);
             }
 
             // 同步状态到 SynchedEntityData

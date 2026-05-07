@@ -4,6 +4,8 @@ import com.github.tartaricacid.touhoulittlemaid.api.task.IMaidTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidArriveAtBlockTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.ai.brain.task.MaidMoveToPredicateBlockTask;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.github.tartaricacid.touhoulittlemaid.init.InitEntities;
+import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.entity.base.GuestEntity;
@@ -24,6 +26,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
@@ -50,7 +53,7 @@ public class FrontDeskTask implements IMaidTask {
 
     @Override
     public List<Pair<Integer, BehaviorControl<? super EntityMaid>>> createBrainTasks(EntityMaid maid) {
-        return List.of(
+        return Lists.newArrayList(
                 Pair.of(
                         5,
                         new MaidMoveToPredicateBlockTask(
@@ -62,11 +65,24 @@ public class FrontDeskTask implements IMaidTask {
     }
 
     private static boolean canStartReception(EntityMaid maid) {
-        TeamData team = getOpenInnTeam(maid);
-        if (team == null) {
+        if (!(maid.level() instanceof ServerLevel level)) {
+            clearTarget(maid);
             return false;
         }
-        return hasBoundRoomKey(maid.getMaidInv()) && !getWaitingGuests(team, (ServerLevel) maid.level()).isEmpty();
+        TeamData team = getOpenInnTeam(maid);
+        if (team == null) {
+            clearTarget(maid);
+            return false;
+        }
+        if (!hasBoundRoomKey(maid.getMaidInv())) {
+            clearTarget(maid);
+            return false;
+        }
+        boolean hasWaiting = !getWaitingGuests(team, level).isEmpty();
+        if (!hasWaiting) {
+            clearTarget(maid);
+        }
+        return hasWaiting;
     }
 
     private static TeamData getOpenInnTeam(EntityMaid maid) {
@@ -82,41 +98,57 @@ public class FrontDeskTask implements IMaidTask {
 
     private static boolean hasWaitingGuestNearby(EntityMaid maid, BlockPos pos) {
         if (!(maid.level() instanceof ServerLevel level)) {
+            clearTarget(maid);
             return false;
         }
         TeamData team = getOpenInnTeam(maid);
         if (team == null) {
+            clearTarget(maid);
             return false;
         }
         GuestEntity guest = findNearestWaitingGuest(level, team, pos);
+        if (guest == null) {
+            clearTarget(maid);
+        }
         return guest != null;
     }
 
     private static void handleReceptionAt(EntityMaid maid, BlockPos pos) {
         if (!(maid.level() instanceof ServerLevel level)) {
+            clearTarget(maid);
             return;
         }
         TeamData team = getOpenInnTeam(maid);
         if (team == null) {
+            clearTarget(maid);
             return;
         }
         GuestEntity guest = findNearestWaitingGuest(level, team, maid.blockPosition());
         if (guest == null) {
+            clearTarget(maid);
             return;
         }
         int keySlot = findBestRoomKeySlotForGuest(maid.getMaidInv(), team, guest.getGuestData());
         if (keySlot < 0) {
+            clearTarget(maid);
             return;
         }
         ItemStack keyStack = maid.getMaidInv().getStackInSlot(keySlot);
         Optional<Integer> roomIdOpt = RoomKeyItem.getBoundRoomId(keyStack);
         if (roomIdOpt.isEmpty()) {
+            clearTarget(maid);
             return;
         }
         if (team.getInnData().checkIn(guest.getUUID(), roomIdOpt.get(), level)) {
             consumeOne(maid.getMaidInv(), keySlot);
             maid.swing(InteractionHand.MAIN_HAND, true);
         }
+        clearTarget(maid);
+    }
+
+    private static void clearTarget(EntityMaid maid) {
+        maid.getBrain().eraseMemory(InitEntities.TARGET_POS.get());
+        maid.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
     }
 
     private static int findBestRoomKeySlotForGuest(
