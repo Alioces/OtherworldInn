@@ -67,7 +67,7 @@ public class MixinContraption {
                 // 检查该位置是否属于某个队伍的旅社区域
                 TeamData team = TeamManager.getInstance().getTeamAt(pos, world.getServer());
 
-                // 如果在城镇维度，且 (不在任何旅社范围内 或 该旅社未开启编辑模式)，则禁止放置
+                // 如果在城镇维度，且 (不在任何旅社范围内 或 该旅社未开启装修模式)，则禁止放置
                 if (team == null || team.getInnData().getState() != InnState.EDIT_MODE) {
                     // 非法区域！
 

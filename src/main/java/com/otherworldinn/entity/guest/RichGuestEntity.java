@@ -41,7 +41,8 @@ public class RichGuestEntity extends GuestEntity {
                 new PreferenceRangeProfile(new GuestData.IntRange(28, 42), new GuestData.IntRange(72, 88)),
                 new PreferenceRangeProfile(new GuestData.IntRange(30, 45), new GuestData.IntRange(74, 90)),
                 new PreferenceRangeProfile(new GuestData.IntRange(25, 30), new GuestData.IntRange(70, 86)),
-                new GuestData.IntRange(24, 48));
+                new GuestData.IntRange(24, 48),
+                1.2D);
     }
 
     @Override

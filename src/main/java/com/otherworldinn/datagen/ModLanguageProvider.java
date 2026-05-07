@@ -362,7 +362,7 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // 房间登记册
         entry("message.otherworldinn.room_register.not_edit_mode")
-                .zh("旅社未处于编辑模式！")
+                .zh("旅社未处于装修模式！")
                 .en("The Inn is not in edit mode!");
         entry("message.otherworldinn.room_register.pos1_set")
                 .zh("位置1已设置：%s")

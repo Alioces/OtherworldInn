@@ -174,7 +174,7 @@ public abstract class VipGuestEntity extends GuestEntity {
                 InnData inn = team.getInnData();
                 team.addCoins(payout, level.getServer());
                 inn.recordDiningIncome(payout, level);
-                inn.addReputation(reputationGain);
+                inn.addReputation(inn.scaleGuestReputationDelta(this, reputationGain));
                 TeamManager.getInstance().syncTeam(team, level.getServer());
                 level.sendParticles(
                         ParticleTypes.HAPPY_VILLAGER,
@@ -235,7 +235,8 @@ public abstract class VipGuestEntity extends GuestEntity {
         TeamData team = resolveInnTeam(level);
         if (team != null) {
             int reputationLoss = 10 + this.getRandom().nextInt(11);
-            team.getInnData().addReputation(-reputationLoss);
+            InnData inn = team.getInnData();
+            inn.addReputation(inn.scaleGuestReputationDelta(this, -reputationLoss));
             TeamManager.getInstance().syncTeam(team, level.getServer());
         }
         level.sendParticles(

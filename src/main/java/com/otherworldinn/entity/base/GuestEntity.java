@@ -278,7 +278,12 @@ public abstract class GuestEntity extends PathfinderMob {
                 new PreferenceRangeProfile(new GuestData.IntRange(0, 0), new GuestData.IntRange(100, 100)),
                 new PreferenceRangeProfile(new GuestData.IntRange(0, 0), new GuestData.IntRange(100, 100)),
                 new PreferenceRangeProfile(new GuestData.IntRange(0, 0), new GuestData.IntRange(100, 100)),
-                new GuestData.IntRange(6, 42));
+                new GuestData.IntRange(6, 42),
+                1.0D);
+    }
+
+    public double getReputationMultiplier() {
+        return Math.max(0.0D, this.getGuestProfile().reputationMultiplier());
     }
 
     /**
@@ -1157,7 +1162,8 @@ public abstract class GuestEntity extends PathfinderMob {
             PreferenceRangeProfile comfortRange,
             PreferenceRangeProfile lightRange,
             PreferenceRangeProfile humidityRange,
-            GuestData.IntRange budgetRange) {}
+            GuestData.IntRange budgetRange,
+            double reputationMultiplier) {}
 
     public record PreferenceRangeProfile(GuestData.IntRange minRange, GuestData.IntRange maxRange) {}
 

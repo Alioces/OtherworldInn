@@ -31,7 +31,7 @@ public class CreateCompat {
                 // 检查该位置是否属于某个队伍的旅社区域
                 TeamData team = TeamManager.getInstance().getTeamAt(pos, serverLevel.getServer());
 
-                // 如果不在任何队伍的旅社范围内，或者该旅社未开启编辑模式，则禁止移动
+                // 如果不在任何队伍的旅社范围内，或者该旅社未开启装修模式，则禁止移动
                 if (team == null || team.getInnData().getState() != InnState.EDIT_MODE) {
                     return CheckResult.FAIL;
                 }

@@ -468,7 +468,7 @@
   "message.otherworldinn.room_register.create_success": "房间创建成功！",
   "message.otherworldinn.room_register.invalid_room": "无效的房间结构",
   "message.otherworldinn.room_register.manual_removal": "手动移除",
-  "message.otherworldinn.room_register.not_edit_mode": "旅社未处于编辑模式！",
+  "message.otherworldinn.room_register.not_edit_mode": "旅社未处于装修模式！",
   "message.otherworldinn.room_register.overlay.add_room": "添加房间",
   "message.otherworldinn.room_register.overlay.delete_room": "删除房间",
   "message.otherworldinn.room_register.overlay.show_room": "显示房间",

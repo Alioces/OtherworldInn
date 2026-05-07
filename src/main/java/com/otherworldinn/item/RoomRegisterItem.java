@@ -29,7 +29,7 @@ import net.neoforged.fml.loading.FMLEnvironment;
 /**
  * 房间登记册物品
  *
- * <p>用于在编辑模式下创建和删除房间。
+ * <p>用于在装修模式下创建和删除房间。
  */
 public class RoomRegisterItem extends Item {
 

@@ -34,7 +34,8 @@ public class UltraRichGuestEntity extends GuestEntity {
                 new PreferenceRangeProfile(new GuestData.IntRange(44, 62), new GuestData.IntRange(80, 100)),
                 new PreferenceRangeProfile(new GuestData.IntRange(46, 64), new GuestData.IntRange(70, 100)),
                 new PreferenceRangeProfile(new GuestData.IntRange(22, 30), new GuestData.IntRange(65, 100)),
-                new GuestData.IntRange(86, 140));
+                new GuestData.IntRange(86, 140),
+                1.4D);
     }
 
     @Override

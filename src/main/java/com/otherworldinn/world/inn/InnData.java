@@ -111,7 +111,7 @@ public class InnData {
     private static final int MAX_SPAWN_DELAY_TICKS = 7200;
     private static final int[] REPUTATION_REQUIREMENTS_BY_RATING = {100, 250, 350, 500, 750, 900};
     private static final int[] ROOM_REQUIREMENTS_BY_RATING = {2, 4, 6, 8, 10, 12};
-    private static final int[] TOTAL_INCOME_REQUIREMENTS_BY_RATING = {200, 400, 1000, 2500, 6000, 10000};
+    private static final int[] TOTAL_INCOME_REQUIREMENTS_BY_RATING = {200, 500, 2000, 4500, 9000, 20000};
 
     public InnData() {}
 
@@ -156,6 +156,27 @@ public class InnData {
         if (this.reputation < 0) {
             this.reputation = 0;
         }
+    }
+
+    public int scaleGuestReputationDelta(GuestEntity guest, int rawAmount) {
+        if (rawAmount == 0) {
+            return 0;
+        }
+        double guestMultiplier = guest == null ? 1.0D : Math.max(0.0D, guest.getReputationMultiplier());
+        double starMultiplier = getRatingReputationMultiplier();
+        int scaled = (int) Math.round(rawAmount * guestMultiplier * starMultiplier);
+        if (scaled == 0) {
+            if (guestMultiplier <= 0.0D || starMultiplier <= 0.0D) {
+                return 0;
+            }
+            return rawAmount > 0 ? 1 : -1;
+        }
+        return scaled;
+    }
+
+    private double getRatingReputationMultiplier() {
+        int clampedRating = Math.max(0, Math.min(5, this.rating));
+        return clampedRating * (3.0D / 5.0D);
     }
 
     public int getTotalIncome() {
@@ -242,7 +263,7 @@ public class InnData {
     }
 
     /**
-     * 尝试开启编辑模式
+     * 尝试开启装修模式
      *
      * @return 如果成功开启返回 true，否则返回 false (例如正在营业或有客人)
      */
@@ -282,7 +303,7 @@ public class InnData {
 
     public void addGuest(UUID guestId) {
         this.guestIds.add(guestId);
-        // 有客人时自动关闭编辑模式，如果处于 Open 状态则保持 Open，否则切换到 Closed (异常情况)
+        // 有客人时自动关闭装修模式，如果处于 Open 状态则保持 Open，否则切换到 Closed (异常情况)
         if (this.state == InnState.EDIT_MODE) {
             this.state = InnState.CLOSED;
         }
@@ -1066,9 +1087,10 @@ public class InnData {
     public void handleGuestDeparture(
             UUID guestId, boolean isAngry, ServerLevel level, TeamData team) {
         Entity entity = level.getEntity(guestId);
+        GuestEntity guestEntity = entity instanceof GuestEntity g ? g : null;
 
         // 1. 获取并移除待办事项 (如果是等待中离开)
-        if (entity instanceof GuestEntity guestEntity) {
+        if (guestEntity != null) {
             GuestData guestData = guestEntity.getGuestData();
             if (guestData.getState() == GuestData.GuestState.WAITING) {
                 String guestName =
@@ -1084,7 +1106,7 @@ public class InnData {
 
         if (isAngry) {
             int reputationLoss = 2 + level.random.nextInt(5);
-            this.addReputation(-reputationLoss);
+            this.addReputation(scaleGuestReputationDelta(guestEntity, -reputationLoss));
             if (entity != null) {
                 level.broadcastEntityEvent(entity, (byte) 13);
                 level.sendParticles(
@@ -1113,7 +1135,7 @@ public class InnData {
 
         // 通用离开逻辑：移除占用并触发离场
 
-        if (entity instanceof GuestEntity guestEntity) {
+        if (guestEntity != null) {
             guestEntity.setNavigationTarget(new BlockPos(10, 71, 0));
             EntityUtils.scheduleDisappear(guestEntity);
 
@@ -1138,9 +1160,10 @@ public class InnData {
      */
     public void checkOut(UUID guestId, ServerLevel level, boolean isNormalCheckout) {
         Entity entity = level.getEntity(guestId);
+        GuestEntity guestEntity = entity instanceof GuestEntity g ? g : null;
         GuestData guest = null;
         boolean vipGuest = false;
-        if (entity instanceof GuestEntity guestEntity) {
+        if (guestEntity != null) {
             guest = guestEntity.getGuestData();
             vipGuest = guestEntity instanceof VipGuestEntity;
             if (guest != null) {
@@ -1198,15 +1221,15 @@ public class InnData {
                 int score = guest.getPreferenceScore();
                 int baseReputationGain = Math.max(2, Math.min(10, score));
                 if (!vipGuest) {
-                    this.addReputation(baseReputationGain);
+                    this.addReputation(scaleGuestReputationDelta(guestEntity, baseReputationGain));
                 } else {
                     int mismatchCount = countPreferenceMismatch(guest, targetRoom);
                     if (mismatchCount == 0) {
                         int vipReputationGain = Math.max(1, Math.round(baseReputationGain * 1.7f));
-                        this.addReputation(vipReputationGain);
+                        this.addReputation(scaleGuestReputationDelta(guestEntity, vipReputationGain));
                     } else if (mismatchCount >= 2) {
                         int vipReputationLoss = 2 + level.random.nextInt(5);
-                        this.addReputation(-vipReputationLoss);
+                        this.addReputation(scaleGuestReputationDelta(guestEntity, -vipReputationLoss));
                     }
                 }
             }
@@ -1220,7 +1243,7 @@ public class InnData {
         if (team != null) {
             TeamManager.getInstance().syncTeam(team, level.getServer());
         }
-        if (entity instanceof GuestEntity guestEntity) {
+        if (guestEntity != null) {
             guestEntity.setNavigationTarget(new BlockPos(10, 71, 0));
         }
         if (entity != null) {

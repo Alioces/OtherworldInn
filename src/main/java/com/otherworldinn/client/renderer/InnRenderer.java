@@ -72,7 +72,7 @@ public class InnRenderer {
         // 颜色设置
         float red, green, blue;
         if (state == InnData.InnState.EDIT_MODE) {
-            // 编辑模式：蓝色 #1E90FF
+            // 装修模式：蓝色 #1E90FF
             red = 0.118f;
             green = 0.565f;
             blue = 0.929f;

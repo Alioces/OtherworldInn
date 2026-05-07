@@ -42,7 +42,8 @@ public class SponsorGuestEntity extends VipGuestEntity {
                 new PreferenceRangeProfile(new GuestData.IntRange(24, 45), new GuestData.IntRange(60, 100)),
                 new PreferenceRangeProfile(new GuestData.IntRange(26, 40), new GuestData.IntRange(50, 100)),
                 new PreferenceRangeProfile(new GuestData.IntRange(12, 50), new GuestData.IntRange(65, 100)),
-                new GuestData.IntRange(86, 140));
+                new GuestData.IntRange(86, 140),
+                1.8D);
     }
 
     @Override

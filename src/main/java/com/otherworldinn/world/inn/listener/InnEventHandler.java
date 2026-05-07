@@ -59,7 +59,7 @@ public class InnEventHandler {
     /**
      * 监听方块更新事件 (NeighborNotifyEvent)
      *
-     * <p>当方块发生更新（放置、破坏、状态改变）时触发。 如果更新发生在开启了编辑模式的旅社区域内，则标记该队伍在 tick 结束时进行房间检查。
+     * <p>当方块发生更新（放置、破坏、状态改变）时触发。 如果更新发生在开启了装修模式的旅社区域内，则标记该队伍在 tick 结束时进行房间检查。
      */
     @SubscribeEvent
     public static void onBlockUpdate(BlockEvent.NeighborNotifyEvent event) {
@@ -91,7 +91,7 @@ public class InnEventHandler {
         TeamData team = TeamManager.getInstance().getTeamAt(pos, level.getServer());
 
         if (team != null) {
-            // 如果是编辑模式，触发房间检查
+            // 如果是装修模式，触发房间检查
             if (team.getInnData().getState() == InnState.EDIT_MODE) {
                 synchronized (pendingChecks) {
                     pendingChecks.add(team.getTeamId());
@@ -479,7 +479,7 @@ public class InnEventHandler {
     /**
      * 处理左键点击方块的公共逻辑
      *
-     * <p>检查玩家副手是否持有房间登记册，且处于编辑模式下。 如果条件满足，则删除点击位置所在的房间。
+     * <p>检查玩家副手是否持有房间登记册，且处于装修模式下。 如果条件满足，则删除点击位置所在的房间。
      *
      * @param player 玩家实体
      * @param pos 点击的方块坐标

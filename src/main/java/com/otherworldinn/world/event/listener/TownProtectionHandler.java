@@ -100,7 +100,7 @@ public class TownProtectionHandler {
             return Component.translatable("message.otherworldinn.protection.deny");
         }
 
-        // 情况 2: 在旅社区域内，但未开启编辑模式 -> 装修提示
+        // 情况 2: 在旅社区域内，但未开启装修模式 -> 装修提示
         if (team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
             return Component.translatable("message.otherworldinn.protection.deny_renovation");
         }
