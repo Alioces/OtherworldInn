@@ -204,7 +204,7 @@ public class GuestData {
                             new ItemEntity(
                                     level,
                                     pos.getX() + 0.5,
-                                    pos.getY() + 0.5,
+                                    pos.getY() + 1.0,
                                     pos.getZ() + 0.5,
                                     stack);
                     itemEntity.setDeltaMovement(0.0, 0.0, 0.0);

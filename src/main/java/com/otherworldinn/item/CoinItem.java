@@ -49,7 +49,7 @@ public class CoinItem extends Item {
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResultHolder.fail(stack);
         }
-        return depositOne(serverPlayer, usedHand)
+        return depositAllInHand(serverPlayer, usedHand)
                 ? InteractionResultHolder.success(stack)
                 : InteractionResultHolder.fail(stack);
     }
@@ -66,7 +66,7 @@ public class CoinItem extends Item {
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResult.FAIL;
         }
-        return depositOne(serverPlayer, context.getHand())
+        return depositAllInHand(serverPlayer, context.getHand())
                 ? InteractionResult.SUCCESS
                 : InteractionResult.FAIL;
     }
@@ -158,7 +158,7 @@ public class CoinItem extends Item {
         return teamId.equals(tag.getUUID(WITHDRAWN_SOURCE_TEAM_KEY));
     }
 
-    private boolean depositOne(ServerPlayer player, InteractionHand hand) {
+    private boolean depositAllInHand(ServerPlayer player, InteractionHand hand) {
         TeamData team = TeamManager.getInstance().getPlayerTeam(player);
         if (team == null) {
             player.displayClientMessage(
@@ -172,14 +172,15 @@ public class CoinItem extends Item {
             return false;
         }
         boolean fromSameTeamWithdrawal = isWithdrawnFromTeam(stack, team.getTeamId());
+        int depositAmount = Math.max(1, stack.getCount());
         if (!player.getAbilities().instabuild) {
-            stack.shrink(1);
+            stack.shrink(depositAmount);
         }
-        team.addCoins(1, player.getServer());
+        team.addCoins(depositAmount, player.getServer());
         if (!fromSameTeamWithdrawal
                 && !player.getAbilities().instabuild
                 && player.level() instanceof ServerLevel serverLevel) {
-            team.getInnData().recordOtherIncome(1, serverLevel);
+            team.getInnData().recordOtherIncome(depositAmount, serverLevel);
         }
         TeamManager.getInstance().syncTeam(team, player.getServer());
         return true;

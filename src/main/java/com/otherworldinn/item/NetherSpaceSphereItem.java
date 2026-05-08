@@ -41,7 +41,8 @@ public class NetherSpaceSphereItem extends Item {
         BlockPos targetBase =
                 BlockPos.containing(
                         serverPlayer.getX() / 8.0D, serverPlayer.getY(), serverPlayer.getZ() / 8.0D);
-        BlockPos safePos = TeleportUtils.findSafeSpawnPosInNether(nether, targetBase);
+        BlockPos randomizedBase = TeleportUtils.getRandomizedNetherBase(nether, targetBase);
+        BlockPos safePos = TeleportUtils.findSafeSpawnPosInNether(nether, randomizedBase);
         serverPlayer.teleportTo(
                 nether,
                 safePos.getX() + 0.5D,

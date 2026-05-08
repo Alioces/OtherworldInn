@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public abstract class StoreEntity extends PathfinderMob {
     private static final int MAX_FAVOR_LEVEL = 10;
-    private static final int COINS_PER_FAVOR_LEVEL = 500;
+    private static final int COINS_PER_FAVOR_LEVEL = 200;
     private static final double MAX_LEVEL_DISCOUNT_RATE = 0.7D;
 
     public static int getMaxFavorLevelValue() {

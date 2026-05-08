@@ -1,6 +1,7 @@
 package com.otherworldinn.world.event.listener;
 
 import com.github.ysbbbbbb.kaleidoscopecookery.block.food.FoodBlock;
+import com.github.ysbbbbbb.kaleidoscopetavern.block.brew.BottleBlock;
 import com.github.ysbbbbbb.kaleidoscopecookery.block.kitchen.StoveBlock;
 import com.github.ysbbbbbb.kaleidoscopecookery.init.ModBlocks;
 import com.otherworldinn.OtherworldInn;
@@ -14,6 +15,7 @@ import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -25,6 +27,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -55,6 +58,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.EntityMobGriefingEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockGrowFeatureEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
@@ -155,7 +159,7 @@ public class TownProtectionHandler {
         if (state.is(OtherworldInn.INN_FREE_INTERACT)) {
             return true;
         }
-        if (state.getBlock() instanceof FoodBlock) {
+        if (state.getBlock() instanceof FoodBlock || state.getBlock() instanceof BottleBlock) {
             return true;
         }
         return false;
@@ -205,6 +209,18 @@ public class TownProtectionHandler {
             }
         }
         return false;
+    }
+
+    private static boolean canFarmOrOperateInInnNonEdit(Player player, BlockPos pos, Level level) {
+        if (player == null || pos == null || level == null || !isTownDimension(level)) {
+            return false;
+        }
+        if (player.isCreative()) {
+            return true;
+        }
+        TeamData team = TeamManager.getInstance().getPlayerTeam(player);
+        return team != null
+                && (isInsideInnZone(team, pos) || isInsideGreenhouseExtraBuildAllowRange(team, pos));
     }
 
     private static int getGreenhouseLevelAtPos(Level level, BlockPos pos) {
@@ -458,6 +474,31 @@ public class TownProtectionHandler {
         return team.isInInnZone(pos);
     }
 
+    private static boolean isTouhouLittleMaid(Entity entity) {
+        if (entity == null || entity.getType() == null) {
+            return false;
+        }
+        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        if (key == null) {
+            return false;
+        }
+        return "touhou_little_maid".equals(key.getNamespace()) && "maid".equals(key.getPath());
+    }
+
+    private static Player resolveActorPlayer(Entity entity) {
+        if (entity instanceof Player player) {
+            return player;
+        }
+        if (!(entity instanceof OwnableEntity ownable) || !(entity.level() instanceof ServerLevel serverLevel)) {
+            return null;
+        }
+        UUID ownerId = ownable.getOwnerUUID();
+        if (ownerId == null) {
+            return null;
+        }
+        return serverLevel.getServer().getPlayerList().getPlayer(ownerId);
+    }
+
     private static void sendDenyMessage(Player player, Component message) {
         // 使用 Status Bar
         player.displayClientMessage(
@@ -509,6 +550,32 @@ public class TownProtectionHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void onEntityMobGriefing(EntityMobGriefingEvent event) {
+        Entity entity = event.getEntity();
+        if (!(entity.level() instanceof ServerLevel serverLevel) || !isTownDimension(serverLevel)) {
+            return;
+        }
+        if (!isTouhouLittleMaid(entity)) {
+            return;
+        }
+
+        BlockPos pos = entity.blockPosition();
+        Player actor = resolveActorPlayer(entity);
+        if (actor != null) {
+            if (canFarmOrOperateInInnNonEdit(actor, pos, serverLevel)) {
+                event.setCanGrief(true);
+                return;
+            }
+            Component denyReason = getBuildDenyReason(actor, pos, serverLevel);
+            if (denyReason == null && isEditModeAllowedAt(serverLevel, pos)) {
+                event.setCanGrief(true);
+                return;
+            }
+        }
+        event.setCanGrief(false);
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         Player player = event.getPlayer();
         Level level = (Level) event.getLevel();
@@ -518,20 +585,19 @@ public class TownProtectionHandler {
             if (!isTownDimension(level)) {
                 return;
             }
-            if (player instanceof ServerPlayer serverPlayer && !(player instanceof FakePlayer)) {
-                Component denyReason = getBuildDenyReason(player, event.getPos(), level);
-                if (denyReason != null) {
-                    event.setCanceled(true);
+            if (canFarmOrOperateInInnNonEdit(player, event.getPos(), level)) {
+                return;
+            }
+            Component denyReason = getBuildDenyReason(player, event.getPos(), level);
+            if (denyReason != null) {
+                event.setCanceled(true);
+                if (player instanceof ServerPlayer) {
                     denyBuildForPlayer(player, denyReason);
                 }
                 return;
             }
-            // 覆盖 FakePlayer 路径
-            if (level instanceof ServerLevel serverLevel && player instanceof FakePlayer) {
-                if (!isEditModeAllowedAt(serverLevel, event.getPos())) {
-                    event.setCanceled(true);
-                }
-                return;
+            if (level instanceof ServerLevel serverLevel && !isEditModeAllowedAt(serverLevel, event.getPos())) {
+                event.setCanceled(true);
             }
             return;
         }
@@ -581,7 +647,8 @@ public class TownProtectionHandler {
                 event.setCanceled(true);
                 return;
             }
-            if (!isInnZonePos(serverLevel, event.getPos())) {
+            if (!isInnZonePos(serverLevel, event.getPos())
+                    && getGreenhouseLevelAtPos(serverLevel, event.getPos()) <= 0) {
                 event.setCanceled(true);
                 return;
             }
@@ -736,10 +803,18 @@ public class TownProtectionHandler {
 
         // 2.5 拦截农作物右键交互（覆盖 FTB Ultimine 右键收获路径）
         if (isFarmingBlock(clickedState)) {
+            if (canFarmOrOperateInInnNonEdit(player, pos, level)) {
+                return;
+            }
             Component denyReason = getBuildDenyReason(player, pos, level);
             if (denyReason != null) {
                 denyRightClickBlock(event, player, denyReason);
             }
+            return;
+        }
+
+        // 城镇维度内统一放行与带方块实体的方块交互（例如炒锅、箱子等）
+        if (clickedState.hasBlockEntity()) {
             return;
         }
 

@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
@@ -16,6 +17,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
  * <p>提供与玩家传送相关的通用方法。
  */
 public class TeleportUtils {
+    private static final int OVERWORLD_RANDOM_RADIUS = 1024;
+    private static final int NETHER_RANDOM_RADIUS = 1024;
 
     /**
      * 将玩家传送到资源主世界出生点。
@@ -37,7 +40,8 @@ public class TeleportUtils {
         if (targetLevel == null) return;
 
         BlockPos spawnPos = targetLevel.getSharedSpawnPos();
-        BlockPos safePos = findSafeSpawnPos(targetLevel, spawnPos);
+        BlockPos randomBase = randomizeHorizontalBase(targetLevel, spawnPos, OVERWORLD_RANDOM_RADIUS);
+        BlockPos safePos = findSafeSpawnPos(targetLevel, randomBase);
         player.teleportTo(
                 targetLevel,
                 safePos.getX() + 0.5,
@@ -45,6 +49,10 @@ public class TeleportUtils {
                 safePos.getZ() + 0.5,
                 player.getYRot(),
                 player.getXRot());
+    }
+
+    public static BlockPos getRandomizedNetherBase(ServerLevel nether, BlockPos convertedBase) {
+        return randomizeHorizontalBase(nether, convertedBase, NETHER_RANDOM_RADIUS);
     }
 
     public static BlockPos findSafeSpawnPos(ServerLevel level, BlockPos basePos) {
@@ -124,5 +132,15 @@ public class TeleportUtils {
         int chunkX = SectionPos.blockToSectionCoord(x);
         int chunkZ = SectionPos.blockToSectionCoord(z);
         level.getChunkSource().getChunk(chunkX, chunkZ, ChunkStatus.FULL, true);
+    }
+
+    private static BlockPos randomizeHorizontalBase(ServerLevel level, BlockPos basePos, int radius) {
+        if (radius <= 0) {
+            return basePos;
+        }
+        RandomSource random = level.getRandom();
+        int offsetX = random.nextInt(radius * 2 + 1) - radius;
+        int offsetZ = random.nextInt(radius * 2 + 1) - radius;
+        return basePos.offset(offsetX, 0, offsetZ);
     }
 }
