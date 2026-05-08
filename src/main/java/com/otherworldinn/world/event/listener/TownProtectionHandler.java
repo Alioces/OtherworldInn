@@ -10,6 +10,7 @@ import com.otherworldinn.foundation.ModBlockProperties;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.inn.InnData;
+import com.otherworldinn.world.inn.RoomData;
 import com.otherworldinn.world.inn.facility.FacilityRegistry;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
@@ -37,7 +38,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.AttachedStemBlock;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.CandleBlock;
@@ -77,8 +77,6 @@ public class TownProtectionHandler {
     private static final double TOWN_CROP_GROWTH_MULTIPLIER = 0.3D;
     private static final double GREENHOUSE_CROP_GROWTH_MULTIPLIER = 1.5D;
     private static final String GREENHOUSE_FACILITY_ID = "greenhouse";
-    private static final String KALEIDOSCOPE_COOKERY_NAMESPACE = "kaleidoscopecookery";
-    private static final String KALEIDOSCOPE_TAVERN_NAMESPACE = "kaleidoscopetavern";
     private static final ResourceLocation CREATE_DEPOT_ID =
             ResourceLocation.fromNamespaceAndPath("create", "depot");
 
@@ -109,7 +107,8 @@ public class TownProtectionHandler {
         }
 
         // 情况 2: 在旅社区域内，但未开启装修模式 -> 装修提示
-        if (team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
+        if (team.getInnData().getState() != InnData.InnState.EDIT_MODE
+                && isInsideProtectedRoomAreaForNonEdit(team, pos)) {
             return Component.translatable("message.otherworldinn.protection.deny_renovation");
         }
 
@@ -165,19 +164,7 @@ public class TownProtectionHandler {
         if (state.getBlock() instanceof FoodBlock || state.getBlock() instanceof BottleBlock) {
             return true;
         }
-        if (state.hasBlockEntity()) {
-            return true;
-        }
-        if (state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).isEmpty()) {
-            return true;
-        }
-        ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-        if (blockId == null) {
-            return false;
-        }
-        String namespace = blockId.getNamespace();
-        return KALEIDOSCOPE_COOKERY_NAMESPACE.equals(namespace)
-                || KALEIDOSCOPE_TAVERN_NAMESPACE.equals(namespace);
+        return false;
     }
 
     private static boolean isInnFreeInteractBlockItem(BlockItem blockItem) {
@@ -234,8 +221,79 @@ public class TownProtectionHandler {
             return true;
         }
         TeamData team = TeamManager.getInstance().getPlayerTeam(player);
-        return team != null
-                && (isInsideInnZone(team, pos) || isInsideGreenhouseExtraBuildAllowRange(team, pos));
+        if (team == null) {
+            return false;
+        }
+        boolean inOwnedRange =
+                isInsideInnZone(team, pos) || isInsideGreenhouseExtraBuildAllowRange(team, pos);
+        if (!inOwnedRange) {
+            return false;
+        }
+        if (team.getInnData().getState() == InnData.InnState.EDIT_MODE) {
+            return true;
+        }
+        return !isInsideProtectedRoomAreaForNonEdit(team, pos);
+    }
+
+    private static boolean isInsideProtectedRoomAreaForNonEdit(TeamData team, BlockPos pos) {
+        if (team == null || pos == null) {
+            return false;
+        }
+        InnData innData = team.getInnData();
+        if (innData == null || innData.getRooms() == null || innData.getRooms().isEmpty()) {
+            return false;
+        }
+        for (RoomData room : innData.getRooms().values()) {
+            if (room == null) {
+                continue;
+            }
+            if (isInsideRoomOrOuterFaces(pos, room)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isInsideRoomOrOuterFaces(BlockPos pos, RoomData room) {
+        if (pos == null || room == null || room.getMinPos() == null || room.getMaxPos() == null) {
+            return false;
+        }
+        BlockPos min = room.getMinPos();
+        BlockPos max = room.getMaxPos();
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+
+        boolean inRoom =
+                x >= min.getX()
+                        && x <= max.getX()
+                        && y >= min.getY()
+                        && y <= max.getY()
+                        && z >= min.getZ()
+                        && z <= max.getZ();
+        if (inRoom) {
+            return true;
+        }
+
+        boolean xFace =
+                (x == min.getX() - 1 || x == max.getX() + 1)
+                        && y >= min.getY()
+                        && y <= max.getY()
+                        && z >= min.getZ()
+                        && z <= max.getZ();
+        boolean yFace =
+                (y == min.getY() - 1 || y == max.getY() + 1)
+                        && x >= min.getX()
+                        && x <= max.getX()
+                        && z >= min.getZ()
+                        && z <= max.getZ();
+        boolean zFace =
+                (z == min.getZ() - 1 || z == max.getZ() + 1)
+                        && x >= min.getX()
+                        && x <= max.getX()
+                        && y >= min.getY()
+                        && y <= max.getY();
+        return xFace || yFace || zFace;
     }
 
     private static int getGreenhouseLevelAtPos(Level level, BlockPos pos) {

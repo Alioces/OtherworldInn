@@ -13,6 +13,8 @@
     "MixinTransportedItemStack",
     "MixinReskillableConfiguration",
     "MixinPlayerExperience",
+    "MixinPlayerExhaustionRate",
+    "MixinFoodDataNaturalRegenRate",
     "MixinReskillableSkillButton",
     "MixinReskillableSkillScreen",
     "MixinReskillableSkillModel",
