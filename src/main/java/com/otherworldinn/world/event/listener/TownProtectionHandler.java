@@ -37,6 +37,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.AttachedStemBlock;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.CandleBlock;
@@ -76,6 +77,8 @@ public class TownProtectionHandler {
     private static final double TOWN_CROP_GROWTH_MULTIPLIER = 0.3D;
     private static final double GREENHOUSE_CROP_GROWTH_MULTIPLIER = 1.5D;
     private static final String GREENHOUSE_FACILITY_ID = "greenhouse";
+    private static final String KALEIDOSCOPE_COOKERY_NAMESPACE = "kaleidoscopecookery";
+    private static final String KALEIDOSCOPE_TAVERN_NAMESPACE = "kaleidoscopetavern";
     private static final ResourceLocation CREATE_DEPOT_ID =
             ResourceLocation.fromNamespaceAndPath("create", "depot");
 
@@ -162,7 +165,19 @@ public class TownProtectionHandler {
         if (state.getBlock() instanceof FoodBlock || state.getBlock() instanceof BottleBlock) {
             return true;
         }
-        return false;
+        if (state.hasBlockEntity()) {
+            return true;
+        }
+        if (state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO).isEmpty()) {
+            return true;
+        }
+        ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        if (blockId == null) {
+            return false;
+        }
+        String namespace = blockId.getNamespace();
+        return KALEIDOSCOPE_COOKERY_NAMESPACE.equals(namespace)
+                || KALEIDOSCOPE_TAVERN_NAMESPACE.equals(namespace);
     }
 
     private static boolean isInnFreeInteractBlockItem(BlockItem blockItem) {
@@ -694,15 +709,21 @@ public class TownProtectionHandler {
 
         // 允许种植农作物
         if (isFarmingBlock(event.getState())) {
-            if (!(event.getEntity() instanceof Player player)
-                    || !(event.getLevel() instanceof Level level)
-                    || !isTownDimension(level)) {
+            if (!(event.getLevel() instanceof Level level) || !isTownDimension(level)) {
                 return;
             }
-            Component denyReason = getBuildDenyReason(player, event.getPos(), level);
-            if (denyReason != null) {
+            if (event.getEntity() instanceof Player player) {
+                Component denyReason = getBuildDenyReason(player, event.getPos(), level);
+                if (denyReason != null) {
+                    event.setCanceled(true);
+                    denyBuildForPlayer(player, denyReason);
+                }
+                return;
+            }
+            // 非玩家实体（例如女仆）也必须满足同一套权限规则；无来源实体路径由自然生长分支处理。
+            if (event.getEntity() != null
+                    && !canMaidOperateAt(event.getEntity(), event.getPos(), level)) {
                 event.setCanceled(true);
-                denyBuildForPlayer(player, denyReason);
             }
             return;
         }

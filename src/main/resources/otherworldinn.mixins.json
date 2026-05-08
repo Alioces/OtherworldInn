@@ -22,7 +22,8 @@
     "MixinCropBlockTownDecorSurvival",
     "MixinBushBlockTownDecorSurvival",
     "MixinServerLevel",
-    "MixinLittleMaidFarmMoveTask"
+    "MixinLittleMaidFarmMoveTask",
+    "MixinLittleMaidTaskNormalFarm"
   ],
   "client": [
     "MixinPlayerRendererMapModeHidden"
