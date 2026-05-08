@@ -44,10 +44,12 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 public class DimensionResetManager {
 
     private static final long RESET_CYCLE_TICKS = 192000L;
+    private static final double EXTERNAL_DIM_BORDER_SIZE = 20480.0D;
 
     private static boolean hasWarned10Min = false;
     private static boolean hasWarned5Min = false;
     private static boolean hasWarned2Min = false;
+    private static boolean worldBordersApplied = false;
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
@@ -56,7 +58,13 @@ public class DimensionResetManager {
             hasWarned10Min = false;
             hasWarned5Min = false;
             hasWarned2Min = false;
+            worldBordersApplied = false;
             return;
+        }
+
+        if (!worldBordersApplied) {
+            applyWorldBorders(server);
+            worldBordersApplied = true;
         }
 
         ServerLevel timeLevel = server.getLevel(Level.OVERWORLD);
@@ -160,6 +168,8 @@ public class DimensionResetManager {
                 Component.translatable("message.otherworldinn.reset.complete")
                         .withStyle(ChatFormatting.GREEN),
                 false);
+
+        applyWorldBorders(server);
 
         OtherworldInn.LOGGER.info("Dimension reset sequence completed.");
     }
@@ -330,6 +340,17 @@ public class DimensionResetManager {
 
     private static Field getFieldByType(Class<?> clazz, Class<?> type) {
         return getFieldWithFallback(clazz, type);
+    }
+
+    private static void applyWorldBorders(MinecraftServer server) {
+        for (ResourceKey<Level> dimKey : List.of(
+                TownDimensions.RESOURCE_OVERWORLD_LEVEL, Level.NETHER, Level.END)) {
+            ServerLevel dim = server.getLevel(dimKey);
+            if (dim != null) {
+                dim.getWorldBorder().setSize(EXTERNAL_DIM_BORDER_SIZE);
+                dim.getWorldBorder().setCenter(0.0, 0.0);
+            }
+        }
     }
 
     private static void discardAllEntities(ServerLevel level) {
