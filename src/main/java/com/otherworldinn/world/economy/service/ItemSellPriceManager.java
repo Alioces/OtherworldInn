@@ -44,7 +44,7 @@ public class ItemSellPriceManager {
         addPrice("minecraft:rabbit_stew", 7);
 
 		//森罗厨房
-        addPrice("kaleidoscope_cookery:suspicious_stir_fry", 2); // 谜之炒菜
+        addPrice("kaleidoscope_cookery:suspicious_stir_fry", 1); // 谜之炒菜
         addPrice("kaleidoscope_cookery:slime_ball_meal", 22); // 黏液饭
         addPrice("kaleidoscope_cookery:fondant_pie", 24); // 翻糖派
         addPrice("kaleidoscope_cookery:dongpo_pork", 26); // 东坡肉
@@ -101,7 +101,7 @@ public class ItemSellPriceManager {
         addPrice("kaleidoscope_cookery:fish_flavored_shredded_pork_rice_bowl", 28); // 鱼香肉丝盖饭
         addPrice("kaleidoscope_cookery:braised_fish_rice_bowl", 24); // 红烧鱼盖饭
         addPrice("kaleidoscope_cookery:spicy_chicken_rice_bowl", 24); // 辣子鸡盖饭
-        addPrice("kaleidoscope_cookery:suspicious_stir_fry_rice_bowl", 22); // 谜之炒菜盖饭
+        addPrice("kaleidoscope_cookery:suspicious_stir_fry_rice_bowl", 2); // 谜之炒菜盖饭
         addPrice("kaleidoscope_cookery:egg_fried_rice", 14); // 蛋炒饭
         addPrice("kaleidoscope_cookery:delicious_egg_fried_rice", 22); // 美味蛋炒饭
         addPrice("kaleidoscope_cookery:pork_bone_soup", 24); // 大骨汤
