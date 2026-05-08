@@ -254,6 +254,24 @@ public class TownProtectionHandler {
         return false;
     }
 
+    private static boolean isInnRestrictionLiftedForTeamAtPos(TeamData team, BlockPos pos) {
+        if (team == null || pos == null || !isInsideInnZone(team, pos)) {
+            return false;
+        }
+        if (team.getInnData().getState() == InnData.InnState.EDIT_MODE) {
+            return true;
+        }
+        return !isInsideProtectedRoomAreaForNonEdit(team, pos);
+    }
+
+    public static boolean isInnRestrictionLiftedAt(ServerLevel level, BlockPos pos) {
+        if (level == null || pos == null || !isTownDimension(level)) {
+            return false;
+        }
+        TeamData team = TeamManager.getInstance().getTeamAt(pos, level.getServer());
+        return isInnRestrictionLiftedForTeamAtPos(team, pos);
+    }
+
     private static boolean isInsideRoomOrOuterFaces(BlockPos pos, RoomData room) {
         if (pos == null || room == null || room.getMinPos() == null || room.getMaxPos() == null) {
             return false;
@@ -579,6 +597,9 @@ public class TownProtectionHandler {
         if (!isTownDimension(level)) {
             return true;
         }
+        if (level instanceof ServerLevel serverLevel && isInnRestrictionLiftedAt(serverLevel, pos)) {
+            return true;
+        }
         Player actor = resolveActorPlayer(maidEntity);
         if (actor == null) {
             return false;
@@ -656,6 +677,10 @@ public class TownProtectionHandler {
         }
 
         BlockPos pos = entity.blockPosition();
+        if (isInnRestrictionLiftedAt(serverLevel, pos)) {
+            event.setCanGrief(true);
+            return;
+        }
         Player actor = resolveActorPlayer(entity);
         if (actor != null) {
             if (canFarmOrOperateInInnNonEdit(actor, pos, serverLevel)) {
@@ -675,6 +700,9 @@ public class TownProtectionHandler {
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         Player player = event.getPlayer();
         Level level = (Level) event.getLevel();
+        if (level instanceof ServerLevel serverLevel && isInnRestrictionLiftedAt(serverLevel, event.getPos())) {
+            return;
+        }
 
         // 允许破坏农作物
         if (isFarmingBlock(event.getState())) {
@@ -727,6 +755,11 @@ public class TownProtectionHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
+        if (event.getLevel() instanceof ServerLevel serverLevel
+                && isInnRestrictionLiftedAt(serverLevel, event.getPos())) {
+            return;
+        }
+
         if (event.getLevel() instanceof ServerLevel serverLevel
                 && isTownDimension(serverLevel)
                 && isIgnitionFireBlock(event.getState())) {
@@ -905,6 +938,9 @@ public class TownProtectionHandler {
 
         // 2.5 拦截农作物右键交互（覆盖 FTB Ultimine 右键收获路径）
         if (isFarmingBlock(clickedState)) {
+            if (level instanceof ServerLevel serverLevel && isInnRestrictionLiftedAt(serverLevel, pos)) {
+                return;
+            }
             if (canFarmOrOperateInInnNonEdit(player, pos, level)) {
                 return;
             }
@@ -945,6 +981,10 @@ public class TownProtectionHandler {
 
             // 计算拟放置位置
             BlockPos placePos = pos.relative(event.getFace());
+            if (level instanceof ServerLevel serverLevel
+                    && isInnRestrictionLiftedAt(serverLevel, placePos)) {
+                return;
+            }
 
             // 检查是否允许在该位置建筑
             Component denyReason = getBuildDenyReason(player, placePos, level);
@@ -954,6 +994,9 @@ public class TownProtectionHandler {
         }
 
         if (!player.isCreative() && stack.getItem() instanceof HoeItem) {
+            if (level instanceof ServerLevel serverLevel && isInnRestrictionLiftedAt(serverLevel, pos)) {
+                return;
+            }
             Component denyReason = getBuildDenyReason(player, pos, level);
             if (denyReason != null) {
                 denyRightClickBlock(event, player, denyReason);
@@ -1019,6 +1062,17 @@ public class TownProtectionHandler {
             for (BlockPos p : resolver.getToPush()) {
                 pointsToCheck.add(p); // 源位置
                 pointsToCheck.add(p.relative(moveDir)); // 目标位置
+            }
+
+            boolean allPointsInLiftedInnArea = true;
+            for (BlockPos p : pointsToCheck) {
+                if (!isInnRestrictionLiftedAt(level, p)) {
+                    allPointsInLiftedInnArea = false;
+                    break;
+                }
+            }
+            if (allPointsInLiftedInnArea) {
+                return;
             }
 
             // 验证一致性：所有点必须属于同一个队伍（或者都不属于任何队伍）

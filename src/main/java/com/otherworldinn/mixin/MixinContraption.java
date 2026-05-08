@@ -2,6 +2,7 @@ package com.otherworldinn.mixin;
 
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.inn.InnData.InnState;
+import com.otherworldinn.world.event.listener.TownProtectionHandler;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import com.simibubi.create.content.contraptions.Contraption;
@@ -64,6 +65,10 @@ public class MixinContraption {
         if (worldAccessor instanceof Level world && !world.isClientSide) {
             // 仅在城镇维度生效
             if (world.dimension() == TownDimensions.TOWN_LEVEL) {
+                if (world instanceof net.minecraft.server.level.ServerLevel serverLevel
+                        && TownProtectionHandler.isInnRestrictionLiftedAt(serverLevel, pos)) {
+                    return this.customBlockPlacement(worldAccessor, pos, state);
+                }
                 // 检查该位置是否属于某个队伍的旅社区域
                 TeamData team = TeamManager.getInstance().getTeamAt(pos, world.getServer());
 
