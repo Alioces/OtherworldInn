@@ -3,8 +3,10 @@ package com.otherworldinn.world.event.listener;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.world.dimension.TownDimensions;
+import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import com.otherworldinn.world.teleport.TeleportUtils;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
@@ -40,6 +43,51 @@ public class PlayerEventHandler {
     private static final Component TOWN_BOUNDARY_WARNING_TEXT =
             Component.translatable(TOWN_BOUNDARY_WARNING_KEY).withStyle(ChatFormatting.RED);
 
+    private static final double DEATH_PENALTY_MIN_RATIO = 0.05;
+    private static final double DEATH_PENALTY_MAX_RATIO = 0.10;
+    private static final int DEATH_PENALTY_MAX_AMOUNT = 500;
+
+
+    /**
+     * 处理玩家死亡事件
+     *
+     * <p>在非城镇维度死亡时扣除队伍余额的5%-10%（上限500），并通知全队。
+     */
+    @SubscribeEvent
+    public static void onPlayerDeath(LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+
+        Level level = player.level();
+        if (level.dimension() == TownDimensions.TOWN_LEVEL) return;
+
+        MinecraftServer server = player.getServer();
+        if (server == null) return;
+
+        TeamData team = TeamManager.getInstance().getPlayerTeam(player);
+        if (team == null || team.getCoins() <= 0) return;
+
+        double ratio = DEATH_PENALTY_MIN_RATIO
+                + (DEATH_PENALTY_MAX_RATIO - DEATH_PENALTY_MIN_RATIO) * level.random.nextDouble();
+        int penalty = Math.max(1, (int) Math.round(team.getCoins() * ratio));
+        penalty = Math.min(penalty, DEATH_PENALTY_MAX_AMOUNT);
+        penalty = Math.min(penalty, team.getCoins());
+
+        team.removeCoins(penalty, server);
+        TeamManager.getInstance().syncTeam(team, server);
+
+        Component coinIcon = Component.literal("\uE001").withStyle(ChatFormatting.WHITE);
+        Component msg = Component.translatable("message.otherworldinn.death_penalty",
+                player.getName().copy().withStyle(ChatFormatting.YELLOW),
+                coinIcon.copy().append(Component.literal(String.valueOf(penalty)).withStyle(ChatFormatting.GOLD)))
+                .withStyle(ChatFormatting.RED);
+
+        for (UUID memberId : team.getMembers()) {
+            ServerPlayer member = server.getPlayerList().getPlayer(memberId);
+            if (member != null) {
+                member.sendSystemMessage(msg);
+            }
+        }
+    }
 
     /**
      * 处理玩家维度切换事件

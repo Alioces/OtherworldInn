@@ -386,6 +386,7 @@
   "message.otherworldinn.commission.submit_kill_unfinished": "Kill objectives are not complete yet",
   "message.otherworldinn.commission.submit_not_needed": "This commission does not require item submission",
   "message.otherworldinn.commission.today": "Today",
+  "message.otherworldinn.death_penalty": "%s collapsed, medical expenses deducted: %s",
   "message.otherworldinn.desk_bell.status.closed": "The Inn is CLOSED",
   "message.otherworldinn.desk_bell.status.edit_mode": "The Inn is under RENOVATION",
   "message.otherworldinn.desk_bell.status.open": "The Inn is OPEN",
