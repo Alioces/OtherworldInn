@@ -499,6 +499,29 @@ public class TownProtectionHandler {
         return serverLevel.getServer().getPlayerList().getPlayer(ownerId);
     }
 
+    public static boolean canMaidOperateAt(Entity maidEntity, BlockPos pos, Level level) {
+        if (maidEntity == null || pos == null || level == null) {
+            return false;
+        }
+        if (!isTownDimension(level)) {
+            return true;
+        }
+        Player actor = resolveActorPlayer(maidEntity);
+        if (actor == null) {
+            return false;
+        }
+        if (canFarmOrOperateInInnNonEdit(actor, pos, level)) {
+            return true;
+        }
+        if (getBuildDenyReason(actor, pos, level) == null) {
+            return true;
+        }
+        if (level instanceof ServerLevel serverLevel) {
+            return isEditModeAllowedAt(serverLevel, pos);
+        }
+        return false;
+    }
+
     private static void sendDenyMessage(Player player, Component message) {
         // 使用 Status Bar
         player.displayClientMessage(
@@ -834,14 +857,10 @@ public class TownProtectionHandler {
 
             if (isInnFreeInteractBlockItem(blockItem)) {
                 BlockPos placePos = pos.relative(event.getFace());
-                if (level instanceof ServerLevel serverLevel) {
-                    TeamData team =
-                            TeamManager.getInstance()
-                                    .getTeamAt(placePos, serverLevel.getServer());
-                    if (team != null
-                            && team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
-                        return;
-                    }
+                // 兼容“点击可替换方块时实际放置在原位”的情况，避免误拦截导致无挥手/无音效。
+                if (canFarmOrOperateInInnNonEdit(player, pos, level)
+                        || canFarmOrOperateInInnNonEdit(player, placePos, level)) {
+                    return;
                 }
             }
 

@@ -21,7 +21,8 @@
     "MixinSeasonalCropGrowthHandler",
     "MixinCropBlockTownDecorSurvival",
     "MixinBushBlockTownDecorSurvival",
-    "MixinServerLevel"
+    "MixinServerLevel",
+    "MixinLittleMaidFarmMoveTask"
   ],
   "client": [
     "MixinPlayerRendererMapModeHidden"
