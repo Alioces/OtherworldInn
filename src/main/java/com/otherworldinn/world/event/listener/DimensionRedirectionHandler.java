@@ -2,6 +2,7 @@ package com.otherworldinn.world.event.listener;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.world.dimension.TownDimensions;
+import com.otherworldinn.world.teleport.TeleportUtils;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -78,14 +79,13 @@ public class DimensionRedirectionHandler {
                                                                         .PLAY_PORTAL_SOUND);
                                                 player.changeDimension(transition);
                                             } else {
-                                                // 其他情况（指令等），直接传送
-                                                player.teleportTo(
+                                                TeleportUtils.changeDimensionTo(
+                                                        player,
                                                         resourceOverworld,
-                                                        player.getX(),
-                                                        player.getY(),
-                                                        player.getZ(),
-                                                        player.getYRot(),
-                                                        player.getXRot());
+                                                        new Vec3(
+                                                                player.getX(),
+                                                                player.getY(),
+                                                                player.getZ()));
                                             }
                                         }));
             }

@@ -264,12 +264,9 @@ public class InnEventHandler {
         for (UUID teamId : teamsToCheck) {
             TeamData team = teamManager.getTeam(teamId, level.getServer());
             if (team != null) {
-                // 执行房间合法性检查
                 team.getInnData().checkAllRoomsValidity(level, team);
-
-                // 更新房间属性 (家具统计)
                 team.getInnData().updateAllRoomsStats(level);
-                // 同步数据给客户端
+                team.getInnData().refreshClipboardTodos(level, team);
                 teamManager.syncTeam(team, level.getServer());
             }
         }

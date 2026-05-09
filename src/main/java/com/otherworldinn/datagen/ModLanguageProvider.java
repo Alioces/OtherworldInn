@@ -328,7 +328,7 @@ public class ModLanguageProvider extends LanguageProvider {
                 .zh("你不能修改城镇内的方块")
                 .en("You cannot modify blocks within the Town.");
         entry("message.otherworldinn.protection.deny_renovation")
-                .zh("旅社不在装修中...")
+                .zh("旅社不在装修中，无法修改房间装潢")
                 .en("The Inn is not under renovation...");
         entry("message.otherworldinn.protection.banned_item")
                 .zh("此物品在城镇维度被禁用")
@@ -368,7 +368,7 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // 房间登记册
         entry("message.otherworldinn.room_register.not_edit_mode")
-                .zh("旅社未处于装修模式！")
+                .zh("旅社未处于装修模式，无法登记房间")
                 .en("The Inn is not in edit mode!");
         entry("message.otherworldinn.room_register.pos1_set")
                 .zh("位置1已设置：%s")

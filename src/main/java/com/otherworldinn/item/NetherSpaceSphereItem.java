@@ -5,8 +5,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -43,22 +41,7 @@ public class NetherSpaceSphereItem extends Item {
                         serverPlayer.getX() / 8.0D, serverPlayer.getY(), serverPlayer.getZ() / 8.0D);
         BlockPos randomizedBase = TeleportUtils.getRandomizedNetherBase(nether, targetBase);
         BlockPos safePos = TeleportUtils.findSafeSpawnPosInNether(nether, randomizedBase);
-        serverPlayer.teleportTo(
-                nether,
-                safePos.getX() + 0.5D,
-                safePos.getY(),
-                safePos.getZ() + 0.5D,
-                serverPlayer.getYRot(),
-                serverPlayer.getXRot());
-        nether.playSound(
-                null,
-                safePos.getX() + 0.5D,
-                safePos.getY(),
-                safePos.getZ() + 0.5D,
-                SoundEvents.ENDERMAN_TELEPORT,
-                SoundSource.PLAYERS,
-                1.0F,
-                1.0F);
+        TeleportUtils.changeDimensionTo(serverPlayer, nether, safePos);
 
         if (!serverPlayer.getAbilities().instabuild) {
             stack.shrink(1);

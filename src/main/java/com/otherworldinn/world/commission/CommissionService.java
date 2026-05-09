@@ -161,7 +161,7 @@ public final class CommissionService {
             refreshBoard(level, team, day);
             return true;
         }
-        boolean expired = data.hasAccepted() && day > data.getExpireDay();
+        boolean expired = data.hasAccepted() && !data.isRewardClaimed() && day > data.getExpireDay();
         if (expired) {
             notifyTeamCommissionExpired(level, team);
             refreshBoard(level, team, day);

@@ -675,8 +675,7 @@ public class InnData {
             ServerLevel level, GuestEntity guestEntity, RoomData room, BlockPos assignedBedPos) {
         BlockPos bedApproach = findBedApproachTarget(level, assignedBedPos);
         if (bedApproach != null) {
-            Path path = guestEntity.getNavigation().createPath(bedApproach, 0);
-            if (path != null && path.canReach()) {
+            if (isReachable(guestEntity, bedApproach)) {
                 return bedApproach;
             }
         }
@@ -685,24 +684,25 @@ public class InnData {
         int centerX = (min.getX() + max.getX()) / 2;
         int centerY = min.getY() + 1;
         int centerZ = (min.getZ() + max.getZ()) / 2;
-        BlockPos fallback = new BlockPos(centerX, centerY, centerZ);
+
+        int searchX0 = min.getX() - 2;
+        int searchX1 = max.getX() + 2;
+        int searchZ0 = min.getZ() - 2;
+        int searchZ1 = max.getZ() + 2;
 
         BlockPos best = null;
         double bestDist = Double.MAX_VALUE;
-        for (int x = min.getX(); x <= max.getX(); x++) {
-            for (int z = min.getZ(); z <= max.getZ(); z++) {
+        for (int x = searchX0; x <= searchX1; x++) {
+            for (int z = searchZ0; z <= searchZ1; z++) {
                 for (int y = min.getY(); y <= Math.min(max.getY(), min.getY() + 2); y++) {
                     BlockPos pos = new BlockPos(x, y, z);
                     if (!isWalkableRoomTarget(level, pos)) {
                         continue;
                     }
-                    Path path = guestEntity.getNavigation().createPath(pos, 0);
-                    if (path == null || !path.canReach()) {
+                    if (!isReachable(guestEntity, pos)) {
                         continue;
                     }
-                    double dist =
-                            guestEntity.distanceToSqr(
-                                    pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
+                    double dist = guestEntity.distanceToSqr(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
                     if (dist < bestDist) {
                         bestDist = dist;
                         best = pos;
@@ -713,10 +713,17 @@ public class InnData {
         if (best != null) {
             return best;
         }
+
+        BlockPos fallback = new BlockPos(centerX, centerY, centerZ);
         if (!isWalkableRoomTarget(level, fallback)) {
             return fallback.above();
         }
         return fallback;
+    }
+
+    private static boolean isReachable(GuestEntity guestEntity, BlockPos pos) {
+        Path path = guestEntity.getNavigation().createPath(pos, 0);
+        return path != null && path.canReach();
     }
 
     private BlockPos claimUnassignedBedForGuest(RoomData room, UUID guestId, ServerLevel level) {
@@ -1349,6 +1356,17 @@ public class InnData {
 
         for (String todo : todoList) {
             ClipboardManager.addTodo(level, area, todo);
+        }
+    }
+
+    public void refreshClipboardTodos(Level level, TeamData team) {
+        for (TeamData.InnRegion region : team.getInnRegions()) {
+            AABB area =
+                    new AABB(region.minX(), -64, region.minZ(), region.maxX(), 320, region.maxZ());
+            ClipboardManager.clear(level, area);
+            for (String todo : todoList) {
+                ClipboardManager.addTodo(level, area, todo);
+            }
         }
     }
 

@@ -34,6 +34,7 @@ public class FrontDeskTask implements IMaidTask {
     private static final ResourceLocation UID =
             ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "front_desk");
     private static final ItemStack ICON = new ItemStack(ModItems.ROOM_KEY.get());
+    private static final int RECEPTION_RANGE = 16;
 
     @Override
     public ResourceLocation getUid() {
@@ -78,11 +79,12 @@ public class FrontDeskTask implements IMaidTask {
             clearTarget(maid);
             return false;
         }
-        boolean hasWaiting = !getWaitingGuests(team, level).isEmpty();
-        if (!hasWaiting) {
+        GuestEntity nearestInRange = findNearestWaitingGuest(level, team, maid.blockPosition(), RECEPTION_RANGE);
+        if (nearestInRange == null) {
             clearTarget(maid);
+            return false;
         }
-        return hasWaiting;
+        return true;
     }
 
     private static TeamData getOpenInnTeam(EntityMaid maid) {
@@ -97,6 +99,9 @@ public class FrontDeskTask implements IMaidTask {
     }
 
     private static boolean hasWaitingGuestNearby(EntityMaid maid, BlockPos pos) {
+        if (!pos.equals(maid.blockPosition())) {
+            return false;
+        }
         if (!(maid.level() instanceof ServerLevel level)) {
             clearTarget(maid);
             return false;
@@ -106,7 +111,7 @@ public class FrontDeskTask implements IMaidTask {
             clearTarget(maid);
             return false;
         }
-        GuestEntity guest = findNearestWaitingGuest(level, team, pos);
+        GuestEntity guest = findNearestWaitingGuest(level, team, pos, RECEPTION_RANGE);
         if (guest == null) {
             clearTarget(maid);
         }
@@ -123,7 +128,7 @@ public class FrontDeskTask implements IMaidTask {
             clearTarget(maid);
             return;
         }
-        GuestEntity guest = findNearestWaitingGuest(level, team, maid.blockPosition());
+        GuestEntity guest = findNearestWaitingGuest(level, team, maid.blockPosition(), RECEPTION_RANGE);
         if (guest == null) {
             clearTarget(maid);
             return;
@@ -223,12 +228,13 @@ public class FrontDeskTask implements IMaidTask {
                 .toList();
     }
 
-    private static GuestEntity findNearestWaitingGuest(ServerLevel level, TeamData team, BlockPos pos) {
+    private static GuestEntity findNearestWaitingGuest(ServerLevel level, TeamData team, BlockPos pos, int maxRange) {
+        int maxRangeSqr = maxRange * maxRange;
         GuestEntity nearest = null;
         double nearestDist = Double.MAX_VALUE;
         for (GuestEntity guest : getWaitingGuests(team, level)) {
             double dist = guest.blockPosition().distSqr(pos);
-            if (dist < nearestDist) {
+            if (dist <= maxRangeSqr && dist < nearestDist) {
                 nearestDist = dist;
                 nearest = guest;
             }

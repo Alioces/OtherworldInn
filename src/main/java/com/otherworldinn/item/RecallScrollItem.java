@@ -5,8 +5,8 @@ import com.otherworldinn.client.ClientHooks;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.map.MapPoint;
 import com.otherworldinn.world.map.TownDataProvider;
+import com.otherworldinn.world.teleport.TeleportUtils;
 import java.util.Optional;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -95,37 +95,7 @@ public class RecallScrollItem extends Item {
                             1.0F,
                             1.0F);
 
-                    // 传送玩家
-                    player.teleportTo(
-                            townLevel,
-                            target.x,
-                            target.y,
-                            target.z,
-                            player.getYRot(),
-                            player.getXRot());
-
-                    // 播放传送后的音效 (在目标维度)
-                    townLevel.playSound(
-                            null,
-                            target.x,
-                            target.y,
-                            target.z,
-                            SoundEvents.ENDERMAN_TELEPORT,
-                            SoundSource.PLAYERS,
-                            1.0F,
-                            1.0F);
-
-                    // 生成传送粒子效果 (在目标维度)
-                    townLevel.sendParticles(
-                            ParticleTypes.PORTAL,
-                            target.x,
-                            target.y + 1.0,
-                            target.z,
-                            32,
-                            0.5,
-                            1.0,
-                            0.5,
-                            0.1);
+                    TeleportUtils.changeDimensionTo(player, townLevel, target);
                 }
             }
         }

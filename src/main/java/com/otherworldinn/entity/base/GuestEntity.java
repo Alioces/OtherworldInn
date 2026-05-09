@@ -151,6 +151,7 @@ public abstract class GuestEntity extends PathfinderMob {
     protected PathNavigation createNavigation(Level level) {
         GroundPathNavigation navigation = new GroundPathNavigation(this, level);
         navigation.setCanOpenDoors(true);
+        navigation.setCanPassDoors(true);
         return navigation;
     }
 
@@ -204,7 +205,6 @@ public abstract class GuestEntity extends PathfinderMob {
                     return;
                 }
 
-                // 定期重新计算路径 (每 20 tick / 1秒)
                 if (--this.recalculateDelay <= 0) {
                     this.recalculateDelay = 20;
                     moveToTarget();
@@ -253,7 +253,8 @@ public abstract class GuestEntity extends PathfinderMob {
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 64.0)
-                .add(Attributes.MOVEMENT_SPEED, 0.25);
+                .add(Attributes.MOVEMENT_SPEED, 0.25)
+                .add(Attributes.FOLLOW_RANGE, 48.0);
     }
 
     /**

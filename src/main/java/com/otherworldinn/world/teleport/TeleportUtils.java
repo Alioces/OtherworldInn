@@ -10,6 +10,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * 传送工具类
@@ -28,27 +30,38 @@ public class TeleportUtils {
      * @param player 需要传送的玩家
      */
     public static void teleportToOverworldSpawn(ServerPlayer player) {
-        // 优先尝试传送到资源主世界
-        ServerLevel targetLevel =
-                player.getServer().getLevel(TownDimensions.RESOURCE_OVERWORLD_LEVEL);
-
-        // 资源主世界不可用时回退到原版主世界
+        ServerLevel targetLevel = player.getServer().getLevel(TownDimensions.RESOURCE_OVERWORLD_LEVEL);
         if (targetLevel == null) {
             targetLevel = player.getServer().getLevel(Level.OVERWORLD);
         }
-
         if (targetLevel == null) return;
 
         BlockPos spawnPos = targetLevel.getSharedSpawnPos();
         BlockPos randomBase = randomizeHorizontalBase(targetLevel, spawnPos, OVERWORLD_RANDOM_RADIUS);
         BlockPos safePos = findSafeSpawnPos(targetLevel, randomBase);
-        player.teleportTo(
+        changeDimensionTo(player, targetLevel, safePos);
+    }
+
+    public static void changeDimensionTo(ServerPlayer player, ServerLevel targetLevel, BlockPos safePos) {
+        DimensionTransition transition = new DimensionTransition(
                 targetLevel,
-                safePos.getX() + 0.5,
-                safePos.getY(),
-                safePos.getZ() + 0.5,
+                new Vec3(safePos.getX() + 0.5, safePos.getY(), safePos.getZ() + 0.5),
+                player.getDeltaMovement(),
                 player.getYRot(),
-                player.getXRot());
+                player.getXRot(),
+                DimensionTransition.PLACE_PORTAL_TICKET);
+        player.changeDimension(transition);
+    }
+
+    public static void changeDimensionTo(ServerPlayer player, ServerLevel targetLevel, Vec3 target) {
+        DimensionTransition transition = new DimensionTransition(
+                targetLevel,
+                target,
+                player.getDeltaMovement(),
+                player.getYRot(),
+                player.getXRot(),
+                DimensionTransition.PLACE_PORTAL_TICKET);
+        player.changeDimension(transition);
     }
 
     public static BlockPos getRandomizedNetherBase(ServerLevel nether, BlockPos convertedBase) {
@@ -80,6 +93,10 @@ public class TeleportUtils {
         ensureChunk(level, baseX, baseZ);
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, baseX, baseZ);
         int fallbackY = Math.max(y, level.getSeaLevel() + 1);
+        BlockPos fallback = findSafeYAround(level, baseX, fallbackY, baseZ, 16);
+        if (fallback != null) {
+            return fallback;
+        }
         return new BlockPos(baseX, fallbackY, baseZ);
     }
 
@@ -108,7 +125,12 @@ public class TeleportUtils {
 
         ensureChunk(level, baseX, baseZ);
         int y = Math.min(level.getSeaLevel() + 1, roofLimitY);
-        return new BlockPos(baseX, Math.max(y, minY), baseZ);
+        int fallbackStartY = Math.max(y, minY);
+        BlockPos fallback = findSafeYAround(level, baseX, fallbackStartY, baseZ, 64);
+        if (fallback != null) {
+            return fallback;
+        }
+        return new BlockPos(baseX, fallbackStartY, baseZ);
     }
 
     private static boolean isSafeSpawn(ServerLevel level, BlockPos pos) {
@@ -126,6 +148,24 @@ public class TeleportUtils {
             return false;
         }
         return head.getCollisionShape(level, pos.above()).isEmpty();
+    }
+
+    private static BlockPos findSafeYAround(ServerLevel level, int x, int baseY, int z, int searchRange) {
+        int minY = level.getMinBuildHeight() + 1;
+        int maxY = level.getMaxBuildHeight() - 2;
+        for (int dy = 0; dy <= searchRange; dy++) {
+            for (int sign = -1; sign <= 1; sign += 2) {
+                int y = baseY + dy * sign;
+                if (y < minY || y > maxY) {
+                    continue;
+                }
+                BlockPos candidate = new BlockPos(x, y, z);
+                if (isSafeSpawn(level, candidate)) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
     }
 
     private static void ensureChunk(ServerLevel level, int x, int z) {
