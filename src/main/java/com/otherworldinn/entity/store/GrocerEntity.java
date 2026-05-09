@@ -46,6 +46,7 @@ public class GrocerEntity extends StoreEntity {
         this.addStoreItem("minecraft:tuff", 3, 64);
         this.addStoreItem("minecraft:calcite", 3, 64);
         this.addStoreItem("minecraft:cobbled_deepslate", 3, 64);
+        this.addStoreItem("minecraft:white_wool", 2, 64);
     }
 
     private void addAllPlanks() {

@@ -240,6 +240,7 @@ final class NpcStoreJeiData {
         addById(recipes, GROCER, "minecraft:tuff", 3, 3, 64, 64, 1, null, false);
         addById(recipes, GROCER, "minecraft:calcite", 3, 3, 64, 64, 1, null, false);
         addById(recipes, GROCER, "minecraft:cobbled_deepslate", 3, 3, 64, 64, 1, null, false);
+        addById(recipes, GROCER, "minecraft:white_wool", 2, 2, 64, 64, 1, null, false);
 
         addById(recipes, GROCER, "refinedstorage:1k_storage_part", 32, 32, 8, 8, 2, null, false);
         addById(recipes, GROCER, "refinedstorage:4k_storage_part", 64, 64, 6, 6, 4, null, false);
