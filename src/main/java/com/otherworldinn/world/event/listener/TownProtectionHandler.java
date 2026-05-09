@@ -528,6 +528,11 @@ public class TownProtectionHandler {
         return false;
     }
 
+    @SubscribeEvent
+    public static void onFarmlandTrample(BlockEvent.FarmlandTrampleEvent event) {
+        event.setCanceled(true);
+    }
+
     /** 客户端事件处理器 专门用于在客户端预测阶段就拦截交互 */
     @EventBusSubscriber(modid = OtherworldInn.MODID, value = Dist.CLIENT)
     public static class ClientHandler {
