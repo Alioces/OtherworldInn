@@ -176,13 +176,16 @@ public abstract class GuestEntity extends PathfinderMob {
         @Override
         public void tick() {
             if (GuestEntity.this.navigationTarget != null) {
-                double distSqr =
-                        GuestEntity.this.distanceToSqr(
-                                GuestEntity.this.navigationTarget.getX() + 0.5,
-                                GuestEntity.this.navigationTarget.getY(),
-                                GuestEntity.this.navigationTarget.getZ() + 0.5);
+                double tgtX = GuestEntity.this.navigationTarget.getX() + 0.5;
+                double tgtY = GuestEntity.this.navigationTarget.getY();
+                double tgtZ = GuestEntity.this.navigationTarget.getZ() + 0.5;
+                double hDistSqr =
+                        (GuestEntity.this.getX() - tgtX) * (GuestEntity.this.getX() - tgtX)
+                                + (GuestEntity.this.getZ() - tgtZ)
+                                        * (GuestEntity.this.getZ() - tgtZ);
+                double vDist = Math.abs(GuestEntity.this.getY() - tgtY);
 
-                if (distSqr < 4.0D) {
+                if (hDistSqr < 4.0D && vDist < 2.0D) {
                     if (GuestEntity.this.guestData.getState() == GuestData.GuestState.WAITING) {
                         GuestEntity.this.getNavigation().stop();
                     } else {
@@ -190,7 +193,7 @@ public abstract class GuestEntity extends PathfinderMob {
                     }
                     return;
                 }
-                if (GuestEntity.this.lastNavigationDistanceSqr - distSqr
+                if (GuestEntity.this.lastNavigationDistanceSqr - hDistSqr
                         > NAVIGATION_PROGRESS_THRESHOLD_SQR) {
                     GuestEntity.this.navigationStuckTicks = 0;
                 } else {
@@ -199,7 +202,7 @@ public abstract class GuestEntity extends PathfinderMob {
                         GuestEntity.this.navigationStuckTicks += 2;
                     }
                 }
-                GuestEntity.this.lastNavigationDistanceSqr = distSqr;
+                GuestEntity.this.lastNavigationDistanceSqr = hDistSqr;
                 if (GuestEntity.this.navigationStuckTicks >= NAVIGATION_STUCK_TIMEOUT_TICKS) {
                     GuestEntity.this.clearNavigationTarget();
                     return;
