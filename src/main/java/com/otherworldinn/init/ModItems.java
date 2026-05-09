@@ -162,7 +162,8 @@ public class ModItems {
                     .rarity(Rarity.EPIC)
                     .stacksTo(1)
                     .lang("Space Sphere", "空间球")
-                    .tooltip("Use to activate map teleport for your team", "使用后激活地图点传送功能");
+                    .tooltip("Use to activate map teleport for your team", "使用后激活地图点传送功能")
+                    .tooltip("Right click in non-town dimensions to teleport randomly within 256 blocks", "在非城镇维度右键使用，随机传送至256格内安全位置");
     public static final DeferredItem<SpaceSphereItem> SPACE_SPHERE = SPACE_SPHERE_REG.register();
 
     public static final ItemReg<NetherSpaceSphereItem> NETHER_SPACE_SPHERE_REG =

@@ -54,6 +54,8 @@ public final class AdvancementUtils {
             ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "greenhouse_max_level");
     public static final ResourceLocation ALL_FACILITY_MAX_LEVEL =
             ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "all_facility_max_level");
+    public static final ResourceLocation TOO_MANY_BEDS =
+            ResourceLocation.fromNamespaceAndPath(OtherworldInn.MODID, "too_many_beds");
     private static final AABB TOWN_NPC_SCAN_BOX = new AABB(-1024, -64, -1024, 1024, 384, 1024);
 
     private AdvancementUtils() {}

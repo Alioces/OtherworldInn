@@ -62,6 +62,12 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("advancements.otherworldinn.root.description")
                 .zh("获得旅社钥匙，开启你的经营之旅")
                 .en("Obtain the Inn Key and begin your management journey");
+        entry("advancements.otherworldinn.too_many_beds.title")
+                .zh("你要干什么")
+                .en("What Are You Doing");
+        entry("advancements.otherworldinn.too_many_beds.description")
+                .zh("在一间房里放致死量的床")
+                .en("Put a lethal amount of beds in one room");
         entry("advancements.otherworldinn.maimai_hidden.title")
                 .zh("这不是洗衣机")
                 .en("This Is Not a Washing Machine");

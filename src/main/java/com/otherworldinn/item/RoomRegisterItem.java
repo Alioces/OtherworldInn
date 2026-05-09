@@ -108,10 +108,12 @@ public class RoomRegisterItem extends Item {
                     innData.addRoom(newRoom);
                     innData.calculateRoomStats(newId, level);
 
-                    // 立即同步队伍数据
                     TeamManager.getInstance().syncTeam(team, serverPlayer.getServer());
                     if (isFirstRoom) {
                         AdvancementUtils.award(serverPlayer, AdvancementUtils.CREATE_FIRST_ROOM);
+                    }
+                    if (bedCount >= 7) {
+                        AdvancementUtils.award(serverPlayer, AdvancementUtils.TOO_MANY_BEDS);
                     }
 
                     player.displayClientMessage(
