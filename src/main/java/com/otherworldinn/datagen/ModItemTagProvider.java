@@ -30,8 +30,6 @@ public class ModItemTagProvider extends ItemTagsProvider {
         // 定义“城镇维度禁用”标签
         tag(OtherworldInn.BANNED_IN_TOWN)
                 .add(Items.TNT)
-                .add(Items.FLINT_AND_STEEL)
-                .add(Items.LAVA_BUCKET)
                 .add(Items.END_CRYSTAL)
                 .add(Items.FIRE_CHARGE)
                 .add(Items.FIREWORK_ROCKET)
@@ -45,7 +43,6 @@ public class ModItemTagProvider extends ItemTagsProvider {
                 .add(ModItems.LAND_DEED.get())
                 .add(ModItems.INN_KEY.get())
                 .add(ModItems.ROOM_KEY.get())
-                .add(ModItems.SPACE_SPHERE.get())
                 .add(ModItems.NETHER_SPACE_SPHERE.get())
                 .add(ModItems.END_SPACE_SPHERE.get())
                 ;

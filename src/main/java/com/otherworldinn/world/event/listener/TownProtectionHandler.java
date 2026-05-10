@@ -24,7 +24,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
@@ -148,10 +147,6 @@ public class TownProtectionHandler {
 
     private static boolean isTownDimension(Level level) {
         return level.dimension() == TownDimensions.TOWN_LEVEL;
-    }
-
-    private static boolean isIgnitionFireBlock(BlockState state) {
-        return state != null && state.is(BlockTags.FIRE);
     }
 
     private static boolean isDepotDisplayBlock(BlockState state) {
@@ -755,13 +750,6 @@ public class TownProtectionHandler {
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
         if (event.getLevel() instanceof ServerLevel serverLevel
                 && isInnRestrictionLiftedAt(serverLevel, event.getPos())) {
-            return;
-        }
-
-        if (event.getLevel() instanceof ServerLevel serverLevel
-                && isTownDimension(serverLevel)
-                && isIgnitionFireBlock(event.getState())) {
-            event.setCanceled(true);
             return;
         }
 

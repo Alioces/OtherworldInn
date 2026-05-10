@@ -11,16 +11,24 @@ import com.otherworldinn.client.renderer.GrocerRenderer;
 import com.otherworldinn.client.renderer.GuestRenderer;
 import com.otherworldinn.client.renderer.MagicianModel;
 import com.otherworldinn.client.renderer.MagicianRenderer;
+import com.otherworldinn.init.ModItems;
+import com.otherworldinn.item.RoomKeyItem;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 /**
@@ -93,5 +101,23 @@ public class ModClientEvents {
     @SubscribeEvent
     public static void onRegisterAdditionalModels(ModelEvent.RegisterAdditional event) {
         event.register(COLD_CUT_HAM_SLICES_FORCED_MODEL_PATH);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterItemDecorations(RegisterItemDecorationsEvent event) {
+        event.register(
+                ModItems.ROOM_KEY.get(),
+                (guiGraphics, font, stack, x, y) -> {
+                    if (!RoomKeyItem.isBoundRoomFull(stack)) {
+                        return false;
+                    }
+                    PoseStack pose = guiGraphics.pose();
+                    pose.pushPose();
+                    pose.translate(x + 9, y + 9, 200);
+                    pose.scale(0.5F, 0.5F, 1.0F);
+                    guiGraphics.renderItem(new ItemStack(Items.BARRIER), 0, 0);
+                    pose.popPose();
+                    return false;
+                });
     }
 }

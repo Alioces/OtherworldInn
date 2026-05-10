@@ -493,6 +493,7 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // 房间钥匙
         entry("item.otherworldinn.room_key.bound").zh("%d号房间钥匙").en("Room %d Key");
+        entry("item.otherworldinn.room_key.bound_full").zh("%d号房间钥匙（已满员）").en("Room %d Key (Full)");
         entry("message.otherworldinn.room_key.bound")
                 .zh("成功绑定到 %d 号房间")
                 .en("Successfully bound to Room %d");

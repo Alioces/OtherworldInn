@@ -96,7 +96,7 @@ public class RoomThemeManager {
                 BlockMatcher.byExactId("minecraft:dragon_head"),
                 BlockMatcher.byIdKeyword("shulker_box")));
 
-        register(new RoomTheme("end", "末地主题", "End Theme", endShell, endInterior));
+        register(new RoomTheme("end", "末地", "End", endShell, endInterior));
 
         // ── 下界主题 ──
         // 外壳组:
@@ -115,7 +115,19 @@ public class RoomThemeManager {
                 BlockMatcher.byExactId("minecraft:soul_lantern"),
                 BlockMatcher.byExactId("minecraft:soul_wall_torch")));
 
-        register(new RoomTheme("nether", "下界主题", "Nether Theme", netherShell, netherInterior));
+        register(new RoomTheme("nether", "下界", "Nether", netherShell, netherInterior));
+
+        // ── 海洋主题 ──
+        // 外壳组:
+        List<List<BlockMatcher>> oceanShell = List.of(List.of(
+                BlockMatcher.byIdKeyword("prismarine")));
+        // 内部组: 有海晶灯/潮涌核心/珊瑚
+        List<List<BlockMatcher>> oceanInterior = List.of(List.of(
+                BlockMatcher.byExactId("minecraft:sea_lantern"),
+                BlockMatcher.byExactId("minecraft:conduit"),
+                BlockMatcher.byIdKeyword("coral")));
+
+        register(new RoomTheme("ocean", "海洋", "Ocean", oceanShell, oceanInterior));
     }
 
     public static void register(RoomTheme theme) {

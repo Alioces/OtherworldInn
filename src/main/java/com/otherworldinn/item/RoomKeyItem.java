@@ -238,9 +238,26 @@ public class RoomKeyItem extends Item {
     public Component getName(ItemStack stack) {
         Optional<Integer> roomId = getBoundRoomId(stack);
         if (roomId.isPresent()) {
-            return Component.translatable("item.otherworldinn.room_key.bound", roomId.get());
+            int id = roomId.get();
+            if (isBoundRoomFull(stack)) {
+                return Component.translatable("item.otherworldinn.room_key.bound_full", id);
+            }
+            return Component.translatable("item.otherworldinn.room_key.bound", id);
         }
         return super.getName(stack);
+    }
+
+    public static boolean isBoundRoomFull(ItemStack stack) {
+        Optional<Integer> roomId = getBoundRoomId(stack);
+        if (roomId.isEmpty()) {
+            return false;
+        }
+        TeamData team = TeamManager.getInstance().getClientPlayerTeam();
+        if (team == null) {
+            return false;
+        }
+        RoomData room = team.getInnData().getRoom(roomId.get());
+        return room != null && room.getCurrentGuests().size() >= room.getMaxGuests();
     }
 
     @Override
