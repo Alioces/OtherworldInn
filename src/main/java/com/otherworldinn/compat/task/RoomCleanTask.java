@@ -40,6 +40,7 @@ public class RoomCleanTask implements IMaidTask{
     private static final ItemStack ICON = new ItemStack(InitItems.BROOM.get());
 
     private static final Map<UUID, Long> WASH_COOLDOWN = new HashMap<>();
+    private static final int CLEAN_SEARCH_RANGE = 32;
 
     @Override
     public ResourceLocation getUid() {
@@ -64,7 +65,7 @@ public class RoomCleanTask implements IMaidTask{
                         5,
                         new MaidMoveToPredicateBlockTask(
                                 0.8f,
-                                IMaidTask.VERTICAL_SEARCH_RANGE,
+                                CLEAN_SEARCH_RANGE,
                                 RoomCleanTask::shouldCleanBeds,
                                 RoomCleanTask::isMessyBed)),
                 Pair.of(6, new MaidArriveAtBlockTask(2.2, RoomCleanTask::cleanMessyBedAt)),
@@ -72,7 +73,7 @@ public class RoomCleanTask implements IMaidTask{
                         7,
                         new MaidMoveToPredicateBlockTask(
                                 0.8f,
-                                IMaidTask.VERTICAL_SEARCH_RANGE,
+                                CLEAN_SEARCH_RANGE,
                                 RoomCleanTask::shouldWashDirtySheets,
                                 RoomCleanTask::isWashTarget)),
                 Pair.of(8, new MaidArriveAtBlockTask(2.2, RoomCleanTask::washMessySheetAt)));

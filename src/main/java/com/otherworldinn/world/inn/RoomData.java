@@ -55,6 +55,9 @@ public class RoomData {
     @Setter(AccessLevel.NONE)
     private int totalBeds = 0;
 
+    @Setter(AccessLevel.NONE)
+    private String theme = "";
+
     private final Set<UUID> currentGuests = new HashSet<>();
 
     /**
@@ -109,6 +112,10 @@ public class RoomData {
 
     public void setTotalBeds(int totalBeds) {
         this.totalBeds = Math.max(0, totalBeds);
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme == null ? "" : theme;
     }
 
     public boolean addGuest(UUID guestId) {
@@ -521,6 +528,7 @@ public class RoomData {
 
         tag.putInt("MaxGuests", maxGuests);
         tag.putInt("TotalBeds", totalBeds);
+        tag.putString("Theme", theme);
         ListTag guestsTag = new ListTag();
         for (UUID uuid : currentGuests) {
             CompoundTag guestTag = new CompoundTag();
@@ -565,6 +573,10 @@ public class RoomData {
 
         if (tag.contains("TotalBeds")) {
             room.setTotalBeds(tag.getInt("TotalBeds"));
+        }
+
+        if (tag.contains("Theme")) {
+            room.setTheme(tag.getString("Theme"));
         }
 
         if (tag.contains("CurrentGuests")) {

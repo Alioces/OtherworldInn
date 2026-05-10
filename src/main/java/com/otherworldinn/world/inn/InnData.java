@@ -7,6 +7,7 @@ import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.util.EntityUtils;
 import com.otherworldinn.world.inn.service.ClipboardManager;
 import com.otherworldinn.world.inn.service.FurnitureManager;
+import com.otherworldinn.world.inn.service.RoomThemeManager;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import com.otherworldinn.world.team.TeamSavedData;
@@ -449,6 +450,11 @@ public class InnData {
         room.setComfort(stats[0]);
         room.setLight(stats[1]);
         room.setHumidity(stats[2]);
+
+        if (level instanceof ServerLevel serverLevel) {
+            String detected = RoomThemeManager.detectTheme(serverLevel, min, max);
+            room.setTheme(detected == null ? "" : detected);
+        }
     }
 
     /**

@@ -506,6 +506,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("tooltip.otherworldinn.room_key.price")
                 .zh("床位价格: §f\uE001§r%d")
                 .en("Price: §f\uE001§r%d");
+        entry("tooltip.otherworldinn.room_key.theme")
+                .zh("房间主题：%s")
+                .en("Room Theme: %s");
 
         // 旅客入住
         entry("message.otherworldinn.room_key.checkin_success")

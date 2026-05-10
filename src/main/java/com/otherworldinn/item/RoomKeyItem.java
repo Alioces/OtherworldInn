@@ -6,6 +6,7 @@ import com.otherworldinn.util.AdvancementUtils;
 import com.otherworldinn.world.inn.GuestData;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.RoomData;
+import com.otherworldinn.world.inn.service.RoomThemeManager;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import com.otherworldinn.world.team.TeamSavedData;
@@ -320,6 +321,17 @@ public class RoomKeyItem extends Item {
                                                             style ->
                                                                     style.withColor(
                                                                             ModColors.HUMIDITY)));
+
+                                    String themeId = room.getTheme();
+                                    if (themeId != null && !themeId.isEmpty()) {
+                                        String themeName =
+                                                RoomThemeManager.getDisplayName(themeId, true);
+                                        tooltipComponents.add(
+                                                Component.translatable(
+                                                                "tooltip.otherworldinn.room_key.theme",
+                                                                themeName)
+                                                        .withStyle(ChatFormatting.LIGHT_PURPLE));
+                                    }
                                 }
                             }
                         });
