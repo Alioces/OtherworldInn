@@ -83,10 +83,6 @@ public class DeskBellIconRenderer {
                 icon = AllIcons.I_BLACKLIST;
                 color = ModColors.RED;
                 break;
-            case EDIT_MODE:
-                icon = AllIcons.I_SCHEMATIC;
-                color = ModColors.BLUE;
-                break;
             default:
                 return;
         }

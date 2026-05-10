@@ -50,8 +50,7 @@ public class InnKeyItem extends Item {
                         MutableComponent message;
                         int color;
 
-                        if (currentState == InnData.InnState.EDIT_MODE
-                                || currentState == InnData.InnState.OPEN) {
+                        if (currentState == InnData.InnState.OPEN) {
                             sound = SoundEvents.WOODEN_DOOR_OPEN;
                             newState = InnData.InnState.CLOSED;
                             message =

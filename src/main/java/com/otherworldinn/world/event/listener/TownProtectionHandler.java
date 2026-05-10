@@ -106,13 +106,17 @@ public class TownProtectionHandler {
             return Component.translatable("message.otherworldinn.protection.deny");
         }
 
-        // 情况 2: 在旅社区域内，但未开启装修模式 -> 装修提示
-        if (team.getInnData().getState() != InnData.InnState.EDIT_MODE
-                && isInsideProtectedRoomAreaForNonEdit(team, pos)) {
-            return Component.translatable("message.otherworldinn.protection.deny_renovation");
+        // 情况 2: 在旅社区域内 -> 检查是否在有旅客入住的房间内
+        if (team != null) {
+            InnData innData = team.getInnData();
+            RoomData room = innData.getRoomAffectedBy(pos);
+            if (room != null && !room.getCurrentGuests().isEmpty()) {
+                return Component.translatable("message.otherworldinn.protection.deny_guest_in_room");
+            }
+            return null;
         }
 
-        return null; // 允许
+        return Component.translatable("message.otherworldinn.protection.deny");
     }
 
     /** 检查方块是否属于农作物白名单 */
@@ -229,10 +233,7 @@ public class TownProtectionHandler {
         if (!inOwnedRange) {
             return false;
         }
-        if (team.getInnData().getState() == InnData.InnState.EDIT_MODE) {
-            return true;
-        }
-        return !isInsideProtectedRoomAreaForNonEdit(team, pos);
+        return true;
     }
 
     private static boolean isInsideProtectedRoomAreaForNonEdit(TeamData team, BlockPos pos) {
@@ -255,13 +256,10 @@ public class TownProtectionHandler {
     }
 
     private static boolean isInnRestrictionLiftedForTeamAtPos(TeamData team, BlockPos pos) {
-        if (team == null || pos == null || !isInsideInnZone(team, pos)) {
+        if (team == null || pos == null) {
             return false;
         }
-        if (team.getInnData().getState() == InnData.InnState.EDIT_MODE) {
-            return true;
-        }
-        return !isInsideProtectedRoomAreaForNonEdit(team, pos);
+        return isInsideInnZone(team, pos);
     }
 
     public static boolean isInnRestrictionLiftedAt(ServerLevel level, BlockPos pos) {
@@ -616,7 +614,7 @@ public class TownProtectionHandler {
             return true;
         }
         if (level instanceof ServerLevel serverLevel) {
-            return isEditModeAllowedAt(serverLevel, pos);
+            return isInsideInnZone(serverLevel, pos);
         }
         return false;
     }
@@ -652,9 +650,9 @@ public class TownProtectionHandler {
         sendDenyMessage(player, message);
     }
 
-    private static boolean isEditModeAllowedAt(ServerLevel level, BlockPos pos) {
+    private static boolean isInsideInnZone(ServerLevel level, BlockPos pos) {
         TeamData team = TeamManager.getInstance().getTeamAt(pos, level.getServer());
-        return team != null && team.getInnData().getState() == InnData.InnState.EDIT_MODE;
+        return team != null;
     }
 
     private static void spawnFallingBlockDrop(
@@ -693,7 +691,7 @@ public class TownProtectionHandler {
                 return;
             }
             Component denyReason = getBuildDenyReason(actor, pos, serverLevel);
-            if (denyReason == null && isEditModeAllowedAt(serverLevel, pos)) {
+            if (denyReason == null && isInsideInnZone(serverLevel, pos)) {
                 event.setCanGrief(true);
                 return;
             }
@@ -725,7 +723,7 @@ public class TownProtectionHandler {
                 }
                 return;
             }
-            if (level instanceof ServerLevel serverLevel && !isEditModeAllowedAt(serverLevel, event.getPos())) {
+            if (level instanceof ServerLevel serverLevel && !isInsideInnZone(serverLevel, event.getPos())) {
                 event.setCanceled(true);
             }
             return;
@@ -735,12 +733,7 @@ public class TownProtectionHandler {
         if (player instanceof ServerPlayer && !(player instanceof FakePlayer)) {
             if (isInnFreeInteractBlock(event.getState())
                     && level instanceof ServerLevel serverLevel) {
-                TeamData team =
-                        TeamManager.getInstance().getTeamAt(event.getPos(), serverLevel.getServer());
-                if (team != null
-                        && team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
-                    return;
-                }
+                return;
             }
             Component denyReason = getBuildDenyReason(player, event.getPos(), level);
             if (denyReason != null) {
@@ -751,7 +744,7 @@ public class TownProtectionHandler {
         // 如果是非玩家实体或 FakePlayer (自动化设备)
         else if (level instanceof ServerLevel serverLevel) {
             if (serverLevel.dimension() == TownDimensions.TOWN_LEVEL) {
-                if (!isEditModeAllowedAt(serverLevel, event.getPos())) {
+                if (!isInsideInnZone(serverLevel, event.getPos())) {
                     event.setCanceled(true);
                 }
             }
@@ -832,13 +825,7 @@ public class TownProtectionHandler {
             if (player instanceof ServerPlayer serverPlayer && !(player instanceof FakePlayer)) {
                 if (isInnFreeInteractBlock(event.getState())
                         && event.getLevel() instanceof ServerLevel serverLevel) {
-                    TeamData team =
-                            TeamManager.getInstance()
-                                    .getTeamAt(event.getPos(), serverLevel.getServer());
-                    if (team != null
-                            && team.getInnData().getState() != InnData.InnState.EDIT_MODE) {
-                        return;
-                    }
+                    return;
                 }
                 Component denyReason =
                         getBuildDenyReason(player, event.getPos(), (Level) event.getLevel());
@@ -853,7 +840,7 @@ public class TownProtectionHandler {
                 Level level = event.getEntity().level();
                 if (level instanceof ServerLevel serverLevel
                         && level.dimension() == TownDimensions.TOWN_LEVEL) {
-                    if (!isEditModeAllowedAt(serverLevel, event.getPos())) {
+                    if (!isInsideInnZone(serverLevel, event.getPos())) {
                         event.setCanceled(true);
                     }
                 }
@@ -863,7 +850,7 @@ public class TownProtectionHandler {
             Level level = event.getEntity().level();
             if (level instanceof ServerLevel serverLevel
                     && level.dimension() == TownDimensions.TOWN_LEVEL) {
-                if (!isEditModeAllowedAt(serverLevel, event.getPos())) {
+                if (!isInsideInnZone(serverLevel, event.getPos())) {
                     event.setCanceled(true);
                 }
             }

@@ -333,9 +333,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.protection.deny")
                 .zh("你不能修改城镇内的方块")
                 .en("You cannot modify blocks within the Town.");
-        entry("message.otherworldinn.protection.deny_renovation")
-                .zh("旅社不在装修中，无法修改房间装潢")
-                .en("The Inn is not under renovation...");
+        entry("message.otherworldinn.protection.deny_guest_in_room")
+                .zh("此房间有人入住，无法修改布局")
+                .en("This room is occupied; you cannot modify its layout.");
         entry("message.otherworldinn.protection.banned_item")
                 .zh("此物品在城镇维度被禁用")
                 .en("This item is banned in the Town dimension.");
@@ -374,8 +374,8 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // 房间登记册
         entry("message.otherworldinn.room_register.not_edit_mode")
-                .zh("旅社未处于装修模式，无法登记房间")
-                .en("The Inn is not in edit mode!");
+                .zh("你当前不在任何队伍中")
+                .en("You are not in any team!");
         entry("message.otherworldinn.room_register.pos1_set")
                 .zh("位置1已设置：%s")
                 .en("Position 1 set: %s");
@@ -539,9 +539,6 @@ public class ModLanguageProvider extends LanguageProvider {
         // 铃铛
         entry("message.otherworldinn.desk_bell.status.open").zh("旅社营业中").en("The Inn is OPEN");
         entry("message.otherworldinn.desk_bell.status.closed").zh("旅社已打烊").en("The Inn is CLOSED");
-        entry("message.otherworldinn.desk_bell.status.edit_mode")
-                .zh("旅社装修中")
-                .en("The Inn is under RENOVATION");
         entry("message.otherworldinn.store.overlay.open").zh("打开商店").en("Open Store");
         entry("message.otherworldinn.store.overlay.talk").zh("与店主对话").en("Talk");
         entry("screen.otherworldinn.commission_board.title").zh("委托板").en("Commission Board");
@@ -664,12 +661,6 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.inn_key.overlay.toggle_state")
                 .zh("潜行时切换旅社状态")
                 .en("Toggle Inn State while Sneaking");
-        entry("message.otherworldinn.inn_key.fail_open")
-                .zh("旅社营业期间无法进行装修！")
-                .en("Cannot switch to renovation mode while the Inn is OPEN!");
-        entry("message.otherworldinn.inn_key.fail_guests")
-                .zh("旅社内仍有旅客，无法进行装修！")
-                .en("Cannot switch to renovation mode while guests are present!");
         entry("message.otherworldinn.inn_key.open")
                 .zh("旅社已开业，今天也要努力")
                 .en("The Inn is now OPEN! Let's work hard today.");

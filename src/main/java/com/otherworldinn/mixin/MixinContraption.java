@@ -1,7 +1,6 @@
 package com.otherworldinn.mixin;
 
 import com.otherworldinn.world.dimension.TownDimensions;
-import com.otherworldinn.world.inn.InnData.InnState;
 import com.otherworldinn.world.event.listener.TownProtectionHandler;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
@@ -73,7 +72,7 @@ public class MixinContraption {
                 TeamData team = TeamManager.getInstance().getTeamAt(pos, world.getServer());
 
                 // 如果在城镇维度，且 (不在任何旅社范围内 或 该旅社未开启装修模式)，则禁止放置
-                if (team == null || team.getInnData().getState() != InnState.EDIT_MODE) {
+                if (team == null) {
                     // 非法区域！
 
                     // 执行掉落

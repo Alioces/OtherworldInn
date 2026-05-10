@@ -64,12 +64,6 @@ public class DeskBellClientHandler {
                             Component.translatable("message.otherworldinn.desk_bell.status.closed");
                     color = ModColors.RED;
                     break;
-                case EDIT_MODE:
-                    message =
-                            Component.translatable(
-                                    "message.otherworldinn.desk_bell.status.edit_mode");
-                    color = ModColors.BLUE;
-                    break;
                 default:
                     return;
             }

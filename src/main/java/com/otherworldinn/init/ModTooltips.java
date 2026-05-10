@@ -89,12 +89,6 @@ public class ModTooltips {
                                             "message.otherworldinn.desk_bell.status.open");
                             color = ModColors.GREEN;
                             break;
-                        case EDIT_MODE:
-                            stateText =
-                                    Component.translatable(
-                                            "message.otherworldinn.desk_bell.status.edit_mode");
-                            color = ModColors.BLUE;
-                            break;
                         case CLOSED:
                         default:
                             stateText =

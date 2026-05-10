@@ -52,7 +52,7 @@ public final class ReskillableSkillXpHandler {
             return;
         }
         BlockState placed = event.getState();
-        if (isCrop(placed)) {
+        if (isMatureCrop(placed)) {
             ReskillableCompat.addSkillExperience(player, "farming", FARMING_XP_PER_CROP_ACTION);
             return;
         }
@@ -70,7 +70,7 @@ public final class ReskillableSkillXpHandler {
             return;
         }
         BlockState broken = event.getState();
-        if (isCrop(broken)) {
+        if (isMatureCrop(broken)) {
             ReskillableCompat.addSkillExperience(player, "farming", FARMING_XP_PER_CROP_ACTION);
             return;
         }
@@ -103,12 +103,13 @@ public final class ReskillableSkillXpHandler {
         if (amount <= 0.0F) {
             return;
         }
+        float cappedAmount = Math.min(amount, 20.0F);
         if (event.getSource().getEntity() instanceof ServerPlayer attacker) {
-            int attackXp = Math.max(1, Mth.floor(amount));
+            int attackXp = Math.max(1, Mth.floor(cappedAmount));
             ReskillableCompat.addSkillExperience(attacker, "attack", attackXp);
         }
         if (event.getEntity() instanceof ServerPlayer defender) {
-            int defenseXp = Math.max(1, Mth.floor(amount));
+            int defenseXp = Math.max(1, Mth.floor(cappedAmount));
             ReskillableCompat.addSkillExperience(defender, "defense", defenseXp);
         }
     }
@@ -171,8 +172,19 @@ public final class ReskillableSkillXpHandler {
         SPRINT_DISTANCE_PROGRESS.remove(playerId);
     }
 
-    private static boolean isCrop(BlockState state) {
-        return state.is(BlockTags.CROPS) || state.getBlock() instanceof CropBlock;
+    private static boolean isMatureCrop(BlockState state) {
+        if (state.getBlock() instanceof CropBlock crop) {
+            return crop.isMaxAge(state);
+        }
+        if (state.is(BlockTags.CROPS)) {
+            for (net.minecraft.world.level.block.state.properties.Property<?> prop : state.getProperties()) {
+                if (prop.getName().equals("age") && prop instanceof net.minecraft.world.level.block.state.properties.IntegerProperty ageProp) {
+                    int maxAge = ageProp.getPossibleValues().stream().mapToInt(Integer::intValue).max().orElse(0);
+                    return maxAge > 0 && state.getValue(ageProp) == maxAge;
+                }
+            }
+        }
+        return false;
     }
 
     private static int getOreBonusMiningXp(BlockState state) {

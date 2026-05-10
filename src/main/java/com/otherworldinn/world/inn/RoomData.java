@@ -50,7 +50,10 @@ public class RoomData {
 
     // 旅客信息
     @Setter(AccessLevel.NONE)
-    private int maxGuests = 1; // 默认最大可居住1人
+    private int maxGuests = 1;
+
+    @Setter(AccessLevel.NONE)
+    private int totalBeds = 0;
 
     private final Set<UUID> currentGuests = new HashSet<>();
 
@@ -104,6 +107,10 @@ public class RoomData {
         this.maxGuests = Math.max(0, maxGuests);
     }
 
+    public void setTotalBeds(int totalBeds) {
+        this.totalBeds = Math.max(0, totalBeds);
+    }
+
     public boolean addGuest(UUID guestId) {
         if (currentGuests.size() < maxGuests) {
             return currentGuests.add(guestId);
@@ -144,7 +151,7 @@ public class RoomData {
         int maxPrice = 96;
         int singleBedBasePrice = minPrice + (int) Math.round(score * (maxPrice - minPrice));
 
-        int beds = Math.max(1, this.maxGuests);
+        int beds = Math.max(1, this.totalBeds);
 
         if (beds <= 1) {
             return singleBedBasePrice;
@@ -207,7 +214,7 @@ public class RoomData {
      *
      * <p>只有干净的床位 (MESSY=false) 计入有效床位。 整洁度 = (干净床位 / 总床位) * 100 如果没有床，整洁度默认为 100。
      *
-     * @return [有效床位数, 整洁度]
+     * @return [有效床位数, 整洁度, 物理床位总数]
      */
     public static int[] calculateBedStats(BlockPos minPos, BlockPos maxPos, Level level) {
         int cleanBedCount = 0;
@@ -245,7 +252,7 @@ public class RoomData {
 
         int cleanliness =
                 totalBedCount > 0 ? (int) ((float) cleanBedCount / totalBedCount * 100) : 100;
-        return new int[] {cleanBedCount, cleanliness};
+        return new int[] {cleanBedCount, cleanliness, totalBedCount};
     }
 
     /** 统计区域内床头数量（包含干净床和脏乱床） */
@@ -513,6 +520,7 @@ public class RoomData {
         tag.putInt("Cleanliness", cleanliness);
 
         tag.putInt("MaxGuests", maxGuests);
+        tag.putInt("TotalBeds", totalBeds);
         ListTag guestsTag = new ListTag();
         for (UUID uuid : currentGuests) {
             CompoundTag guestTag = new CompoundTag();
@@ -553,6 +561,10 @@ public class RoomData {
 
         if (tag.contains("MaxGuests")) {
             room.setMaxGuests(tag.getInt("MaxGuests"));
+        }
+
+        if (tag.contains("TotalBeds")) {
+            room.setTotalBeds(tag.getInt("TotalBeds"));
         }
 
         if (tag.contains("CurrentGuests")) {

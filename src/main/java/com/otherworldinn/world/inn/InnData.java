@@ -87,9 +87,8 @@ public class InnData {
     private InnState state = InnState.CLOSED; // 默认为歇业
 
     public enum InnState {
-        CLOSED, // 歇业中
-        OPEN, // 营业中
-        EDIT_MODE // 装修中
+        CLOSED,
+        OPEN
     }
 
     private final Set<UUID> guestIds = new HashSet<>();
@@ -268,45 +267,15 @@ public class InnData {
      * @return 如果成功开启返回 true，否则返回 false (例如正在营业或有客人)
      */
     public boolean setState(InnState newState) {
-        // 如果状态没有改变，直接返回成功
         if (this.state == newState) {
             return true;
         }
-
-        switch (newState) {
-            case OPEN:
-                // 可以从 CLOSED 切换到 OPEN
-                // 不可以直接从 EDIT_MODE 切换到 OPEN (需要先 CLOSED)
-                if (this.state == InnState.CLOSED) {
-                    this.state = InnState.OPEN;
-                    return true;
-                }
-                break;
-
-            case EDIT_MODE:
-                // 只能从 CLOSED 切换到 EDIT_MODE
-                // 且必须没有客人
-                if (this.state == InnState.CLOSED && this.guestIds.isEmpty()) {
-                    this.state = InnState.EDIT_MODE;
-                    return true;
-                }
-                break;
-
-            case CLOSED:
-                // 可以从任何状态切换到 CLOSED
-                this.state = InnState.CLOSED;
-                return true;
-        }
-
-        return false;
+        this.state = newState;
+        return true;
     }
 
     public void addGuest(UUID guestId) {
         this.guestIds.add(guestId);
-        // 有客人时自动关闭装修模式，如果处于 Open 状态则保持 Open，否则切换到 Closed (异常情况)
-        if (this.state == InnState.EDIT_MODE) {
-            this.state = InnState.CLOSED;
-        }
     }
 
     /**
@@ -442,6 +411,7 @@ public class InnData {
      * 计算并更新房间属性
      *
      * <p>遍历房间内的所有方块，查找已注册的家具，累加其属性值。
+     * 每种方块最多计入两个，防止大量放置同一方块刷属性。
      *
      * @param roomId 房间ID
      * @param level 服务器等级 (用于获取方块状态)
@@ -452,18 +422,22 @@ public class InnData {
             return;
         }
 
-        // 使用局部变量累加，避免 lambda 表达式中无法修改局部变量的问题
         final int[] stats = new int[3]; // [0]: comfort, [1]: light, [2]: humidity
 
         BlockPos min = room.getMinPos();
         BlockPos max = room.getMaxPos();
 
-        // 遍历房间区域
+        java.util.Map<net.minecraft.world.level.block.Block, Integer> blockCounts = new java.util.HashMap<>();
+
         for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
-            // 获取方块状态
             BlockState state = level.getBlockState(pos);
-            // 获取家具属性
-            FurnitureManager.getStats(state.getBlock())
+            net.minecraft.world.level.block.Block block = state.getBlock();
+            int count = blockCounts.getOrDefault(block, 0);
+            if (count >= 2) {
+                continue;
+            }
+            blockCounts.put(block, count + 1);
+            FurnitureManager.getStats(block)
                     .ifPresent(
                             s -> {
                                 stats[0] += s.comfort();
@@ -493,6 +467,7 @@ public class InnData {
                         RoomData.calculateBedStats(room.getMinPos(), room.getMaxPos(), level);
                 room.setMaxGuests(bedStats[0]); // 有效床位
                 room.setCleanliness(bedStats[1]); // 整洁度
+                room.setTotalBeds(bedStats[2]); // 物理床位总数
 
                 for (UUID guestId : room.getCurrentGuests()) {
                     GuestData guest = getGuestData(guestId, serverLevel);
@@ -578,6 +553,7 @@ public class InnData {
                         RoomData.calculateBedStats(room.getMinPos(), room.getMaxPos(), level);
                 room.setMaxGuests(bedStats[0]);
                 room.setCleanliness(bedStats[1]);
+                room.setTotalBeds(bedStats[2]);
             }
         }
 
@@ -588,6 +564,114 @@ public class InnData {
         }
 
         return removedRooms;
+    }
+
+    /**
+     * 判断一个位置是否处于房间的范围内或其六面外壳上。
+     *
+     * <p>六面外壳包括：房间内部、地板（底面下方一层）、天花板（顶面上方一层）、
+     * 以及四面外侧墙壁（东西南北各向外偏移一格）。
+     */
+    public static boolean isPosAffectingRoom(BlockPos pos, RoomData room) {
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+        int minX = room.getMinPos().getX();
+        int minY = room.getMinPos().getY();
+        int minZ = room.getMinPos().getZ();
+        int maxX = room.getMaxPos().getX();
+        int maxY = room.getMaxPos().getY();
+        int maxZ = room.getMaxPos().getZ();
+
+        if (x >= minX && x <= maxX && y >= minY && y <= maxY && z >= minZ && z <= maxZ) {
+            return true;
+        }
+
+        if (y == minY - 1 && x >= minX && x <= maxX && z >= minZ && z <= maxZ) {
+            return true;
+        }
+
+        if (y == maxY + 1 && x >= minX && x <= maxX && z >= minZ && z <= maxZ) {
+            return true;
+        }
+
+        if (y >= minY && y <= maxY) {
+            if (z == minZ - 1 && x >= minX && x <= maxX) return true;
+            if (z == maxZ + 1 && x >= minX && x <= maxX) return true;
+            if (x == minX - 1 && z >= minZ && z <= maxZ) return true;
+            if (x == maxX + 1 && z >= minZ && z <= maxZ) return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 查找该位置受影响的房间（包含内部和六面外壳）。
+     *
+     * @return 受该位置影响的房间，没有则返回 null
+     */
+    public RoomData getRoomAffectedBy(BlockPos pos) {
+        for (RoomData room : rooms.values()) {
+            if (isPosAffectingRoom(pos, room)) {
+                return room;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 根据一组变更位置，找出受影响的房间 ID 集合。
+     */
+    public java.util.Set<Integer> findAffectedRoomIds(java.util.Set<BlockPos> positions) {
+        java.util.Set<Integer> affected = new java.util.HashSet<>();
+        for (BlockPos pos : positions) {
+            for (RoomData room : rooms.values()) {
+                if (isPosAffectingRoom(pos, room)) {
+                    affected.add(room.getId());
+                }
+            }
+        }
+        return affected;
+    }
+
+    /**
+     * 对单个房间进行合法性判定与属性更新。
+     *
+     * <p>如果房间不合法，则自动删除该房间。
+     *
+     * @return 房间是否被保留
+     */
+    public boolean checkAndUpdateRoom(int roomId, Level level, TeamData team) {
+        RoomData room = rooms.get(roomId);
+        if (room == null) {
+            return false;
+        }
+
+        RoomData.ValidationResult result =
+                RoomData.validate(room.getMinPos(), room.getMaxPos(), level, team, room.getId());
+        boolean keepRoom = result.isSuccess();
+        if (!keepRoom && result == RoomData.ValidationResult.MISSING_BED) {
+            keepRoom = RoomData.countAllBeds(room.getMinPos(), room.getMaxPos(), level) > 0;
+        }
+
+        if (!keepRoom) {
+            removeRoom(
+                    roomId,
+                    level,
+                    team,
+                    Component.translatable(result.getTranslationKey()));
+            return false;
+        }
+
+        int[] bedStats =
+                RoomData.calculateBedStats(room.getMinPos(), room.getMaxPos(), level);
+        room.setMaxGuests(bedStats[0]);
+        room.setCleanliness(bedStats[1]);
+        room.setTotalBeds(bedStats[2]);
+
+        calculateRoomStats(roomId, level);
+
+        return true;
     }
 
     // --- 入住/退房 ---
@@ -1502,17 +1586,8 @@ public class InnData {
                 state = InnState.CLOSED;
             }
         } else {
-            // 兼容旧数据
             boolean isOpen = tag.contains("Open") && tag.getBoolean("Open");
-            boolean isEditMode = tag.contains("EditMode") && tag.getBoolean("EditMode");
-
-            if (isOpen) {
-                state = InnState.OPEN;
-            } else if (isEditMode) {
-                state = InnState.EDIT_MODE;
-            } else {
-                state = InnState.CLOSED;
-            }
+            state = isOpen ? InnState.OPEN : InnState.CLOSED;
         }
 
         if (tag.contains("NextGuestSpawnTime")) {
