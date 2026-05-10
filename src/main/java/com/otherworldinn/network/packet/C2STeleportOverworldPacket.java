@@ -39,6 +39,10 @@ public record C2STeleportOverworldPacket() implements CustomPacketPayload {
         context.enqueueWork(
                 () -> {
                     if (context.player() instanceof ServerPlayer player) {
+                        if (player.getPortalCooldown() > 0) {
+                            return;
+                        }
+                        player.setPortalCooldown();
                         TeleportUtils.teleportToOverworldSpawn(player);
                     }
                 });
