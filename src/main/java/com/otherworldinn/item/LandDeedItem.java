@@ -299,8 +299,8 @@ public class LandDeedItem extends Item {
                     tag.remove("Pos2");
                     stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
 
-                    // 消耗物品 (如果是生存模式)
-                    if (!player.getAbilities().instabuild) {
+                    // 消耗物品 (如果是生存模式且价格大于0)
+                    if (!player.getAbilities().instabuild && price > 0) {
                         stack.shrink(1);
                     }
                 } else {

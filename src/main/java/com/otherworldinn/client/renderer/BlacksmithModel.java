@@ -18,7 +18,7 @@ public class BlacksmithModel extends StoreHumanoidModel<BlacksmithEntity> {
     }
 
     public static LayerDefinition createBodyLayer() {
-        return StoreHumanoidModel.createBodyLayer();
+        return StoreHumanoidModel.createSlimBodyLayer();
     }
 
     @Override

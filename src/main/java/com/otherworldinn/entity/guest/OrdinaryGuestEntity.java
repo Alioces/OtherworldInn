@@ -26,10 +26,6 @@ public class OrdinaryGuestEntity extends GuestEntity {
     private static final ResourceLocation DEFAULT_TEXTURE =
             ResourceLocation.fromNamespaceAndPath(
                     OtherworldInn.MODID, "textures/entity/guest/ordinary_guest/1.png");
-    private static final ResourceLocation IRON_INGOT_ID =
-            ResourceLocation.fromNamespaceAndPath("minecraft", "iron_ingot");
-    private static final ResourceLocation GOLD_INGOT_ID =
-            ResourceLocation.fromNamespaceAndPath("minecraft", "gold_ingot");
     private static final List<ResourceLocation> TEXTURES = new ArrayList<>();
     private static boolean texturesLoaded = false;
 

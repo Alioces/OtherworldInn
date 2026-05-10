@@ -219,7 +219,6 @@ public final class CommissionRegistry {
                                 "The town prepares for a festival. Needs food and decoration materials."))
                 .submit("minecraft:cake", 3)
                 .submit("minecraft:cookie", 24)
-                .submit("minecraft:flower", 16)
                 .rewardCoins(90)
                 .build();
 

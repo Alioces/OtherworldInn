@@ -228,6 +228,131 @@ public abstract class GuestEntity extends PathfinderMob {
         }
     }
 
+    private class SleepAtNightGoal extends Goal {
+        private BlockPos targetBedHead;
+        private int pathRecalcDelay;
+        private int stuckTicks;
+        private double lastDistanceSqr = Double.MAX_VALUE;
+        private static final int STUCK_TIMEOUT_TICKS = 200;
+        private static final double PROGRESS_THRESHOLD_SQR = 0.0625D;
+
+        public SleepAtNightGoal() {
+            this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (!(GuestEntity.this.level() instanceof ServerLevel level)) return false;
+            if (!level.isNight()) return false;
+            if (GuestEntity.this.guestData.getState() != GuestData.GuestState.CHECKED_IN)
+                return false;
+            BlockPos assignedBed = GuestEntity.this.guestData.getAssignedBedPos();
+            if (assignedBed == null) return false;
+            BlockPos bedHeadPos = normalizeBedHeadPos(level, assignedBed);
+            if (bedHeadPos == null) return false;
+            if (GuestEntity.this.isSleeping()) {
+                if (GuestEntity.this.getSleepingPos().isPresent()
+                        && bedHeadPos.equals(GuestEntity.this.getSleepingPos().get())) {
+                    return false;
+                }
+                GuestEntity.this.stopSleeping();
+            }
+            return true;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            if (!(GuestEntity.this.level() instanceof ServerLevel level)) return false;
+            if (!level.isNight()) return false;
+            if (GuestEntity.this.guestData.getState() != GuestData.GuestState.CHECKED_IN)
+                return false;
+            BlockPos assignedBed = GuestEntity.this.guestData.getAssignedBedPos();
+            if (assignedBed == null) return false;
+            BlockPos bedHeadPos = normalizeBedHeadPos(level, assignedBed);
+            if (bedHeadPos == null) return false;
+            if (GuestEntity.this.isSleeping()) {
+                return bedHeadPos.equals(GuestEntity.this.getSleepingPos().orElse(null));
+            }
+            if (this.stuckTicks >= STUCK_TIMEOUT_TICKS) {
+                return false;
+            }
+            return this.targetBedHead != null && this.targetBedHead.equals(bedHeadPos);
+        }
+
+        @Override
+        public void start() {
+            this.pathRecalcDelay = 0;
+            this.stuckTicks = 0;
+            this.lastDistanceSqr = Double.MAX_VALUE;
+            if (GuestEntity.this.level() instanceof ServerLevel level) {
+                BlockPos assignedBed = GuestEntity.this.guestData.getAssignedBedPos();
+                if (assignedBed != null) {
+                    BlockPos bedHeadPos = normalizeBedHeadPos(level, assignedBed);
+                    if (bedHeadPos != null) {
+                        this.targetBedHead = bedHeadPos;
+                        GuestEntity.this.getNavigation().stop();
+                        moveToBedApproach(level, bedHeadPos);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void tick() {
+            if (!(GuestEntity.this.level() instanceof ServerLevel level)) return;
+            if (this.targetBedHead == null) return;
+
+            double currentDistSqr =
+                    GuestEntity.this.distanceToSqr(
+                            this.targetBedHead.getX() + 0.5D,
+                            this.targetBedHead.getY(),
+                            this.targetBedHead.getZ() + 0.5D);
+
+            if (currentDistSqr <= 3.0D) {
+                GuestEntity.this.startSleeping(this.targetBedHead);
+                GuestEntity.this.getNavigation().stop();
+                return;
+            }
+
+            if (this.lastDistanceSqr - currentDistSqr > PROGRESS_THRESHOLD_SQR) {
+                this.stuckTicks = 0;
+            } else {
+                this.stuckTicks++;
+                if (GuestEntity.this.getNavigation().isDone()) {
+                    this.stuckTicks += 2;
+                }
+            }
+            this.lastDistanceSqr = currentDistSqr;
+
+            if (--this.pathRecalcDelay <= 0) {
+                this.pathRecalcDelay = 20;
+                moveToBedApproach(level, this.targetBedHead);
+            }
+        }
+
+        @Override
+        public void stop() {
+            if (GuestEntity.this.isSleeping()) {
+                GuestEntity.this.stopSleeping();
+            }
+            this.targetBedHead = null;
+            GuestEntity.this.getNavigation().stop();
+        }
+
+        private void moveToBedApproach(ServerLevel level, BlockPos bedHeadPos) {
+            BlockPos approachPos = findBedApproachPos(level, bedHeadPos);
+            if (approachPos != null) {
+                GuestEntity.this
+                        .getNavigation()
+                        .moveTo(
+                                approachPos.getX() + 0.5,
+                                approachPos.getY(),
+                                approachPos.getZ() + 0.5,
+                                1.0D);
+            }
+        }
+    }
+
     /**
      * 获取旅客皮肤纹理
      *
@@ -325,7 +450,7 @@ public abstract class GuestEntity extends PathfinderMob {
     protected void registerGoals() {
         super.registerGoals();
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        // 优先级 1: 移动到目标 (退房离开)
+        this.goalSelector.addGoal(0, new SleepAtNightGoal());
         this.goalSelector.addGoal(1, new MoveToTargetGoal());
         // 优先级 1: 开门
         this.goalSelector.addGoal(1, new OpenDoorGoal(this, true));
@@ -762,7 +887,6 @@ public abstract class GuestEntity extends PathfinderMob {
         }
 
         if (this.activeActivity == Activity.REST) {
-            handleSleepBehavior(level);
             return;
         }
 

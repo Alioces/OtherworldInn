@@ -122,10 +122,7 @@ public abstract class StoreEntity extends PathfinderMob {
             this.idleAnimationState.startIfStopped(this.tickCount);
         } else {
             this.enforceLockedPosition();
-            // 服务端逻辑：每天早上重置库存
-            // 计算当前天数
             long currentDay = this.level().getGameTime() / 24000L;
-            // 检查是否是新的一天
             if (currentDay > this.lastRestockDay) {
                 this.restockAll();
                 this.lastRestockDay = currentDay;
@@ -687,12 +684,9 @@ public abstract class StoreEntity extends PathfinderMob {
 
     /** 补货所有商品并刷新随机商品 */
     public void restockAll() {
-        // 1. 补充固定商品库存
         for (int i = 0; i < this.fixedItemsCount && i < this.storeItems.size(); i++) {
             this.storeItems.get(i).restock();
         }
-
-        // 2. 刷新随机商品
         this.refreshRandomItems();
     }
 
