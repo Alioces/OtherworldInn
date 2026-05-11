@@ -39,6 +39,7 @@ public class LandDeedItem extends Item {
     private static final int DEFAULT_INN_MAX_Z = 14;
     private static final int MAX_INN_RATING = 5;
     private static final String RATING_ICON = "§f\uE005§r";
+    private static final int PRICE_PER_BLOCK = 2;
     private static final int MAX_EXPANDABLE_AREA =
             (MAX_REGION_MAX_X - MAX_REGION_MIN_X + 1) * (MAX_REGION_MAX_Z - MAX_REGION_MIN_Z + 1);
     private static final int BASE_INN_AREA =
@@ -87,7 +88,7 @@ public class LandDeedItem extends Item {
             return false;
         }
         int currentArea = calculateCurrentInnArea(team);
-        int additionalArea = calculatePrice(team, pos1, pos2) / 8;
+        int additionalArea = calculatePrice(team, pos1, pos2) / PRICE_PER_BLOCK;
         int projectedArea = currentArea + additionalArea;
         int maxAllowedArea = getMaxAllowedAreaByRating(team.getInnData().getRating());
         return projectedArea <= maxAllowedArea;
@@ -119,7 +120,7 @@ public class LandDeedItem extends Item {
     /**
      * 计算地契扩展区域的价格
      *
-     * <p>价格 = 有效面积 * 8 有效面积 = 圈选面积 - 已有旅社区域覆盖的面积
+     * <p>价格 = 有效面积 * 单价（PRICE_PER_BLOCK） 有效面积 = 圈选面积 - 已有旅社区域覆盖的面积
      */
     public static int calculatePrice(TeamData team, BlockPos pos1, BlockPos pos2) {
         int minX = Math.min(pos1.getX(), pos2.getX());
@@ -129,7 +130,7 @@ public class LandDeedItem extends Item {
 
         // 如果没有队伍，则全额计算
         if (team == null) {
-            return (maxX - minX + 1) * (maxZ - minZ + 1) * 8;
+            return (maxX - minX + 1) * (maxZ - minZ + 1) * PRICE_PER_BLOCK;
         }
 
         int validCount = 0;
@@ -151,7 +152,7 @@ public class LandDeedItem extends Item {
             }
         }
 
-        return validCount * 8;
+        return validCount * PRICE_PER_BLOCK;
     }
 
     @Override

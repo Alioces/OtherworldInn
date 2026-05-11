@@ -31,7 +31,8 @@
     "MixinCoralWallFanBlock"
   ],
   "client": [
-    "MixinPlayerRendererMapModeHidden"
+    "MixinPlayerRendererMapModeHidden",
+    "MixinEntityRenderDispatcherMapMode"
   ],
   "injectors": {
     "defaultRequire": 1
