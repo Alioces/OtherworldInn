@@ -38,9 +38,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AttachedStemBlock;
-import net.minecraft.world.level.block.CampfireBlock;
-import net.minecraft.world.level.block.CandleBlock;
-import net.minecraft.world.level.block.CandleCakeBlock;
 import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.FarmBlock;
@@ -50,7 +47,6 @@ import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.piston.PistonStructureResolver;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -239,17 +235,6 @@ public class TownProtectionHandler {
                 || main.is(ModItems.MESSY_BED_SHEET.get())
                 || off.is(ModItems.MESSY_BED_SHEET.get());
     }
-
-    private static boolean isAllowedFlintAndSteelFunctionalUse(ItemStack stack, BlockState clickedState) {
-        if (!stack.is(Items.FLINT_AND_STEEL) || clickedState == null) return false;
-        if (CampfireBlock.canLight(clickedState)
-                || CandleBlock.canLight(clickedState)
-                || CandleCakeBlock.canLight(clickedState)) return true;
-        return clickedState.hasProperty(BlockStateProperties.LIT)
-                && !clickedState.getValue(BlockStateProperties.LIT);
-    }
-
-    //  工具方法
 
     private static boolean isNormalTownDecorArea(ServerLevel level, BlockPos pos) {
         return isTownDimension(level) && !isFreeZone(level, pos);
@@ -452,8 +437,6 @@ public class TownProtectionHandler {
             if (event.getLevel().dimension() != TownDimensions.TOWN_LEVEL) return;
             ItemStack stack = event.getItemStack();
             if (stack.is(OtherworldInn.BANNED_IN_TOWN)) {
-                BlockState clickedState = event.getLevel().getBlockState(event.getPos());
-                if (isAllowedFlintAndSteelFunctionalUse(stack, clickedState)) return;
                 event.setCanceled(true);
                 event.setUseItem(TriState.FALSE);
                 event.setUseBlock(TriState.FALSE);
@@ -612,7 +595,6 @@ public class TownProtectionHandler {
         if (isDepotDisplayBlock(clickedState)) return;
 
         if (stack.is(OtherworldInn.BANNED_IN_TOWN)) {
-            if (isAllowedFlintAndSteelFunctionalUse(stack, clickedState)) return;
             denyRightClickBlock(event, player);
             if (player instanceof ServerPlayer serverPlayer) {
                 player.displayClientMessage(
