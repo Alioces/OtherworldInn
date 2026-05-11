@@ -33,7 +33,7 @@ public class UltraRichGuestEntity extends GuestEntity {
         return new GuestProfile(
                 new PreferenceRangeProfile(new GuestData.IntRange(44, 62), new GuestData.IntRange(80, 100)),
                 new PreferenceRangeProfile(new GuestData.IntRange(46, 64), new GuestData.IntRange(70, 100)),
-                new PreferenceRangeProfile(new GuestData.IntRange(0, 12), new GuestData.IntRange(65, 100)),
+                new PreferenceRangeProfile(new GuestData.IntRange(5, 20), new GuestData.IntRange(65, 100)),
                 new GuestData.IntRange(86, 140),
                 1.4D);
     }

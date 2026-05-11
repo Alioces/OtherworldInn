@@ -447,14 +447,22 @@ public class InnData {
                             });
         }
 
+        String detected = null;
+        if (level instanceof ServerLevel serverLevel) {
+            detected = RoomThemeManager.detectTheme(serverLevel, min, max);
+            room.setTheme(detected == null ? "" : detected);
+        }
+
+        if (detected != null && !detected.isEmpty()) {
+            RoomThemeManager.StatModifiers mod = RoomThemeManager.getThemeModifiers(detected);
+            stats[0] += mod.comfort();
+            stats[1] += mod.light();
+            stats[2] += mod.humidity();
+        }
+
         room.setComfort(stats[0]);
         room.setLight(stats[1]);
         room.setHumidity(stats[2]);
-
-        if (level instanceof ServerLevel serverLevel) {
-            String detected = RoomThemeManager.detectTheme(serverLevel, min, max);
-            room.setTheme(detected == null ? "" : detected);
-        }
     }
 
     /**

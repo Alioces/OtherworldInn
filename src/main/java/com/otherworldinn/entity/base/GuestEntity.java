@@ -412,7 +412,7 @@ public abstract class GuestEntity extends PathfinderMob {
         return new GuestProfile(
                 new PreferenceRangeProfile(new GuestData.IntRange(0, 0), new GuestData.IntRange(100, 100)),
                 new PreferenceRangeProfile(new GuestData.IntRange(0, 0), new GuestData.IntRange(100, 100)),
-                new PreferenceRangeProfile(new GuestData.IntRange(0, 12), new GuestData.IntRange(100, 100)),
+                new PreferenceRangeProfile(new GuestData.IntRange(5, 20), new GuestData.IntRange(100, 100)),
                 new GuestData.IntRange(6, 42),
                 1.0D);
     }

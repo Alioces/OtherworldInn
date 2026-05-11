@@ -62,6 +62,10 @@ public class RoomThemeManager {
         }
     }
 
+    public record StatModifiers(int comfort, int light, int humidity) {
+        public static final StatModifiers NONE = new StatModifiers(0, 0, 0);
+    }
+
     /**
      * 主题定义。
      *
@@ -70,13 +74,15 @@ public class RoomThemeManager {
      * <p>内部需求组（interiorGroups）：检查房间内部方块，不包含外壳。
      * 组内 OR，组间 AND。
      * <p>外壳和内部必须同时满足。
+     * <p>statModifiers：主题对房间三维属性（舒适度、光照、潮湿度）的加成值。
      */
     public record RoomTheme(
             String id,
             String zhName,
             String enName,
             List<List<BlockMatcher>> shellGroups,
-            List<List<BlockMatcher>> interiorGroups) {}
+            List<List<BlockMatcher>> interiorGroups,
+            StatModifiers statModifiers) {}
 
     private static final Map<String, RoomTheme> THEMES = new LinkedHashMap<>();
 
@@ -96,7 +102,7 @@ public class RoomThemeManager {
                 BlockMatcher.byExactId("minecraft:dragon_head"),
                 BlockMatcher.byIdKeyword("shulker_box")));
 
-        register(new RoomTheme("end", "末地", "End", endShell, endInterior));
+        register(new RoomTheme("end", "末地", "End", endShell, endInterior, StatModifiers.NONE));
 
         // ── 下界主题 ──
         // 外壳组:
@@ -115,7 +121,7 @@ public class RoomThemeManager {
                 BlockMatcher.byExactId("minecraft:soul_lantern"),
                 BlockMatcher.byExactId("minecraft:soul_wall_torch")));
 
-        register(new RoomTheme("nether", "下界", "Nether", netherShell, netherInterior));
+        register(new RoomTheme("nether", "下界", "Nether", netherShell, netherInterior, StatModifiers.NONE));
 
         // ── 海洋主题 ──
         // 外壳组:
@@ -127,7 +133,7 @@ public class RoomThemeManager {
                 BlockMatcher.byExactId("minecraft:conduit"),
                 BlockMatcher.byIdKeyword("coral")));
 
-        register(new RoomTheme("ocean", "海洋", "Ocean", oceanShell, oceanInterior));
+        register(new RoomTheme("ocean", "海洋", "Ocean", oceanShell, oceanInterior, new StatModifiers(0, 0, 15)));
     }
 
     public static void register(RoomTheme theme) {
@@ -246,5 +252,13 @@ public class RoomThemeManager {
             return id;
         }
         return zh ? theme.zhName() : theme.enName();
+    }
+
+    public static StatModifiers getThemeModifiers(String id) {
+        RoomTheme theme = THEMES.get(id);
+        if (theme == null) {
+            return StatModifiers.NONE;
+        }
+        return theme.statModifiers();
     }
 }
