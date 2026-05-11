@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(CoralBlock.class)
 public class MixinCoralBlock {
 
-    @Inject(method = "randomTick", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void preventDeathInTown(
             BlockState state, ServerLevel level, BlockPos pos, RandomSource random, CallbackInfo ci) {
         if (level.dimension() == TownDimensions.TOWN_LEVEL) {

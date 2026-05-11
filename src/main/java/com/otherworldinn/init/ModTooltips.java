@@ -59,6 +59,14 @@ public class ModTooltips {
                                     .withStyle(style -> style.withColor(ModColors.INFO)));
         }
 
+        if (itemStack.is(net.minecraft.world.item.Items.BOOK)
+                || itemStack.is(net.minecraft.world.item.Items.WRITABLE_BOOK)) {
+            event.getToolTip()
+                    .add(
+                            Component.translatable("tooltip.otherworldinn.book.roster")
+                                    .withStyle(style -> style.withColor(ModColors.INFO)));
+        }
+
         // 检查是否在城镇维度且物品被禁用
         if (level != null) {
             boolean inTown = level.dimension() == TownDimensions.TOWN_LEVEL;

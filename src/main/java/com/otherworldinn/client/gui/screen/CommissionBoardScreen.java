@@ -24,11 +24,13 @@ import com.otherworldinn.world.inventory.CommissionBoardMenu;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 
 public class CommissionBoardScreen extends AbstractContainerScreen<CommissionBoardMenu> {
-    private static final int BASE_BOARD_WIDTH = 175;
-    private static final int BASE_BOARD_HEIGHT = 252;
-    private static final int SIDE_MARGIN = 8;
+    private static final int CARD_WIDTH = 155;
+    private static final int CARD_GAP = 40;
+    private static final int BOARD_WIDTH_TWO = CARD_WIDTH * 2 + CARD_GAP + 20;
+    private static final int BOARD_WIDTH_ONE = 175;
+    private static final int BOARD_HEIGHT = 252;
     private static final int BASE_BUTTON_HEIGHT = 18;
-    private static final ResourceLocation BOARD_TEXTURE =
+    private static final ResourceLocation BOARD_TEXTURE_ONE =
             ResourceLocation.fromNamespaceAndPath(
                     OtherworldInn.MODID, "textures/gui/commission/commission_board.png");
     private static final ResourceLocation ACCEPT_BUTTON_ATLAS_TEXTURE =
@@ -44,7 +46,6 @@ public class CommissionBoardScreen extends AbstractContainerScreen<CommissionBoa
     private static final int COLOR_REWARD = 0xFF4B8A58;
 
     private CompoundTag boardData;
-    private Button acceptButton;
 
     private int leftPos;
     private int topPos;
@@ -55,85 +56,138 @@ public class CommissionBoardScreen extends AbstractContainerScreen<CommissionBoa
                 Minecraft.getInstance().player.getInventory(),
                 Component.translatable("screen.otherworldinn.commission_board.title"));
         this.boardData = boardData == null ? new CompoundTag() : boardData.copy();
-        this.imageWidth = BASE_BOARD_WIDTH;
-        this.imageHeight = BASE_BOARD_HEIGHT;
+        this.imageWidth = BOARD_WIDTH_ONE;
+        this.imageHeight = BOARD_HEIGHT;
     }
 
     public void updateBoardData(CompoundTag data) {
         this.boardData = data == null ? new CompoundTag() : data.copy();
-        rebuildButtons();
+        rebuildLayout();
     }
 
     @Override
     protected void init() {
         super.init();
-        this.leftPos = (this.width - BASE_BOARD_WIDTH) / 2;
-        this.topPos = (this.height - BASE_BOARD_HEIGHT) / 2;
-        rebuildButtons();
+        rebuildLayout();
     }
 
-    private void rebuildButtons() {
+    private boolean isTwoCardMode() {
+        return boardData.getInt("AcceptedIndex") < 0
+                && !boardData.getBoolean("RewardClaimed")
+                && getEntries().size() >= 2;
+    }
+
+    private void rebuildLayout() {
         clearWidgets();
+        if (isTwoCardMode()) {
+            this.imageWidth = BOARD_WIDTH_TWO;
+        } else {
+            this.imageWidth = BOARD_WIDTH_ONE;
+        }
+        this.leftPos = (this.width - this.imageWidth) / 2;
+        this.topPos = (this.height - BOARD_HEIGHT) / 2;
 
-        int cardX = this.leftPos + 10;
-        int cardY = this.topPos + 25;
-        int cardWidth = 155;
-        int cardHeight = 192;
-        int buttonWidth = Math.max(48, (cardWidth - 16) / 2);
-        int buttonX = cardX + (cardWidth - buttonWidth) / 2;
-
-        int y = cardY + cardHeight - BASE_BUTTON_HEIGHT - 4;
         int acceptedIndex = boardData.getInt("AcceptedIndex");
         ListTag entries = getEntries();
         boolean rewardClaimed = boardData.getBoolean("RewardClaimed");
         boolean hasEntry = !entries.isEmpty();
+
         if (rewardClaimed) {
-            this.acceptButton = null;
             return;
         }
-        this.acceptButton =
-                new CommissionAcceptButton(
-                        buttonX,
-                        y,
-                        buttonWidth,
-                        BASE_BUTTON_HEIGHT,
-                        Component.translatable("message.otherworldinn.commission.accept"),
-                        btn -> ModMessages.sendToServer(new C2SAcceptCommissionPacket(0)));
-        acceptButton.active = hasEntry && acceptedIndex < 0;
-        if (acceptedIndex == 0) {
-            acceptButton.setMessage(
-                    Component.translatable("message.otherworldinn.commission.accepted")
-                            .setStyle(Style.EMPTY.withBold(false).withItalic(false)));
-            acceptButton.active = false;
+        if (acceptedIndex < 0 && entries.size() >= 2) {
+            for (int slot = 0; slot < 2; slot++) {
+                int cardX = this.leftPos + 10 + slot * (CARD_WIDTH + CARD_GAP);
+                int cardY = this.topPos + 25;
+                int buttonWidth = Math.max(48, (CARD_WIDTH - 16) / 2);
+                int buttonX = cardX + (CARD_WIDTH - buttonWidth) / 2;
+                int btnY = cardY + 187;
+                final int acceptIndex = slot;
+
+                Button btn =
+                        new CommissionAcceptButton(
+                                buttonX,
+                                btnY,
+                                buttonWidth,
+                                BASE_BUTTON_HEIGHT,
+                                Component.translatable("message.otherworldinn.commission.accept"),
+                                b -> ModMessages.sendToServer(new C2SAcceptCommissionPacket(acceptIndex)));
+                btn.active = hasEntry;
+                if (!hasEntry) {
+                    btn.setMessage(Component.translatable("message.otherworldinn.commission.empty"));
+                    btn.active = false;
+                }
+                addRenderableWidget(btn);
+            }
+        } else {
+            int cardX = this.leftPos + 10;
+            int cardY = this.topPos + 25;
+            int buttonWidth = Math.max(48, (CARD_WIDTH - 16) / 2);
+            int buttonX = cardX + (CARD_WIDTH - buttonWidth) / 2;
+            int btnY = cardY + 187;
+
+            Button btn =
+                    new CommissionAcceptButton(
+                            buttonX,
+                            btnY,
+                            buttonWidth,
+                            BASE_BUTTON_HEIGHT,
+                            Component.translatable("message.otherworldinn.commission.accepted")
+                                    .setStyle(Style.EMPTY.withBold(false).withItalic(false)),
+                            b -> {});
+            btn.active = false;
+            if (!hasEntry) {
+                btn.setMessage(Component.translatable("message.otherworldinn.commission.empty"));
+            }
+            addRenderableWidget(btn);
         }
-        if (!hasEntry) {
-            acceptButton.setMessage(Component.translatable("message.otherworldinn.commission.empty"));
-            acceptButton.active = false;
-        }
-        addRenderableWidget(acceptButton);
     }
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.getResourceManager().getResource(BOARD_TEXTURE).isPresent()) {
+        if (isTwoCardMode()) {
+            for (int slot = 0; slot < 2; slot++) {
+                int cardLeft = this.leftPos + slot * (CARD_WIDTH + CARD_GAP);
+                if (mc.getResourceManager().getResource(BOARD_TEXTURE_ONE).isPresent()) {
+                    RenderSystem.enableBlend();
+                    RenderSystem.defaultBlendFunc();
+                    guiGraphics.blit(
+                            BOARD_TEXTURE_ONE,
+                            cardLeft,
+                            this.topPos,
+                            0,
+                            0,
+                            BOARD_WIDTH_ONE,
+                            BOARD_HEIGHT,
+                            BOARD_WIDTH_ONE,
+                            BOARD_HEIGHT);
+                    RenderSystem.disableBlend();
+                } else {
+                    guiGraphics.fill(cardLeft, this.topPos, cardLeft + BOARD_WIDTH_ONE, this.topPos + BOARD_HEIGHT, 0xAA101018);
+                    guiGraphics.fill(cardLeft + 1, this.topPos + 1, cardLeft + BOARD_WIDTH_ONE - 1, this.topPos + BOARD_HEIGHT - 1, 0xCC1B1B24);
+                }
+            }
+            return;
+        }
+        if (mc.getResourceManager().getResource(BOARD_TEXTURE_ONE).isPresent()) {
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
             guiGraphics.blit(
-                    BOARD_TEXTURE,
+                    BOARD_TEXTURE_ONE,
                     this.leftPos,
                     this.topPos,
                     0,
                     0,
-                    BASE_BOARD_WIDTH,
-                    BASE_BOARD_HEIGHT,
-                    BASE_BOARD_WIDTH,
-                    BASE_BOARD_HEIGHT);
+                    BOARD_WIDTH_ONE,
+                    BOARD_HEIGHT,
+                    BOARD_WIDTH_ONE,
+                    BOARD_HEIGHT);
             RenderSystem.disableBlend();
             return;
         }
-        guiGraphics.fill(this.leftPos, this.topPos, this.leftPos + BASE_BOARD_WIDTH, this.topPos + BASE_BOARD_HEIGHT, 0xAA101018);
-        guiGraphics.fill(this.leftPos + 1, this.topPos + 1, this.leftPos + BASE_BOARD_WIDTH - 1, this.topPos + BASE_BOARD_HEIGHT - 1, 0xCC1B1B24);
+        guiGraphics.fill(this.leftPos, this.topPos, this.leftPos + BOARD_WIDTH_ONE, this.topPos + BOARD_HEIGHT, 0xAA101018);
+        guiGraphics.fill(this.leftPos + 1, this.topPos + 1, this.leftPos + BOARD_WIDTH_ONE - 1, this.topPos + BOARD_HEIGHT - 1, 0xCC1B1B24);
     }
 
     @Override
@@ -144,109 +198,126 @@ public class CommissionBoardScreen extends AbstractContainerScreen<CommissionBoa
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
-        int cardX = this.leftPos + 10;
-        int cardY = this.topPos + 25;
-        int cardWidth = 155;
-        int cardHeight = 192;
-
         ListTag entries = getEntries();
-        int acceptedIndex = boardData.getInt("AcceptedIndex"); // 仅 0 或 -1
+        int acceptedIndex = boardData.getInt("AcceptedIndex");
         long expireDay = boardData.getLong("ExpireDay");
         long currentDay = boardData.getLong("CurrentDay");
         boolean rewardClaimed = boardData.getBoolean("RewardClaimed");
-        int x = cardX;
-        int y = cardY;
-        int contentBottomY = y + cardHeight - 30;
 
         ItemStack hoveredStack = ItemStack.EMPTY;
+        ItemStack[] hoverHolder = new ItemStack[] {ItemStack.EMPTY};
 
         if (rewardClaimed) {
+            int cardX = this.leftPos + 10;
+            int cardY = this.topPos + 25;
             List<FormattedCharSequence> lines =
                     this.font.split(
                             Component.translatable("message.otherworldinn.commission.no_new"),
-                            cardWidth - 16);
-            int textY = y + cardHeight / 2 - (Math.min(2, lines.size()) * 10) / 2;
+                            CARD_WIDTH - 16);
+            int textY = cardY + 187 / 2 - (Math.min(2, lines.size()) * 10) / 2;
             for (int li = 0; li < Math.min(2, lines.size()); li++) {
                 FormattedCharSequence line = lines.get(li);
-                int lineX = x + (cardWidth - this.font.width(line)) / 2;
+                int lineX = cardX + (CARD_WIDTH - this.font.width(line)) / 2;
                 guiGraphics.drawString(this.font, line, lineX, textY, COLOR_MUTED, false);
                 textY += 10;
             }
-        } else if (entries.isEmpty() || !(entries.get(0) instanceof CompoundTag entry)) {
+        } else if (acceptedIndex < 0 && entries.size() >= 2) {
+            for (int i = 0; i < 2; i++) {
+                if (entries.get(i) instanceof CompoundTag entry) {
+                    int cardX = this.leftPos + 10 + i * (CARD_WIDTH + CARD_GAP);
+                    hoverHolder = renderCard(guiGraphics, entry, cardX, false, expireDay, currentDay, mouseX, mouseY, hoverHolder);
+                }
+            }
+            hoveredStack = hoverHolder[0];
+        } else if (!entries.isEmpty() && entries.get(Math.max(0, acceptedIndex)) instanceof CompoundTag entry) {
+            int cardX = this.leftPos + 10;
+            boolean showKillProgress = acceptedIndex >= 0 && !rewardClaimed;
+            hoverHolder = renderCard(guiGraphics, entry, cardX, showKillProgress, expireDay, currentDay, mouseX, mouseY, hoverHolder);
+            hoveredStack = hoverHolder[0];
+        } else {
+            int cardX = this.leftPos + 10;
+            int cardY = this.topPos + 25;
             guiGraphics.drawString(
                     this.font,
                     Component.translatable("message.otherworldinn.commission.empty"),
-                    x + 8,
-                    y + 12,
+                    cardX + 8,
+                    cardY + 12,
                     COLOR_MUTED,
                     false);
-        } else {
-            int stars = entry.getInt("Stars");
-            long duration = entry.getLong("DurationDays");
-            Component difficultyLabel =
-                    Component.translatable("message.otherworldinn.commission.difficulty");
-            guiGraphics.drawString(this.font, difficultyLabel, x + 8, y + 10, COLOR_PRIMARY, false);
-            int starsX = x + 8 + this.font.width(difficultyLabel) + 4;
-            int maxStars = Math.max(1, Math.min(5, stars));
-            String starsText = "\uE005".repeat(maxStars);
-            guiGraphics.drawString(
-                    this.font,
-                    Component.literal(starsText),
-                    starsX,
-                    y + 10,
-                    0xFFFFFFFF,
-                    false);
-            guiGraphics.drawString(
-                    this.font,
-                    Component.translatable("message.otherworldinn.commission.limit_day", duration),
-                    x + 8,
-                    y + 24,
-                    COLOR_SECONDARY,
-                    false);
-
-            int lineY = drawDescription(guiGraphics, entry, x, y + 38, cardWidth, contentBottomY);
-            ItemStack[] currentHover = new ItemStack[] {ItemStack.EMPTY};
-            boolean showKillProgress = acceptedIndex == 0 && !rewardClaimed;
-            lineY =
-                    drawRequirements(
-                            guiGraphics,
-                            entry,
-                            x + 8,
-                            lineY,
-                            cardWidth - 16,
-                            contentBottomY,
-                            mouseX,
-                            mouseY,
-                            currentHover,
-                            showKillProgress);
-            drawRewards(
-                    guiGraphics,
-                    entry,
-                    x + 8,
-                    Math.min(lineY + 4, contentBottomY),
-                    cardWidth - 16,
-                    contentBottomY,
-                    mouseX, mouseY, currentHover);
-            hoveredStack = currentHover[0];
-            if (acceptedIndex == 0) {
-                long remainingDays = Math.max(0L, expireDay - currentDay);
-                Component remainText =
-                        remainingDays <= 0L
-                                ? Component.translatable("message.otherworldinn.commission.today")
-                                : Component.translatable(
-                                        "message.otherworldinn.commission.remaining_day", remainingDays);
-                guiGraphics.drawString(
-                        this.font,
-                        remainText,
-                        x + 8,
-                        y + cardHeight - 36,
-                        COLOR_ACCENT,
-                        false);
-            }
         }
         if (!hoveredStack.isEmpty()) {
             guiGraphics.renderTooltip(this.font, hoveredStack, mouseX, mouseY);
         }
+    }
+
+    private ItemStack[] renderCard(
+            GuiGraphics guiGraphics,
+            CompoundTag entry,
+            int cardX,
+            boolean showKillProgress,
+            long expireDay,
+            long currentDay,
+            int mouseX,
+            int mouseY,
+            ItemStack[] currentHover) {
+        int cardY = this.topPos + 25;
+        int cardHeight = 192;
+        int contentBottomY = cardY + cardHeight - 30;
+
+        int stars = entry.getInt("Stars");
+        long duration = entry.getLong("DurationDays");
+        Component difficultyLabel = Component.translatable("message.otherworldinn.commission.difficulty");
+        guiGraphics.drawString(this.font, difficultyLabel, cardX + 8, cardY + 10, COLOR_PRIMARY, false);
+        int starsX = cardX + 8 + this.font.width(difficultyLabel) + 4;
+        int maxStars = Math.max(1, Math.min(5, stars));
+        String starsText = "\uE005".repeat(maxStars);
+        guiGraphics.drawString(this.font, Component.literal(starsText), starsX, cardY + 10, 0xFFFFFFFF, false);
+        guiGraphics.drawString(
+                this.font,
+                Component.translatable("message.otherworldinn.commission.limit_day", duration),
+                cardX + 8,
+                cardY + 24,
+                COLOR_SECONDARY,
+                false);
+
+        int lineY = drawDescription(guiGraphics, entry, cardX, cardY + 38, CARD_WIDTH, contentBottomY);
+        lineY =
+                drawRequirements(
+                        guiGraphics,
+                        entry,
+                        cardX + 8,
+                        lineY,
+                        CARD_WIDTH - 16,
+                        contentBottomY,
+                        mouseX,
+                        mouseY,
+                        currentHover,
+                        showKillProgress);
+        drawRewards(
+                guiGraphics,
+                entry,
+                cardX + 8,
+                Math.min(lineY + 4, contentBottomY),
+                CARD_WIDTH - 16,
+                contentBottomY,
+                mouseX, mouseY, currentHover);
+
+        if (showKillProgress) {
+            long remainingDays = Math.max(0L, expireDay - currentDay);
+            Component remainText =
+                    remainingDays <= 0L
+                            ? Component.translatable("message.otherworldinn.commission.today")
+                            : Component.translatable(
+                                    "message.otherworldinn.commission.remaining_day", remainingDays);
+            guiGraphics.drawString(
+                    this.font,
+                    remainText,
+                    cardX + 8,
+                    cardY + cardHeight - 36,
+                    COLOR_ACCENT,
+                    false);
+        }
+        return currentHover;
     }
 
     private int drawRequirements(
@@ -516,7 +587,6 @@ public class CommissionBoardScreen extends AbstractContainerScreen<CommissionBoa
         if (y > bottomY - 9) {
             return y;
         }
-        // 前缀短横保持正文黑色，金币图标固定白色（bitmap 原始观感）。
         Component dash = Component.literal("- ");
         guiGraphics.drawString(this.font, dash, x, y, COLOR_BODY, false);
         int iconX = x + this.font.width(dash);

@@ -8,6 +8,7 @@ import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 
@@ -59,6 +60,11 @@ public class ModRecipeProvider extends RecipeProvider {
                 .define('S', ModItems.SPACE_SPHERE.get())
                 .unlockedBy("has_space_sphere", has(ModItems.SPACE_SPHERE.get()))
                 .unlockedBy("has_end_stone", has(Items.END_STONE))
+                .save(recipeOutput);
+
+        ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.WRITABLE_BOOK, 1)
+                .requires(Items.WRITTEN_BOOK)
+                .unlockedBy("has_written_book", has(Items.WRITTEN_BOOK))
                 .save(recipeOutput);
     }
 }

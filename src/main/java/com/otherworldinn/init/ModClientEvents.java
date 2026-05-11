@@ -11,7 +11,7 @@ import com.otherworldinn.client.renderer.GrocerRenderer;
 import com.otherworldinn.client.renderer.GuestRenderer;
 import com.otherworldinn.client.renderer.MagicianModel;
 import com.otherworldinn.client.renderer.MagicianRenderer;
-import com.otherworldinn.init.ModItems;
+  import com.otherworldinn.init.ModItems;
 import com.otherworldinn.item.RoomKeyItem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
@@ -113,7 +113,7 @@ public class ModClientEvents {
                     }
                     PoseStack pose = guiGraphics.pose();
                     pose.pushPose();
-                    pose.translate(x + 9, y + 9, 200);
+                    pose.translate(x, y + 9, 200);
                     pose.scale(0.5F, 0.5F, 1.0F);
                     guiGraphics.renderItem(new ItemStack(Items.BARRIER), 0, 0);
                     pose.popPose();

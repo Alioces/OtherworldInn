@@ -18,6 +18,20 @@ public abstract class MixinServerLevel {
     @Shadow
     private ServerLevelData serverLevelData;
 
+    private boolean otherworldinn$fireTickDisabled = false;
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void disableFireTickInTown(CallbackInfo ci) {
+        if (otherworldinn$fireTickDisabled) {
+            return;
+        }
+        otherworldinn$fireTickDisabled = true;
+        ServerLevel self = (ServerLevel) (Object) this;
+        if (self.dimension() == TownDimensions.TOWN_LEVEL) {
+            self.getGameRules().getRule(GameRules.RULE_DOFIRETICK).set(false, self.getServer());
+        }
+    }
+
     private static ServerLevelData unwrapDerived(ServerLevelData sld) {
         if (sld instanceof DerivedLevelData) {
             try {

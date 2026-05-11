@@ -11,6 +11,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
@@ -32,11 +34,15 @@ public class DeskBellClientHandler {
 
         if (blockEntity instanceof DeskBellBlockEntity) {
             Player player = event.getEntity();
-            TeamData team = TeamManager.getInstance().getClientPlayerTeam();
 
             if (player.isShiftKeyDown()) {
+                ItemStack held = player.getItemInHand(event.getHand());
+                if (held.is(Items.BOOK) || held.is(Items.WRITABLE_BOOK) || held.is(Items.WRITTEN_BOOK)) {
+                    event.setCanceled(true);
+                }
                 return;
             }
+            TeamData team = TeamManager.getInstance().getClientPlayerTeam();
             if (team == null) return;
 
             // 检查是否在旅社区域内

@@ -5,6 +5,7 @@ import com.otherworldinn.foundation.ModColors;
 import com.otherworldinn.init.ModItems;
 import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.world.dimension.TownDimensions;
+import com.otherworldinn.world.inn.GuestData;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.inn.RoomData;
 import com.otherworldinn.world.inn.RoomData;
@@ -14,10 +15,15 @@ import com.otherworldinn.world.team.TeamSavedData;
 import com.simibubi.create.AllBlocks;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
+
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -25,14 +31,18 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.Filterable;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
@@ -387,20 +397,17 @@ public class InnEventHandler {
         Player player = event.getEntity();
         if (!player.isShiftKeyDown()) return;
 
-        // 检查是否点击的是 DeskBell
         if (level.getBlockEntity(pos)
                 instanceof com.simibubi.create.content.redstone.deskBell.DeskBellBlockEntity) {
             ItemStack heldItem = player.getItemInHand(event.getHand());
 
-            // 检查是否持有工具 (斧、镐、铲、锄)
-            if (isTool(heldItem)) {
+            if (heldItem.is(ModItems.INN_KEY.get())) {
                 if (level instanceof ServerLevel serverLevel
                         && level.dimension() == TownDimensions.TOWN_LEVEL) {
                     TeamData team =
                             TeamManager.getInstance().getTeamAt(pos, serverLevel.getServer());
 
                     if (team != null) {
-                        // 检查权限
                         if (!team.hasMember(player.getUUID())) {
                             player.displayClientMessage(
                                     Component.translatable(
@@ -441,14 +448,118 @@ public class InnEventHandler {
                     }
                 }
             }
+
+            if (heldItem.is(Items.BOOK) || heldItem.is(Items.WRITABLE_BOOK) || heldItem.is(Items.WRITTEN_BOOK)) {
+                if (level instanceof ServerLevel serverLevel
+                        && level.dimension() == TownDimensions.TOWN_LEVEL) {
+                    TeamData team =
+                            TeamManager.getInstance().getTeamAt(pos, serverLevel.getServer());
+                    if (team != null && team.hasMember(player.getUUID())) {
+                        ItemStack roster = createGuestRoster(team, serverLevel);
+                        if (roster != null) {
+                            heldItem.shrink(1);
+                            if (!player.getInventory().add(roster)) {
+                                player.spawnAtLocation(roster);
+                            }
+                            level.playSound(null, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 0.8F, 1.0F);
+                            player.swing(event.getHand(), true);
+                            player.displayClientMessage(
+                                    Component.translatable("message.otherworldinn.guest_roster.created")
+                                            .withStyle(style -> style.withColor(ModColors.SUCCESS)),
+                                    true);
+                        }
+                        event.setCanceled(true);
+                    }
+                }
+            }
         }
     }
 
-    private static boolean isTool(ItemStack stack) {
-        return stack.is(net.minecraft.tags.ItemTags.AXES)
-                || stack.is(net.minecraft.tags.ItemTags.PICKAXES)
-                || stack.is(net.minecraft.tags.ItemTags.SHOVELS)
-                || stack.is(net.minecraft.tags.ItemTags.HOES);
+    @Nullable
+    private static ItemStack createGuestRoster(TeamData team, ServerLevel level) {
+        InnData innData = team.getInnData();
+        List<RoomData> rooms = innData.getRooms().values().stream()
+                .sorted(java.util.Comparator.comparingInt(RoomData::getId))
+                .toList();
+
+        if (rooms.isEmpty()) {
+            return null;
+        }
+
+        List<MutableComponent> pageComponents = new java.util.ArrayList<>();
+        MutableComponent currentPage = Component.empty();
+        int lineCount = 0;
+        final int MAX_LINES = 13;
+
+        for (RoomData room : rooms) {
+            MutableComponent header = Component.literal(" -   " + room.getId() + "号房 ")
+                    .withStyle(ChatFormatting.GRAY);
+
+            Set<UUID> guestUuids = room.getCurrentGuests();
+            if (guestUuids.isEmpty()) {
+                header.append(Component.literal("空闲")
+                        .withStyle(ChatFormatting.GRAY));
+                if (lineCount + 2 > MAX_LINES) {
+                    pageComponents.add(currentPage);
+                    currentPage = Component.empty();
+                    lineCount = 0;
+                }
+                currentPage.append(header).append("\n\n");
+                lineCount += 2;
+                continue;
+            }
+
+            int needed = 1 + 1 + guestUuids.size() + 1;
+            if (lineCount + needed > MAX_LINES && lineCount > 0) {
+                pageComponents.add(currentPage);
+                currentPage = Component.empty();
+                lineCount = 0;
+            }
+            currentPage.append(header).append("\n");
+            lineCount++;
+
+            MutableComponent guestsLabel = Component.literal(" 已入住旅客：")
+                    .withStyle(ChatFormatting.GRAY);
+            currentPage.append(guestsLabel).append("\n");
+            lineCount++;
+
+            for (UUID uuid : guestUuids) {
+                String guestName = getGuestName(team, uuid, level);
+                MutableComponent nameLine = Component.literal("  - " + guestName);
+                currentPage.append(nameLine).append("\n");
+                lineCount++;
+            }
+            currentPage.append("\n");
+            lineCount++;
+        }
+
+        pageComponents.add(currentPage);
+
+        List<Filterable<Component>> rawPages = new java.util.ArrayList<>();
+        for (MutableComponent comp : pageComponents) {
+            rawPages.add(Filterable.passThrough(comp));
+        }
+
+        ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
+        book.set(DataComponents.WRITTEN_BOOK_CONTENT,
+                new WrittenBookContent(
+                        Filterable.passThrough("旅客名册"),
+                        team.getName(),
+                        0,
+                        rawPages,
+                        true));
+        return book;
+    }
+
+    private static String getGuestName(TeamData team, UUID uuid, ServerLevel level) {
+        Entity entity = level.getEntity(uuid);
+        if (entity != null && entity.getCustomName() != null) {
+            return entity.getCustomName().getString();
+        }
+        if (entity != null) {
+            return entity.getName().getString();
+        }
+        return uuid.toString().substring(0, 8);
     }
 
     /**

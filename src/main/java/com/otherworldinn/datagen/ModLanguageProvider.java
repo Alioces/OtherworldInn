@@ -371,6 +371,12 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("tooltip.otherworldinn.create_clipboard_hint")
                 .zh("放置在旅社范围内时，会自动添加并提醒重要的待办事项")
                 .en("When placed inside inn bounds, it automatically adds and reminds important todos.");
+        entry("tooltip.otherworldinn.book.roster")
+                .zh("潜行右键前台铃铛可生成旅客名册")
+                .en("Sneak + right-click Desk Bell to create a guest roster.");
+        entry("message.otherworldinn.book.desk_bell")
+                .zh("潜行生成旅客名册")
+                .en("Create Guest Roster");
 
         // 房间登记册
         entry("message.otherworldinn.room_register.not_edit_mode")
@@ -672,6 +678,9 @@ public class ModLanguageProvider extends LanguageProvider {
                 .zh("旅社已歇业，快去休息吧...")
                 .en("The Inn is now CLOSED. Time to rest...");
         entry("message.otherworldinn.inn_key.status").zh("当前状态: %s").en("Current State: %s");
+        entry("message.otherworldinn.guest_roster.created")
+                .zh("已生成旅客名册")
+                .en("Guest roster created.");
         entry("message.otherworldinn.inn_upgrade_voucher.overlay.use")
                 .zh("提升旅社评级")
                 .en("Upgrade Inn Rating");

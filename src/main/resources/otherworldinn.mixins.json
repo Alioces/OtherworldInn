@@ -28,8 +28,7 @@
     "MixinLittleMaidTaskNormalFarm",
     "MixinCoralBlock",
     "MixinCoralFanBlock",
-    "MixinCoralWallFanBlock",
-    "MixinFireBlock"
+    "MixinCoralWallFanBlock"
   ],
   "client": [
     "MixinPlayerRendererMapModeHidden"
