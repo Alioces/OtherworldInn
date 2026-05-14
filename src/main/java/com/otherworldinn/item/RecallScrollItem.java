@@ -7,6 +7,8 @@ import com.otherworldinn.world.map.MapPoint;
 import com.otherworldinn.world.map.TownDataProvider;
 import com.otherworldinn.world.teleport.TeleportUtils;
 import java.util.Optional;
+import com.otherworldinn.world.expedition.ExpeditionDimensions;
+import com.otherworldinn.world.expedition.ExpeditionService;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -71,6 +73,9 @@ public class RecallScrollItem extends Item {
             // 获取目标维度
             ServerLevel townLevel = player.getServer().getLevel(TownDimensions.TOWN_LEVEL);
             if (townLevel != null) {
+                if (ExpeditionDimensions.isExpeditionDimension(player.level().dimension())) {
+                    ExpeditionService.markDeparted(player.getUUID(), player.getServer());
+                }
                 // 获取旅社坐标
                 Optional<MapPoint> innPoint =
                         TownDataProvider.getPoint(

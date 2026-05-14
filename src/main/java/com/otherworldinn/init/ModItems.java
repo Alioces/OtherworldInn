@@ -15,6 +15,8 @@ import com.otherworldinn.item.RecallScrollItem;
 import com.otherworldinn.item.RoomKeyItem;
 import com.otherworldinn.item.RoomRegisterItem;
 import com.otherworldinn.item.SpaceSphereItem;
+import com.otherworldinn.item.ChartComponentItem;
+import com.otherworldinn.item.ExpeditionChartItem;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,16 +164,14 @@ public class ModItems {
                     .rarity(Rarity.EPIC)
                     .stacksTo(1)
                     .lang("Space Sphere", "空间球")
-                    .tooltip("Use to activate map teleport for your team", "使用后激活地图点传送功能")
-                    .tooltip("Right click in non-town dimensions to teleport randomly within 256 blocks", "在非城镇维度右键使用，随机传送至256格内安全位置");
+                    .tooltip("Use to activate map teleport for your team", "使用后激活地图点传送功能");
     public static final DeferredItem<SpaceSphereItem> SPACE_SPHERE = SPACE_SPHERE_REG.register();
 
     public static final ItemReg<NetherSpaceSphereItem> NETHER_SPACE_SPHERE_REG =
             new ItemReg<>("nether_space_sphere", NetherSpaceSphereItem::new)
                     .rarity(Rarity.EPIC)
                     .stacksTo(16)
-                    .lang("Nether Space Sphere", "下界空间球")
-                    .tooltip("Use to teleport to Nether", "使用后传送至下界");
+                    .lang("Nether Space Sphere", "下界空间球");
     public static final DeferredItem<NetherSpaceSphereItem> NETHER_SPACE_SPHERE =
             NETHER_SPACE_SPHERE_REG.register();
 
@@ -179,10 +179,28 @@ public class ModItems {
             new ItemReg<>("end_space_sphere", EndSpaceSphereItem::new)
                     .rarity(Rarity.EPIC)
                     .stacksTo(16)
-                    .lang("End Space Sphere", "末地空间球")
-                    .tooltip("Use to teleport to End", "使用后传送至末地");
+                    .lang("End Space Sphere", "末地空间球");
     public static final DeferredItem<EndSpaceSphereItem> END_SPACE_SPHERE =
             END_SPACE_SPHERE_REG.register();
+
+    public static final ItemReg<ExpeditionChartItem> PIONEER_CHART_REG =
+            new ItemReg<>("pioneer_chart", ExpeditionChartItem::new)
+                    .rarity(Rarity.RARE)
+                    .stacksTo(1)
+                    .lang("Pioneer Chart", "开拓者星图")
+                    .tooltip("Add Chart Components via crafting to customize the expedition", "通过合成附加星图组件来定制远征");
+    public static final DeferredItem<ExpeditionChartItem> PIONEER_CHART =
+            PIONEER_CHART_REG.register();
+
+    public static final ItemReg<ChartComponentItem> CHART_COMPONENT_REG =
+            new ItemReg<>("chart_component", ChartComponentItem::new)
+                    .rarity(Rarity.COMMON)
+                    .stacksTo(64)
+                    .lang("Chart Component", "星图组件")
+                    .tooltip("Craft with a blank component + materials to create a specific component", "使用空白组件+特定材料合成特定组件")
+                    .tooltip("Attach to a Pioneer Chart to customize expedition terrain", "附加到开拓者星图以定制远征地形");
+    public static final DeferredItem<ChartComponentItem> CHART_COMPONENT =
+            CHART_COMPONENT_REG.register();
 
     // --- 辅助方法 ---
 

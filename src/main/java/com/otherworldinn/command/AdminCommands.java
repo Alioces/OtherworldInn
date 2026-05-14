@@ -12,7 +12,8 @@ import com.otherworldinn.world.event.TownStructurePlacer;
 import com.otherworldinn.world.inn.facility.FacilityRegistry;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
-import com.otherworldinn.world.event.runtime.DimensionResetManager;
+import com.otherworldinn.world.expedition.ExpeditionService;
+import com.otherworldinn.world.expedition.ExpeditionSession;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -24,7 +25,6 @@ import net.minecraft.world.phys.AABB;
 /**
  * 管理员命令
  *
- * <p>/innadmin reset_dimensions - 强制触发维度重置
  */
 public class AdminCommands {
     private static final AABB TOWN_STORE_SCAN_AREA = new AABB(-1024, -64, -1024, 1024, 384, 1024);
@@ -32,10 +32,7 @@ public class AdminCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
                 Commands.literal("innadmin")
-                        .requires(s -> s.hasPermission(2)) // 需要管理员权限 (Level 2)
-                        .then(
-                                Commands.literal("reset_dimensions")
-                                        .executes(AdminCommands::resetDimensions))
+                        .requires(s -> s.hasPermission(2))
                         .then(
                                 Commands.literal("facility")
                                         .then(
@@ -85,21 +82,27 @@ public class AdminCommands {
                                                                                 AdminCommands
                                                                                         ::refreshCommissionBoard))))
                         .then(
+                                Commands.literal("expedition")
+                                        .then(
+                                                Commands.literal("abort")
+                                                        .executes(AdminCommands::abortExpedition)))
+                        .then(
                                 Commands.literal("store")
                                         .then(
                                                 Commands.literal("reset_all_npcs")
                                                         .executes(AdminCommands::resetAllStoreNpcs))));
     }
 
-    private static int resetDimensions(CommandContext<CommandSourceStack> context) {
-        context.getSource()
-                .sendSuccess(
-                        () ->
-                                Component.translatable(
-                                        "command.otherworldinn.admin.reset_dimensions.start"),
-                        true);
-        // 调用 DimensionResetManager 的强制重置方法
-        DimensionResetManager.forceReset(context.getSource().getServer());
+    private static int abortExpedition(CommandContext<CommandSourceStack> context) {
+        ExpeditionSession session = ExpeditionService.getActiveSession();
+        if (session == null) {
+            context.getSource().sendFailure(
+                    Component.translatable("command.otherworldinn.admin.expedition.no_active"));
+            return 0;
+        }
+        ExpeditionService.forceAbort(context.getSource().getServer());
+        context.getSource().sendSuccess(
+                () -> Component.translatable("message.otherworldinn.expedition.aborted"), true);
         return 1;
     }
 

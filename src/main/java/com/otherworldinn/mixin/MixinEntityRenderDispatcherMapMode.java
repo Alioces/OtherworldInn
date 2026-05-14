@@ -14,7 +14,7 @@ public class MixinEntityRenderDispatcherMapMode {
     private static final String MAP_MODE_HIDDEN_TAG = "otherworldinn.map_mode_hidden";
 
     @Inject(
-            method = "render(Lnet/minecraft/world/entity/Entity;DDDFFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
+            method = "render(Lnet/minecraft/world/entity/Entity;DDDFFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At("HEAD"),
             cancellable = true)
     private void otherworldinn$skipRenderForMapModeHidden(

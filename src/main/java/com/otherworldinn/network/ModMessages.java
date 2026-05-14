@@ -5,8 +5,8 @@ import com.otherworldinn.network.packet.C2SDialogueClosePacket;
 import com.otherworldinn.network.packet.C2SDialogueOptionPacket;
 import com.otherworldinn.network.packet.C2SMapModeSyncPacket;
 import com.otherworldinn.network.packet.C2SAcceptCommissionPacket;
+import com.otherworldinn.network.packet.C2SExpeditionCancelPacket;
 import com.otherworldinn.network.packet.C2SStorePurchasePacket;
-import com.otherworldinn.network.packet.C2STeleportOverworldPacket;
 import com.otherworldinn.network.packet.C2STeleportPacket;
 import com.otherworldinn.network.packet.C2SWithdrawCoinPacket;
 import com.otherworldinn.network.packet.S2CCommissionBoardPacket;
@@ -54,11 +54,6 @@ public class ModMessages {
                 C2STeleportPacket.TYPE, C2STeleportPacket.STREAM_CODEC, C2STeleportPacket::handle);
 
         registrar.playToServer(
-                C2STeleportOverworldPacket.TYPE,
-                C2STeleportOverworldPacket.STREAM_CODEC,
-                C2STeleportOverworldPacket::handle);
-
-        registrar.playToServer(
                 C2SMapModeSyncPacket.TYPE,
                 C2SMapModeSyncPacket.STREAM_CODEC,
                 C2SMapModeSyncPacket::handle);
@@ -85,6 +80,10 @@ public class ModMessages {
                 C2SAcceptCommissionPacket.TYPE,
                 C2SAcceptCommissionPacket.STREAM_CODEC,
                 C2SAcceptCommissionPacket::handle);
+        registrar.playToServer(
+                C2SExpeditionCancelPacket.TYPE,
+                C2SExpeditionCancelPacket.STREAM_CODEC,
+                C2SExpeditionCancelPacket::handle);
     }
 
     /**

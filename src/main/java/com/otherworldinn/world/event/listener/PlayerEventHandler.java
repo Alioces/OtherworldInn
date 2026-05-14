@@ -2,10 +2,12 @@ package com.otherworldinn.world.event.listener;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.init.ModItems;
+import com.otherworldinn.item.ExpeditionChartItem;
 import com.otherworldinn.world.dimension.TownDimensions;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
-import com.otherworldinn.world.teleport.TeleportUtils;
+import com.otherworldinn.world.expedition.ExpeditionDimensions;
+import com.otherworldinn.world.expedition.ExpeditionService;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -97,13 +99,22 @@ public class PlayerEventHandler {
     @SubscribeEvent
     public static void onDimensionChange(EntityTravelToDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            // 检查出发维度是否是城镇维度
+            if (ExpeditionDimensions.isExpeditionDimension(event.getDimension())) {
+                if (!ExpeditionService.canEnter(player.getUUID(), event.getDimension())) {
+                    event.setCanceled(true);
+                    player.displayClientMessage(
+                            Component.translatable("message.otherworldinn.expedition.cannot_enter")
+                                    .withStyle(ChatFormatting.RED), true);
+                    return;
+                }
+                ExpeditionChartItem.giveRecallScroll(player);
+                return;
+            }
+
             if (player.level().dimension() == TownDimensions.TOWN_LEVEL) {
-                // 检查目标维度是否不是城镇维度
-                if (event.getDimension() != TownDimensions.TOWN_LEVEL) {
-                    // 给予回程卷轴
+                if (event.getDimension() != TownDimensions.TOWN_LEVEL
+                        && !ExpeditionDimensions.isExpeditionDimension(event.getDimension())) {
                     ItemStack scroll = new ItemStack(ModItems.RECALL_SCROLL.get());
-                    // 检查背包是否已有
                     if (!player.getInventory().contains(scroll)) {
                         if (!player.getInventory().add(scroll)) {
                             player.drop(scroll, false);
@@ -130,6 +141,23 @@ public class PlayerEventHandler {
                 TeamManager.getInstance().onPlayerJoin(player, server);
             }
 
+            // 如果玩家在远征维度但没有活跃Session，送回城镇
+            if (ExpeditionDimensions.isExpeditionDimension(player.level().dimension())) {
+                var session = ExpeditionService.getPlayerSession(player.getUUID());
+                if (session == null) {
+                    ServerLevel townLevel = server.getLevel(TownDimensions.TOWN_LEVEL);
+                    if (townLevel != null) {
+                        BlockPos spawnPos = new BlockPos(10, 71, 0);
+                        player.teleportTo(townLevel,
+                                spawnPos.getX() + 0.5,
+                                spawnPos.getY() + 1,
+                                spawnPos.getZ() + 0.5,
+                                player.getYRot(), player.getXRot());
+                    }
+                }
+                return;
+            }
+
             // 首次加入逻辑
             if (!player.getTags().contains("otherworldinn.joined")) {
                 ServerLevel townLevel = player.getServer().getLevel(TownDimensions.TOWN_LEVEL);
@@ -152,21 +180,14 @@ public class PlayerEventHandler {
     /**
      * 处理玩家重生事件
      *
-     * <p>如果玩家没有重生点，则尝试将其传送到旅社。 如果重生点是在原版主世界（已被隐藏），则重定向到资源主世界。
+     * <p>如果玩家没有重生点，则将其传送到旅社。
      */
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
 
-            // 检查重生维度是否是原版主世界
-            if (player.getRespawnDimension() == Level.OVERWORLD) {
-                // 如果玩家没有设置具体的重生点（即使用的是世界出生点），或者强制重定向
-                // 注意：如果玩家在原版主世界睡过觉（这在正常游玩中不应该发生，因为进不去），
-                // 这里也会被重定向。
-                TeleportUtils.teleportToOverworldSpawn(player);
-            }
-
-            if (player.getRespawnPosition() == null) {
+            if (player.getRespawnDimension() == Level.OVERWORLD
+                    || player.getRespawnPosition() == null) {
                 ServerLevel townLevel = player.getServer().getLevel(TownDimensions.TOWN_LEVEL);
                 if (townLevel != null) {
                     BlockPos spawnPos = new BlockPos(10, 71, 0);

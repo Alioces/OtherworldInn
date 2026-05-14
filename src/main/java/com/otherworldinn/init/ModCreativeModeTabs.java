@@ -1,7 +1,11 @@
 package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
+import com.otherworldinn.item.ChartComponentItem;
+import com.otherworldinn.world.expedition.ChartComponentType;
+import com.otherworldinn.world.expedition.ExpeditionNbtHelper;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -22,7 +26,6 @@ public class ModCreativeModeTabs {
                                     .icon(() -> new ItemStack(ModItems.RECALL_SCROLL.get()))
                                     .displayItems(
                                             (parameters, output) -> {
-                                                // 添加物品
                                                 output.accept(ModItems.RECALL_SCROLL.get());
                                                 output.accept(ModItems.ROOM_REGISTER.get());
                                                 output.accept(ModItems.BED_SHEET.get());
@@ -36,8 +39,41 @@ public class ModCreativeModeTabs {
                                                 output.accept(ModItems.END_SPACE_SPHERE.get());
                                                 output.accept(ModItems.FACILITY_UPGRADE_TEMPLATE.get());
                                                 output.accept(ModItems.COIN.get());
-                                                output.accept(ModBlocks.OVERWORLD_PORTAL.get());
                                                 output.accept(ModBlocks.COMMISSION_BOARD.get());
+                                            })
+                                    .build());
+
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXPEDITION_TAB =
+            CREATIVE_MODE_TABS.register(
+                    "expedition_tab",
+                    () ->
+                            CreativeModeTab.builder()
+                                    .title(Component.translatable("itemGroup.otherworldinn.expedition"))
+                                    .icon(() -> {
+                                        ItemStack icon = new ItemStack(ModItems.CHART_COMPONENT.get());
+                                        CompoundTag tag = new CompoundTag();
+                                        tag.putString("component_type", "ocean_biome");
+                                        ExpeditionNbtHelper.writeTag(icon, tag);
+                                        return icon;
+                                    })
+                                    .displayItems(
+                                            (parameters, output) -> {
+                                                ItemStack maxChart = new ItemStack(ModItems.PIONEER_CHART.get());
+                                                CompoundTag chartTag = new CompoundTag();
+                                                chartTag.putInt("max_slots", 6);
+                                                ExpeditionNbtHelper.writeTag(maxChart, chartTag);
+                                                output.accept(maxChart);
+
+                                                ItemStack blankComponent = new ItemStack(ModItems.CHART_COMPONENT.get());
+                                                output.accept(blankComponent);
+
+                                                for (ChartComponentType type : ChartComponentType.values()) {
+                                                    ItemStack stack = new ItemStack(ModItems.CHART_COMPONENT.get());
+                                                    CompoundTag tag = new CompoundTag();
+                                                    tag.putString("component_type", type.id());
+                                                    ExpeditionNbtHelper.writeTag(stack, tag);
+                                                    output.accept(stack);
+                                                }
                                             })
                                     .build());
 }

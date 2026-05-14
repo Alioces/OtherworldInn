@@ -85,6 +85,12 @@ public class InnData {
     private long incomeStatDay = -1L;
 
     @Setter(AccessLevel.NONE)
+    private boolean initialChartsGiven = false;
+
+    @Setter(AccessLevel.NONE)
+    private int lastChartDistributionWeek = -1;
+
+    @Setter(AccessLevel.NONE)
     private InnState state = InnState.CLOSED; // 默认为歇业
 
     public enum InnState {
@@ -271,9 +277,24 @@ public class InnData {
         if (this.state == newState) {
             return true;
         }
+        boolean opening = (this.state == InnState.CLOSED && newState == InnState.OPEN);
         this.state = newState;
+        if (opening) {
+            onInnOpened();
+        }
         return true;
     }
+
+    private void onInnOpened() {
+        if (!initialChartsGiven) {
+            initialChartsGiven = true;
+        }
+    }
+
+    public void setInitialChartsGiven(boolean value) { this.initialChartsGiven = value; }
+    public boolean isInitialChartsGiven() { return initialChartsGiven; }
+    public int getLastChartDistributionWeek() { return lastChartDistributionWeek; }
+    public void setLastChartDistributionWeek(int week) { this.lastChartDistributionWeek = week; }
 
     public void addGuest(UUID guestId) {
         this.guestIds.add(guestId);
@@ -1489,6 +1510,8 @@ public class InnData {
         tag.putInt("YesterdayDiningIncome", yesterdayDiningIncome);
         tag.putInt("YesterdayOtherIncome", yesterdayOtherIncome);
         tag.putLong("IncomeStatDay", incomeStatDay);
+        tag.putBoolean("InitialChartsGiven", initialChartsGiven);
+        tag.putInt("LastChartWeek", lastChartDistributionWeek);
         tag.putString("State", state.name());
 
         ListTag guestsTag = new ListTag();
@@ -1592,6 +1615,9 @@ public class InnData {
         } else {
             incomeStatDay = -1L;
         }
+
+        initialChartsGiven = tag.contains("InitialChartsGiven") && tag.getBoolean("InitialChartsGiven");
+        lastChartDistributionWeek = tag.contains("LastChartWeek") ? tag.getInt("LastChartWeek") : -1;
 
         if (tag.contains("State")) {
             try {

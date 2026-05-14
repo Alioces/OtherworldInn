@@ -29,7 +29,10 @@
     "MixinCoralBlock",
     "MixinCoralFanBlock",
     "MixinCoralWallFanBlock",
-    "MixinBaseFireBlockTownPortal"
+    "MixinBaseFireBlockTownPortal",
+    "MixinMinecraftServerLevelsAccessor",
+    "MixinStructureStateBoost",
+    "MixinNeutralMobAnger"
   ],
   "client": [
     "MixinPlayerRendererMapModeHidden",

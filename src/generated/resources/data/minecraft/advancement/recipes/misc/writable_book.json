@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "minecraft:writable_book"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_written_book": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:written_book"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_written_book"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "minecraft:writable_book"
+    ]
+  }
+}

@@ -2,7 +2,6 @@ package com.otherworldinn.init;
 
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.block.CommissionBoardBlock;
-import com.otherworldinn.block.OverworldPortalBlock;
 import com.otherworldinn.foundation.BlockDataGenInfo;
 import com.otherworldinn.foundation.BlockReg;
 import java.util.HashMap;
@@ -10,7 +9,6 @@ import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -31,22 +29,6 @@ public class ModBlocks {
     public static final Map<DeferredBlock<?>, BlockDataGenInfo> BLOCK_INFOS = new HashMap<>();
 
     // --- 方块注册 ---
-
-    public static final BlockReg<OverworldPortalBlock> OVERWORLD_PORTAL_REG =
-            register("overworld_portal", OverworldPortalBlock::new)
-                    .properties(
-                            props ->
-                                    props.noCollission()
-                                            .strength(-1.0F, 3600000.8F)
-                                            .noLootTable()
-                                            .isValidSpawn(ModBlocks::never))
-                    .lang("Overworld Portal", "主世界传送门")
-                    .rarity(Rarity.EPIC)
-                    .stacksTo(64)
-                    .fireResistant();
-
-    public static final DeferredBlock<OverworldPortalBlock> OVERWORLD_PORTAL =
-            OVERWORLD_PORTAL_REG.register();
 
     public static final BlockReg<CommissionBoardBlock> COMMISSION_BOARD_REG =
             register("commission_board", CommissionBoardBlock::new)

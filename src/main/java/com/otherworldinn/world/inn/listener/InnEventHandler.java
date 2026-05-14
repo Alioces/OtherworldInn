@@ -11,6 +11,7 @@ import com.otherworldinn.world.inn.RoomData;
 import com.otherworldinn.world.inn.RoomData;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
+import com.otherworldinn.world.expedition.ChartDistributionService;
 import com.otherworldinn.world.team.TeamSavedData;
 import com.simibubi.create.AllBlocks;
 import java.util.HashMap;
@@ -441,6 +442,9 @@ public class InnEventHandler {
                         innData.setState(newState);
                         level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
                         TeamManager.getInstance().syncTeam(team, serverLevel.getServer());
+                        if (newState == InnData.InnState.OPEN) {
+                            ChartDistributionService.onInnOpened(team, serverLevel);
+                        }
                         player.swing(event.getHand(), true);
                         player.displayClientMessage(
                                 message.copy().withStyle(style -> style.withColor(color)),

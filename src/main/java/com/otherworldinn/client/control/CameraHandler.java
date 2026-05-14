@@ -6,7 +6,6 @@ import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.client.gui.MapViewScreen;
 import com.otherworldinn.client.map.service.MapPageManager;
 import com.otherworldinn.foundation.ClientConfig;
-import com.otherworldinn.init.ModBlocks;
 import com.otherworldinn.init.ModKeyBindings;
 import com.otherworldinn.network.ModMessages;
 import com.otherworldinn.network.packet.C2SMapModeSyncPacket;
@@ -87,7 +86,6 @@ public class CameraHandler {
     public static void enableMapMode() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
-        if (isNearPortal(mc.player)) return;
 
         isTransitioning = true;
         transitionProgress = 0.0f;
@@ -401,16 +399,6 @@ public class CameraHandler {
             dummyCameraEntity.remove(Entity.RemovalReason.DISCARDED);
             dummyCameraEntity = null;
         }
-    }
-
-    private static boolean isNearPortal(Entity player) {
-        BlockPos center = player.blockPosition();
-        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-1, -1, -1), center.offset(1, 1, 1))) {
-            if (player.level().getBlockState(pos).is(ModBlocks.OVERWORLD_PORTAL)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

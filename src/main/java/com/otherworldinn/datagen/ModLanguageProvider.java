@@ -43,6 +43,7 @@ public class ModLanguageProvider extends LanguageProvider {
 
     private void addManualTranslations() {
         entry("itemGroup.otherworldinn").zh("旅社物语").en("Otherworld Inn");
+        entry("itemGroup.otherworldinn.expedition").zh("旅社物语 · 星图组件").en("Otherworld Inn · Expedition");
 
         entry("key.categories.otherworldinn").zh("旅社物语").en("Otherworld Inn");
 
@@ -286,9 +287,6 @@ public class ModLanguageProvider extends LanguageProvider {
                 .en("Set team %s inn rating to %s");
 
         // 管理员命令
-        entry("command.otherworldinn.admin.reset_dimensions.start")
-                .zh("§c[管理员] 正在强制触发维度重置...")
-                .en("§c[Admin] Triggering forced dimension reset...");
         entry("command.otherworldinn.admin.facility.not_found")
                 .zh("未找到设施：%s")
                 .en("Facility not found: %s");
@@ -304,6 +302,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("command.otherworldinn.admin.facility.downgrade_success")
                 .zh("已将队伍 %s 的设施 %s 修改为 %s 级")
                 .en("Updated team %s facility %s to level %s");
+        entry("command.otherworldinn.admin.expedition.no_active")
+                .zh("当前没有活跃的远征")
+                .en("No active expedition");
         entry("command.otherworldinn.admin.store.reset_all.town_unavailable")
                 .zh("城镇维度未加载，无法重置商店NPC数据")
                 .en("Town dimension is not loaded, cannot reset store NPC data");
@@ -719,21 +720,9 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.guest.tooltip.rewards.entry")
                 .zh("- %s x%s-%s")
                 .en("- %s x%s-%s");
-        entry("message.otherworldinn.space_sphere.overlay.use")
-                .zh("激活地图点传送")
-                .en("Activate map point teleport");
         entry("message.otherworldinn.map.teleport_not_unlocked")
                 .zh("未解锁地图传送功能，请先使用空间球解锁")
                 .en("Map teleport is not unlocked. Please use a Space Sphere first.");
-        entry("message.otherworldinn.space_sphere.target_unavailable")
-                .zh("目标维度当前不可用")
-                .en("Target dimension is currently unavailable");
-        entry("message.otherworldinn.nether_space_sphere.overlay.use")
-                .zh("传送至下界")
-                .en("Teleport to Nether");
-        entry("message.otherworldinn.end_space_sphere.overlay.use")
-                .zh("传送至末地")
-                .en("Teleport to End");
         entry("jei.otherworldinn.npc_store.title").zh("商店商品").en("Store Products");
         entry("jei.otherworldinn.npc_store.store").zh("店主: %s").en("Store: %s");
         entry("jei.otherworldinn.npc_store.price").zh("价格: %s 金币").en("Price: %s coins");
@@ -748,6 +737,57 @@ public class ModLanguageProvider extends LanguageProvider {
                 .zh("替换脏乱床单")
                 .en("Replace Messy Sheet");
         entry("message.otherworldinn.messy_bed_sheet.overlay.wash").zh("清洗床单").en("Wash Sheet");
+
+        // 远征
+        entry("message.otherworldinn.expedition.no_team").zh("你当前不在任何队伍中").en("You are not in any team");
+        entry("message.otherworldinn.expedition.not_enough_coins").zh("队伍金币不足，还需 %s 金币").en("Not enough coins, need %s more");
+        entry("message.otherworldinn.expedition.solo_started").zh("单人远征已开启！维度传送中…").en("Solo expedition started! Entering dimension...");
+        entry("message.otherworldinn.expedition.sneak_to_confirm").zh("潜行右键以确认开启远征").en("Sneak + right click to confirm expedition");
+        entry("message.otherworldinn.expedition.not_leader").zh("只有发起者才能开启远征").en("Only the leader can start the expedition");
+        entry("message.otherworldinn.expedition.started").zh("✦ 远征开始！%s 名冒险者踏上征途").en("✦ Expedition started! %s adventurers depart");
+        entry("message.otherworldinn.expedition.cancelled").zh("已取消远征招募").en("Expedition recruitment cancelled");
+        entry("message.otherworldinn.expedition.recruit_expired").zh("该招募已过期或已取消").en("This recruitment has expired or been cancelled");
+        entry("message.otherworldinn.expedition.not_same_team").zh("只有同一旅社队伍的成员才能加入").en("Only members of the same inn team can join");
+        entry("message.otherworldinn.expedition.already_in").zh("你已在另一场远征中").en("You are already in another expedition");
+        entry("message.otherworldinn.expedition.full").zh("远征队伍已满").en("Expedition party is full");
+        entry("message.otherworldinn.expedition.already_member").zh("你已在此远征队伍中").en("You are already in this party");
+        entry("message.otherworldinn.expedition.joined").zh("你已加入远征队伍！等待发起者开启远征...").en("Joined the expedition party! Waiting for leader...");
+        entry("message.otherworldinn.expedition.member_joined").zh(" 加入了远征队伍 (%s人)").en(" joined the party (%s players)");
+        entry("message.otherworldinn.expedition.not_in").zh("你当前不在任何远征中").en("You are not in any expedition");
+        entry("message.otherworldinn.expedition.status").zh("远征剩余时间：%s 分钟").en("Expedition remaining: %s minutes");
+        entry("message.otherworldinn.expedition.no_recruiting_chart").zh("你没有正在招募中的星图").en("You have no recruiting chart");
+        entry("message.otherworldinn.expedition.create_failed").zh("远征维度创建失败，请稍后重试").en("Failed to create expedition dimension, try again later");
+        entry("message.otherworldinn.expedition.invalid_id").zh("无效的远征ID").en("Invalid expedition ID");
+        entry("message.otherworldinn.expedition.cannot_enter").zh("你无法进入此远征维度").en("You cannot enter this expedition dimension");
+        entry("message.otherworldinn.expedition.click_to_join").zh("[点击加入]").en("[Click to join]");
+        entry("message.otherworldinn.expedition.click_to_join_hover").zh("点击加入此次远征队伍").en("Click to join this expedition party");
+        entry("message.otherworldinn.expedition.recruit_broadcast").zh("✦ %s 发起了一场远征组队（%s | 预估费用 %s 币）%s").en("✦ %s started an expedition party (%s | est. fee %s coins) %s");
+        entry("message.otherworldinn.expedition.aborted").zh("远征已被管理员强制终止").en("Expedition has been forcibly terminated by admin");
+
+        entry("tooltip.otherworldinn.chart_component.blank_entry").zh("  ▸ 空白组件").en("  ▸ Blank Component");
+        entry("tooltip.otherworldinn.chart_component.blank").zh("用于合成其它星图组件").en("Used to craft other chart components");
+        entry("tooltip.otherworldinn.chart_component.effect").zh("%s").en("%s");
+        entry("tooltip.otherworldinn.chart_component.side_effect").zh("  ⚠ %s").en("  ⚠ %s");
+        entry("tooltip.otherworldinn.chart_component.fee").zh("费用：+%s 金币").en("Fee: +%s coins");
+
+        entry("tooltip.otherworldinn.expedition_chart.recruiting").zh("  ▸ 招募中").en("  ▸ Recruiting");
+        entry("tooltip.otherworldinn.expedition_chart.leader").zh("  发起者：%s").en("  Leader: %s");
+        entry("tooltip.otherworldinn.expedition_chart.joined_count").zh("  已加入 (%s/%s)：").en("  Joined (%s/%s):");
+        entry("tooltip.otherworldinn.expedition_chart.member_entry").zh("    ● %s").en("    ● %s");
+        entry("tooltip.otherworldinn.expedition_chart.waiting_slot").zh("    ○ 等待中...").en("    ○ Waiting...");
+        entry("tooltip.otherworldinn.expedition_chart.no_components").zh("  未附加组件").en("  No components attached");
+        entry("tooltip.otherworldinn.expedition_chart.available_slots").zh("  可用槽位：%s").en("  Available slots: %s");
+        entry("tooltip.otherworldinn.expedition_chart.attached_components").zh("  已附加组件 (%s/%s)：").en("  Attached Components (%s/%s):");
+        entry("tooltip.otherworldinn.expedition_chart.component_entry").zh("    ◇ %s").en("    ◇ %s");
+        entry("tooltip.otherworldinn.expedition_chart.empty_slot").zh("    ○ 空闲槽位").en("    ○ Empty slot");
+        entry("tooltip.otherworldinn.expedition_chart.time_limit").zh("  时限：%s 分钟").en("  Time limit: %s min");
+        entry("tooltip.otherworldinn.expedition_chart.max_players").zh("  队伍：最多 %s 人").en("  Party: up to %s players");
+        entry("tooltip.otherworldinn.expedition_chart.fee").zh("  预估费用：%s 金币").en("  Estimated fee: %s coins");
+        entry("tooltip.otherworldinn.expedition_chart.fee_with_count").zh("  费用：%s 金币（%s 人）").en("  Fee: %s coins (%s players)");
+        entry("tooltip.otherworldinn.expedition_chart.dimension").zh("  维度类别：%s").en("  Dimension: %s");
+        entry("message.otherworldinn.expedition.overlay.use").zh("使用星图").en("Use Chart");
+        entry("message.otherworldinn.expedition.overlay.launch").zh("潜行开始远征").en("Sneak To Start");
+        entry("message.otherworldinn.expedition.overlay.cancel").zh("取消招募").en("Cancel Recruitment");
 
         // 旅客姓名
         entry("guest.name.format").zh("%s·%s").en("%s %s");

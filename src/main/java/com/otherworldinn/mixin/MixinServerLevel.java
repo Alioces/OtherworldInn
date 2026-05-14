@@ -47,8 +47,7 @@ public abstract class MixinServerLevel {
     @Inject(method = "wakeUpAllPlayers", at = @At("RETURN"))
     private void onWakeUpAllPlayers(CallbackInfo ci) {
         ServerLevel self = (ServerLevel) (Object) this;
-        if (self.dimension() != TownDimensions.TOWN_LEVEL
-                && self.dimension() != TownDimensions.RESOURCE_OVERWORLD_LEVEL) {
+        if (self.dimension() != TownDimensions.TOWN_LEVEL) {
             return;
         }
         if (!self.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
