@@ -111,6 +111,14 @@ public class PlayerEventHandler {
                 return;
             }
 
+            if (ExpeditionDimensions.isExpeditionDimension(player.level().dimension())) {
+                event.setCanceled(true);
+                player.displayClientMessage(
+                        Component.translatable("message.otherworldinn.expedition.cannot_leave")
+                                .withStyle(ChatFormatting.RED), true);
+                return;
+            }
+
             if (player.level().dimension() == TownDimensions.TOWN_LEVEL) {
                 if (event.getDimension() != TownDimensions.TOWN_LEVEL
                         && !ExpeditionDimensions.isExpeditionDimension(event.getDimension())) {

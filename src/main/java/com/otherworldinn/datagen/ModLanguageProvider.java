@@ -759,6 +759,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.expedition.create_failed").zh("远征维度创建失败，请稍后重试").en("Failed to create expedition dimension, try again later");
         entry("message.otherworldinn.expedition.invalid_id").zh("无效的远征ID").en("Invalid expedition ID");
         entry("message.otherworldinn.expedition.cannot_enter").zh("你无法进入此远征维度").en("You cannot enter this expedition dimension");
+        entry("message.otherworldinn.expedition.cannot_leave").zh("远征中无法前往其他维度").en("Cannot leave expedition dimension");
         entry("message.otherworldinn.expedition.click_to_join").zh("[点击加入]").en("[Click to join]");
         entry("message.otherworldinn.expedition.click_to_join_hover").zh("点击加入此次远征队伍").en("Click to join this expedition party");
         entry("message.otherworldinn.expedition.recruit_broadcast").zh("✦ %s 发起了一场远征组队（%s | 预估费用 %s 币）%s").en("✦ %s started an expedition party (%s | est. fee %s coins) %s");
