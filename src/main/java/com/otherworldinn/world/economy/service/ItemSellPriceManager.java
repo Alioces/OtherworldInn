@@ -132,7 +132,14 @@ public class ItemSellPriceManager {
         addPrice("kaleidoscope_cookery:hui_noodle", 30); // 羊肉烩面
         addPrice("kaleidoscope_cookery:udon_noodle", 24); // 乌冬面
 
-		//森罗酒馆
+        addPrice("kaleidoscope_cookery:barley_tea", 8); // 大麦茶
+        addPrice("kaleidoscope_cookery:flower_tea", 8); // 花茶
+        addPrice("kaleidoscope_cookery:tieguanyin", 14); // 铁观音
+        addPrice("kaleidoscope_cookery:biluochun", 14); // 碧螺春
+        addPrice("kaleidoscope_cookery:oolong", 14); // 乌龙
+        addPrice("kaleidoscope_cookery:sakura_fubuki", 18); // 樱花吹雪
+
+        //森罗酒馆
         addPrice("kaleidoscope_tavern:wine", 10); // 葡萄酒
         addPrice("kaleidoscope_tavern:molotov", 12); // 莫洛托夫鸡尾酒
         addPrice("kaleidoscope_tavern:champagne", 16); // 香槟
@@ -143,6 +150,22 @@ public class ItemSellPriceManager {
         addPrice("kaleidoscope_tavern:plum_wine", 12); // 梅酒
         addPrice("kaleidoscope_tavern:whiskey", 14); // 威士忌
         addPrice("kaleidoscope_tavern:ice_wine", 15); // 冰葡萄酒
+        addPrice("kaleidoscope_tavern:polaris_sweet_white", 20); // 北极星甜白
+        addPrice("kaleidoscope_tavern:honey_wine", 16); // 蜂蜜酒
+        addPrice("kaleidoscope_tavern:red_queen", 22); // 红皇后
+        addPrice("kaleidoscope_tavern:miners_star", 16); // 矿工之星
+        addPrice("kaleidoscope_tavern:rum", 14); // 朗姆酒
+        addPrice("kaleidoscope_tavern:riesling_dry_white", 18); // 雷司令干白
+        addPrice("kaleidoscope_tavern:sunset_glow", 20); // 日落辉光
+        addPrice("kaleidoscope_tavern:madame_shexiang", 22); // 麝香夫人
+        addPrice("kaleidoscope_tavern:sweet_berry_wine", 14); // 甜浆果酒
+        addPrice("kaleidoscope_tavern:sherry", 16); // 雪莉酒
+        addPrice("kaleidoscope_tavern:mother_snow", 22); // 雪母
+        addPrice("kaleidoscope_tavern:luminous_bride", 24); // 发光新娘
+        addPrice("kaleidoscope_tavern:glowflower_brew", 22); // 发光花酿造
+        addPrice("kaleidoscope_tavern:sauvignon_blanc_dry_white", 18); // 长相思干白
+        addPrice("kaleidoscope_tavern:vinegar", 6); // 醋
+        addPrice("kaleidoscope_tavern:watermelon_juice", 8); // 西瓜汁
     }
 
     /**

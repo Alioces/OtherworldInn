@@ -13,7 +13,6 @@ import com.otherworldinn.client.renderer.MagicianModel;
 import com.otherworldinn.client.renderer.MagicianRenderer;
   import com.otherworldinn.init.ModItems;
 import com.otherworldinn.item.RoomKeyItem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
@@ -30,6 +29,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import com.otherworldinn.client.render.SlotIconRenderer;
 
 /**
  * 模组客户端事件处理器
@@ -111,12 +111,8 @@ public class ModClientEvents {
                     if (!RoomKeyItem.isBoundRoomFull(stack)) {
                         return false;
                     }
-                    PoseStack pose = guiGraphics.pose();
-                    pose.pushPose();
-                    pose.translate(x, y + 9, 200);
-                    pose.scale(0.5F, 0.5F, 1.0F);
-                    guiGraphics.renderItem(new ItemStack(Items.BARRIER), 0, 0);
-                    pose.popPose();
+                    SlotIconRenderer.renderCentered(guiGraphics,
+                            new ItemStack(Items.BARRIER), x, y, 200, 0.5f);
                     return false;
                 });
     }

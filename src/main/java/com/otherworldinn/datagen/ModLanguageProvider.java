@@ -764,6 +764,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.expedition.click_to_join_hover").zh("点击加入此次远征队伍").en("Click to join this expedition party");
         entry("message.otherworldinn.expedition.recruit_broadcast").zh("✦ %s 发起了一场远征组队（%s | 预估费用 %s 币）%s").en("✦ %s started an expedition party (%s | est. fee %s coins) %s");
         entry("message.otherworldinn.expedition.aborted").zh("远征已被管理员强制终止").en("Expedition has been forcibly terminated by admin");
+        entry("message.otherworldinn.recipe_book.unlocked").zh("配方已为队伍解锁：%s").en("Recipe unlocked for your team: %s");
 
         entry("tooltip.otherworldinn.chart_component.blank_entry").zh("  ▸ 空白组件").en("  ▸ Blank Component");
         entry("tooltip.otherworldinn.chart_component.blank").zh("用于合成其它星图组件").en("Used to craft other chart components");

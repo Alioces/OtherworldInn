@@ -1,0 +1,42 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "otherworldinn:chart_component"
+    },
+    {
+      "item": "minecraft:granite"
+    },
+    {
+      "item": "minecraft:granite"
+    },
+    {
+      "item": "minecraft:granite"
+    },
+    {
+      "item": "minecraft:granite"
+    },
+    {
+      "item": "minecraft:granite"
+    },
+    {
+      "item": "minecraft:granite"
+    },
+    {
+      "item": "minecraft:granite"
+    },
+    {
+      "item": "minecraft:granite"
+    }
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "component_type": "granite_base"
+      }
+    },
+    "count": 1,
+    "id": "otherworldinn:chart_component"
+  }
+}

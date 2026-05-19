@@ -112,10 +112,12 @@ public class PlayerEventHandler {
             }
 
             if (ExpeditionDimensions.isExpeditionDimension(player.level().dimension())) {
-                event.setCanceled(true);
-                player.displayClientMessage(
-                        Component.translatable("message.otherworldinn.expedition.cannot_leave")
-                                .withStyle(ChatFormatting.RED), true);
+                if (event.getDimension() != TownDimensions.TOWN_LEVEL) {
+                    event.setCanceled(true);
+                    player.displayClientMessage(
+                            Component.translatable("message.otherworldinn.expedition.cannot_leave")
+                                    .withStyle(ChatFormatting.RED), true);
+                }
                 return;
             }
 
@@ -152,7 +154,7 @@ public class PlayerEventHandler {
             // 如果玩家在远征维度但没有活跃Session，送回城镇
             if (ExpeditionDimensions.isExpeditionDimension(player.level().dimension())) {
                 var session = ExpeditionService.getPlayerSession(player.getUUID());
-                if (session == null) {
+                if (session == null || session.departedPlayers().contains(player.getUUID())) {
                     ServerLevel townLevel = server.getLevel(TownDimensions.TOWN_LEVEL);
                     if (townLevel != null) {
                         BlockPos spawnPos = new BlockPos(10, 71, 0);

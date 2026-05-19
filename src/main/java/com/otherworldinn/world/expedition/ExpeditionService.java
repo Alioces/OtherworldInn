@@ -63,6 +63,7 @@ public final class ExpeditionService {
 
     private static volatile ExpeditionSession activeSession;
     private static volatile boolean structureBoostActive;
+    private static volatile boolean shuttingDown;
 
     private static final Unsafe UNSAFE;
     private static final long CM_RANDOM_STATE_OFFSET;
@@ -96,6 +97,10 @@ public final class ExpeditionService {
 
     public static boolean isStructureBoostActive() {
         return structureBoostActive;
+    }
+
+    public static boolean isShuttingDown() {
+        return shuttingDown;
     }
 
     public static boolean hasDimComponent(ResourceKey<Level> dimKey, String componentId) {
@@ -153,7 +158,22 @@ public final class ExpeditionService {
     public static void forceAbort(MinecraftServer server) {
         ExpeditionSession session = activeSession;
         if (session == null) return;
-        ServerLevel level = server.getLevel(session.dimensionKey());
+        ResourceKey<Level> dimKey = session.dimensionKey();
+        abortSingleExpedition(server, dimKey, session);
+    }
+
+    public static void cleanupAllExpeditionLevels(MinecraftServer server) {
+        for (var entry : new ArrayList<>(ACTIVE_EXPEDITIONS.entrySet())) {
+            abortSingleExpedition(server, entry.getKey(), entry.getValue());
+        }
+        ACTIVE_EXPEDITIONS.clear();
+        PLAYER_EXPEDITION_MAP.clear();
+        activeSession = null;
+    }
+
+    private static void abortSingleExpedition(MinecraftServer server,
+            ResourceKey<Level> dimKey, ExpeditionSession session) {
+        ServerLevel level = server.getLevel(dimKey);
         if (level != null) {
             for (ServerPlayer player : List.copyOf(level.players())) {
                 clearRecallScrolls(player);
@@ -166,16 +186,17 @@ public final class ExpeditionService {
             }
             clearLevelEntities(level);
         }
-        ResourceKey<Level> dimKey = session.dimensionKey();
-        ACTIVE_EXPEDITIONS.remove(dimKey);
-        for (UUID playerId : session.activePlayers()) {
-            PLAYER_EXPEDITION_MAP.remove(playerId, dimKey);
-        }
-        activeSession = null;
         Map<ResourceKey<Level>, ServerLevel> levels =
                 ((MixinMinecraftServerLevelsAccessor) server).otherworldinn$getLevels();
         levels.remove(dimKey);
         clearDimComponents(dimKey);
+        ACTIVE_EXPEDITIONS.remove(dimKey);
+        for (UUID playerId : session.activePlayers()) {
+            PLAYER_EXPEDITION_MAP.remove(playerId, dimKey);
+        }
+        if (session == activeSession) {
+            activeSession = null;
+        }
         restoreTemplateDimension(server);
     }
 
@@ -213,6 +234,7 @@ public final class ExpeditionService {
         }
 
         clearLevelEntities(template);
+        clearChunkCaches(template);
         deleteTemplateRegionFiles(server, templateKey);
 
         expGen.setComponentIds(componentIds);
@@ -527,32 +549,8 @@ public final class ExpeditionService {
 
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
-        MinecraftServer server = event.getServer();
-        for (var entry : new ArrayList<>(ACTIVE_EXPEDITIONS.entrySet())) {
-            ResourceKey<Level> dimKey = entry.getKey();
-            ExpeditionSession session = entry.getValue();
-            ServerLevel level = server.getLevel(dimKey);
-            if (level != null) {
-                for (ServerPlayer player : List.copyOf(level.players())) {
-                    player.displayClientMessage(
-                            net.minecraft.network.chat.Component.translatable(
-                                    "message.otherworldinn.expedition.aborted")
-                                    .withStyle(net.minecraft.ChatFormatting.RED),
-                            false);
-                    clearRecallScrolls(player);
-                    recallPlayer(player, server);
-                }
-                clearLevelEntities(level);
-            }
-            Map<ResourceKey<Level>, ServerLevel> levels =
-                    ((MixinMinecraftServerLevelsAccessor) server).otherworldinn$getLevels();
-            levels.remove(dimKey);
-            clearDimComponents(dimKey);
-        }
-        ACTIVE_EXPEDITIONS.clear();
-        PLAYER_EXPEDITION_MAP.clear();
-        activeSession = null;
-        restoreTemplateDimension(server);
+        shuttingDown = true;
+        cleanupAllExpeditionLevels(event.getServer());
     }
 
     private static void recallPlayer(ServerPlayer player, MinecraftServer server) {

@@ -31,8 +31,12 @@
     "MixinCoralWallFanBlock",
     "MixinBaseFireBlockTownPortal",
     "MixinMinecraftServerLevelsAccessor",
-    "MixinStructureStateBoost",
-    "MixinNeutralMobAnger"
+    "MixinMinecraftServerSave",
+    "MixinStructurePlacement",
+    "MixinNeutralMobAnger",
+    "MixinRecipeItemUnlock",
+    "MixinPotBlockEntityCookCheck",
+    "MixinStockpotBlockEntityCookCheck"
   ],
   "client": [
     "MixinPlayerRendererMapModeHidden",

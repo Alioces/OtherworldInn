@@ -401,6 +401,7 @@
   "message.otherworldinn.expedition.already_member": "You are already in this party",
   "message.otherworldinn.expedition.cancelled": "Expedition recruitment cancelled",
   "message.otherworldinn.expedition.cannot_enter": "You cannot enter this expedition dimension",
+  "message.otherworldinn.expedition.cannot_leave": "Cannot leave expedition dimension",
   "message.otherworldinn.expedition.click_to_join": "[Click to join]",
   "message.otherworldinn.expedition.click_to_join_hover": "Click to join this expedition party",
   "message.otherworldinn.expedition.create_failed": "Failed to create expedition dimension, try again later",

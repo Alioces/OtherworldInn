@@ -55,6 +55,8 @@ public class ExpeditionChartItem extends Item {
         if (level.isClientSide) return InteractionResultHolder.success(stack);
         if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResultHolder.fail(stack);
 
+        player.getCooldowns().addCooldown(this, 80);
+
         String state = getChartState(stack);
         if ("recruiting".equals(state)) {
             if (player.isShiftKeyDown()) {

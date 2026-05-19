@@ -88,6 +88,7 @@ public class TeamData {
 
     private final InnData innData = new InnData(); // 旅社数据管理系统
     private final TeamCommissionData commissionData = new TeamCommissionData(); // 队伍委托数据
+    private final Set<String> unlockedCookRecipes = new HashSet<>();
 
     public TeamData(UUID teamId) {
         this.teamId = teamId;
@@ -144,6 +145,18 @@ public class TeamData {
 
     public void lockMapPoint(ResourceLocation pointId) {
         unlockedMapPoints.remove(pointId);
+    }
+
+    public boolean isCookRecipeUnlocked(String recipeId) {
+        return unlockedCookRecipes.contains(recipeId);
+    }
+
+    public void unlockCookRecipe(String recipeId) {
+        unlockedCookRecipes.add(recipeId);
+    }
+
+    public Set<String> getUnlockedCookRecipes() {
+        return unlockedCookRecipes;
     }
 
     public void setCoins(int coins) {
@@ -407,6 +420,12 @@ public class TeamData {
         tag.putBoolean("TeleportUnlocked", teleportUnlocked);
         tag.putInt("Coins", coins);
 
+        ListTag recipesTag = new ListTag();
+        for (String recipeId : unlockedCookRecipes) {
+            recipesTag.add(StringTag.valueOf(recipeId));
+        }
+        tag.put("UnlockedCookRecipes", recipesTag);
+
         // 旅社数据 (包含 EditMode)
         tag.put("InnData", innData.save(new CompoundTag()));
         tag.put("CommissionData", commissionData.save());
@@ -460,6 +479,14 @@ public class TeamData {
             coins = tag.getInt("Coins");
         } else {
             coins = 0;
+        }
+
+        unlockedCookRecipes.clear();
+        if (tag.contains("UnlockedCookRecipes")) {
+            ListTag recipesTag = tag.getList("UnlockedCookRecipes", Tag.TAG_STRING);
+            for (Tag t : recipesTag) {
+                unlockedCookRecipes.add(t.getAsString());
+            }
         }
 
         // 优先加载 InnData，因为后续可能需要用到它

@@ -2,10 +2,8 @@ package com.otherworldinn.world.expedition.recipe;
 
 import com.otherworldinn.item.ChartComponentItem;
 import com.otherworldinn.world.expedition.ChartComponentType;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
@@ -22,46 +20,62 @@ public class ChartComponentRecipe extends CustomRecipe {
 
     public static RecipeSerializer<?> SERIALIZER;
 
-    private static final Map<Item, String> ITEM_TO_COMPONENT = new HashMap<>();
-    private static final Set<Item> RICH_MINES_ORES = new HashSet<>();
+    private static final Map<Item, String> ITEM_TO_COMPONENT = new LinkedHashMap<>();
 
     static {
-        ITEM_TO_COMPONENT.put(Items.PRISMARINE_SHARD, "vast_ocean");
-        ITEM_TO_COMPONENT.put(Items.SNOWBALL, "frozen_waste");
+        ITEM_TO_COMPONENT.put(Items.GRASS_BLOCK, "surface_world");
+        ITEM_TO_COMPONENT.put(Items.END_STONE, "floating_islands");
+        ITEM_TO_COMPONENT.put(Items.MOSSY_COBBLESTONE, "amplified_world");
+        ITEM_TO_COMPONENT.put(Items.DEEPSLATE, "cave_world");
+        ITEM_TO_COMPONENT.put(Items.NETHER_BRICKS, "nether_cave");
+        ITEM_TO_COMPONENT.put(Items.END_STONE_BRICKS, "end_void");
+
+        ITEM_TO_COMPONENT.put(Items.SUNFLOWER, "plains_biome");
+        ITEM_TO_COMPONENT.put(Items.OAK_SAPLING, "forests_biome");
+        ITEM_TO_COMPONENT.put(Items.SPRUCE_SAPLING, "taigas_biome");
+        ITEM_TO_COMPONENT.put(Items.ACACIA_SAPLING, "savannas_biome");
+        ITEM_TO_COMPONENT.put(Items.SAND, "desert_biome");
+        ITEM_TO_COMPONENT.put(Items.SNOWBALL, "snowy_biome");
+        ITEM_TO_COMPONENT.put(Items.JUNGLE_SAPLING, "jungle_biome");
+        ITEM_TO_COMPONENT.put(Items.LILY_PAD, "swamp_biome");
+        ITEM_TO_COMPONENT.put(Items.WATER_BUCKET, "ocean_biome");
+        ITEM_TO_COMPONENT.put(Items.SNOW_BLOCK, "mountain_biome");
+        ITEM_TO_COMPONENT.put(Items.RED_MUSHROOM, "mushroom_biome");
+        ITEM_TO_COMPONENT.put(Items.DARK_OAK_SAPLING, "dark_forest_biome");
+        ITEM_TO_COMPONENT.put(Items.SCULK_CATALYST, "sculk_biome");
+
+        ITEM_TO_COMPONENT.put(Items.NETHERRACK, "nether_wastes_biome");
+        ITEM_TO_COMPONENT.put(Items.CRIMSON_FUNGUS, "crimson_biome");
+        ITEM_TO_COMPONENT.put(Items.WARPED_FUNGUS, "warped_biome");
+        ITEM_TO_COMPONENT.put(Items.BASALT, "basalt_biome");
+        ITEM_TO_COMPONENT.put(Items.SOUL_SAND, "soul_valley_biome");
+
+        ITEM_TO_COMPONENT.put(Items.CHORUS_FLOWER, "end_highlands_biome");
+        ITEM_TO_COMPONENT.put(Items.CHORUS_FRUIT, "end_islands_biome");
+
+        ITEM_TO_COMPONENT.put(Items.STONE, "stone_base");
+        ITEM_TO_COMPONENT.put(Items.POLISHED_DEEPSLATE, "deepslate_base");
+        ITEM_TO_COMPONENT.put(Items.GRANITE, "granite_base");
+        ITEM_TO_COMPONENT.put(Items.ANDESITE, "andesite_base");
+        ITEM_TO_COMPONENT.put(Items.DIORITE, "diorite_base");
+        ITEM_TO_COMPONENT.put(Items.SANDSTONE, "sandstone_base");
+        ITEM_TO_COMPONENT.put(Items.TUFF, "tuff_base");
+
+        ITEM_TO_COMPONENT.put(Items.TRIDENT, "thunderstorm");
+        ITEM_TO_COMPONENT.put(Items.GLOWSTONE_DUST, "eternal_day");
+        ITEM_TO_COMPONENT.put(Items.CLOCK, "eternal_night");
         ITEM_TO_COMPONENT.put(Items.EMERALD, "thriving_realm");
-        ITEM_TO_COMPONENT.put(Items.RED_MUSHROOM, "mushroom_haven");
-        ITEM_TO_COMPONENT.put(Items.BROWN_MUSHROOM, "mushroom_haven");
-        ITEM_TO_COMPONENT.put(Items.SCULK, "sculk_depths");
-        ITEM_TO_COMPONENT.put(Items.MAGMA_CREAM, "nether_molten");
-        ITEM_TO_COMPONENT.put(Items.CRIMSON_NYLIUM, "nether_crimson");
-        ITEM_TO_COMPONENT.put(Items.WARPED_NYLIUM, "nether_warped");
-        ITEM_TO_COMPONENT.put(Items.NETHER_BRICKS, "nether_fortress");
-        ITEM_TO_COMPONENT.put(Items.SOUL_SAND, "nether_soul_abyss");
-        ITEM_TO_COMPONENT.put(Items.GLOWSTONE_DUST, "nether_crystal");
-        ITEM_TO_COMPONENT.put(Items.END_STONE, "end_floating");
-        ITEM_TO_COMPONENT.put(Items.SHULKER_SHELL, "end_ancient");
-
-        ITEM_TO_COMPONENT.put(Items.IRON_ORE, "rich_mines");
-        ITEM_TO_COMPONENT.put(Items.COPPER_ORE, "rich_mines");
-        ITEM_TO_COMPONENT.put(Items.GOLD_ORE, "rich_mines");
-        ITEM_TO_COMPONENT.put(Items.COAL, "rich_mines");
-        ITEM_TO_COMPONENT.put(Items.REDSTONE, "rich_mines");
-        ITEM_TO_COMPONENT.put(Items.LAPIS_LAZULI, "rich_mines");
-        ITEM_TO_COMPONENT.put(Items.DIAMOND, "rich_mines");
-        // EMERALD already mapped to "thriving_realm" above, so it maps as rich_mines too:
-        // Wait, EMERALD is above mapped to "thriving_realm". The design says emerald is part of
-        // rich_mines. But emerald alone (x8) maps to "thriving_realm". We need a way to
-        // distinguish 8 emeralds (thriving_realm) from 1 emerald + 7 other ores (rich_mines).
-        // This is handled specially in matches().
-
-        RICH_MINES_ORES.add(Items.IRON_ORE);
-        RICH_MINES_ORES.add(Items.COPPER_ORE);
-        RICH_MINES_ORES.add(Items.GOLD_ORE);
-        RICH_MINES_ORES.add(Items.COAL);
-        RICH_MINES_ORES.add(Items.REDSTONE);
-        RICH_MINES_ORES.add(Items.LAPIS_LAZULI);
-        RICH_MINES_ORES.add(Items.EMERALD);
-        RICH_MINES_ORES.add(Items.DIAMOND);
+        ITEM_TO_COMPONENT.put(Items.LAVA_BUCKET, "lava_flood");
+        ITEM_TO_COMPONENT.put(Items.FEATHER, "gravity_low");
+        ITEM_TO_COMPONENT.put(Items.DEAD_BUSH, "dry_land");
+        ITEM_TO_COMPONENT.put(Items.TROPICAL_FISH, "water_world");
+        ITEM_TO_COMPONENT.put(Items.GOLDEN_APPLE, "one_hp");
+        ITEM_TO_COMPONENT.put(Items.IRON_SWORD, "universal_anger");
+        ITEM_TO_COMPONENT.put(Items.CAULDRON, "eternal_rain");
+        ITEM_TO_COMPONENT.put(Items.PHANTOM_MEMBRANE, "insomniacs");
+        ITEM_TO_COMPONENT.put(Items.BONE, "no_drops");
+        ITEM_TO_COMPONENT.put(Items.COD, "fish_out_of_water");
+        ITEM_TO_COMPONENT.put(Items.FROGSPAWN, "wednesday_frogs");
     }
 
     public ChartComponentRecipe(CraftingBookCategory category) {
@@ -70,84 +84,66 @@ public class ChartComponentRecipe extends CustomRecipe {
 
     @Override
     public boolean matches(CraftingInput input, Level level) {
-        ItemStack blank = ItemStack.EMPTY;
-        Set<Item> seenOres = new HashSet<>();
-        boolean hasRichMinesMix = true;
-        boolean allSameComponent = true;
-        String targetComponent = null;
+        int w = input.width();
+        int h = input.height();
+        if (w < 3 || h < 3) return false;
+        if (w > 3 || h > 3) return false;
+
+        String componentId = null;
         int materialCount = 0;
 
-        for (int i = 0; i < input.size(); i++) {
-            ItemStack stack = input.getItem(i);
-            if (stack.isEmpty()) continue;
+        for (int row = 0; row < h; row++) {
+            for (int col = 0; col < w; col++) {
+                int idx = row * w + col;
+                ItemStack stack = input.getItem(idx);
 
-            if (stack.getItem() instanceof ChartComponentItem
-                    && "blank".equals(ChartComponentItem.getComponentType(stack))) {
-                if (!blank.isEmpty()) return false;
-                blank = stack;
-            } else {
-                String comp = resolveComponent(stack);
-                if (comp == null) return false;
-
-                if (targetComponent == null) {
-                    targetComponent = comp;
-                } else if (!targetComponent.equals(comp)) {
-                    allSameComponent = false;
-                    if (!RICH_MINES_ORES.contains(stack.getItem())) hasRichMinesMix = false;
+                if (col == 1 && row == 1) {
+                    if (!(stack.getItem() instanceof ChartComponentItem)
+                            || !"blank".equals(ChartComponentItem.getComponentType(stack))) {
+                        return false;
+                    }
+                    continue;
                 }
 
-                if (RICH_MINES_ORES.contains(stack.getItem())) {
-                    if (!seenOres.add(stack.getItem())) hasRichMinesMix = false;
-                } else {
-                    hasRichMinesMix = false;
+                if (col != 1 || row != 1) {
+                    if (stack.isEmpty()) return false;
+                    String comp = ITEM_TO_COMPONENT.get(stack.getItem());
+                    if (comp == null) return false;
+                    if (componentId == null) {
+                        componentId = comp;
+                    } else if (!componentId.equals(comp)) {
+                        return false;
+                    }
+                    materialCount++;
                 }
-
-                materialCount++;
             }
         }
 
-        if (blank.isEmpty() || materialCount != 8) return false;
-
-        if ("rich_mines".equals(targetComponent)) {
-            return hasRichMinesMix && seenOres.size() >= 8;
-        }
-
-        return allSameComponent;
+        if (materialCount != 8) return false;
+        return ChartComponentType.byId(componentId) != null;
     }
 
     @Override
     public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
         ItemStack blank = ItemStack.EMPTY;
-        Set<Item> seenOres = new HashSet<>();
-        boolean allOres = true;
-        String target = null;
+        String componentId = null;
 
         for (int i = 0; i < input.size(); i++) {
             ItemStack stack = input.getItem(i);
             if (stack.isEmpty()) continue;
             if (stack.getItem() instanceof ChartComponentItem) {
-                if ("blank".equals(ChartComponentItem.getComponentType(stack))) blank = stack;
+                if ("blank".equals(ChartComponentItem.getComponentType(stack)))
+                    blank = stack;
                 continue;
             }
-            if (RICH_MINES_ORES.contains(stack.getItem())) {
-                seenOres.add(stack.getItem());
-            } else {
-                allOres = false;
-            }
-            if (target == null) {
-                target = resolveComponent(stack);
+            if (componentId == null) {
+                componentId = ITEM_TO_COMPONENT.get(stack.getItem());
             }
         }
 
-        if (blank.isEmpty() || target == null) return ItemStack.EMPTY;
+        if (blank.isEmpty() || componentId == null) return ItemStack.EMPTY;
 
-        if ("rich_mines".equals(target) && allOres && seenOres.size() >= 8) {
-            target = "rich_mines";
-        } else if ("rich_mines".equals(target) && seenOres.size() < 8) {
-            return ItemStack.EMPTY;
-        }
-
-        ChartComponentType type = ChartComponentType.byId(target);
+        ChartComponentType type = ChartComponentType.byId(componentId);
         if (type == null) return ItemStack.EMPTY;
 
         ItemStack result = new ItemStack(blank.getItem());
@@ -155,26 +151,6 @@ public class ChartComponentRecipe extends CustomRecipe {
         tag.putString("component_type", type.id());
         ExpeditionNbtHelper.writeTag(result, tag);
         return result;
-    }
-
-    private String resolveComponent(ItemStack stack) {
-        String comp = ITEM_TO_COMPONENT.get(stack.getItem());
-        if (comp == null) {
-            if (stack.is(net.minecraft.tags.ItemTags.LOGS)) comp = "dense_woods";
-            else if (stack.is(net.minecraft.tags.ItemTags.FLOWERS)) comp = "blossom_valley";
-            else if (stack.is(net.minecraft.tags.ItemTags.STONE_CRAFTING_MATERIALS)
-                    && stack.getItem() != Items.COBBLESTONE) comp = "stone_spires";
-            else if (isFertileSeed(stack.getItem())) comp = "fertile_fields";
-            else if (stack.getItem() == Items.SAND || stack.getItem() == Items.RED_SAND)
-                comp = "scorched_basin";
-        }
-        return comp;
-    }
-
-    private boolean isFertileSeed(Item item) {
-        return item == Items.WHEAT_SEEDS || item == Items.CARROT || item == Items.POTATO
-                || item == Items.BEETROOT_SEEDS || item == Items.PUMPKIN_SEEDS
-                || item == Items.MELON_SEEDS;
     }
 
     @Override

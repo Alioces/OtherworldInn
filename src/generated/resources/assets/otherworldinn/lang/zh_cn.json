@@ -401,6 +401,7 @@
   "message.otherworldinn.expedition.already_member": "你已在此远征队伍中",
   "message.otherworldinn.expedition.cancelled": "已取消远征招募",
   "message.otherworldinn.expedition.cannot_enter": "你无法进入此远征维度",
+  "message.otherworldinn.expedition.cannot_leave": "远征中无法前往其他维度",
   "message.otherworldinn.expedition.click_to_join": "[点击加入]",
   "message.otherworldinn.expedition.click_to_join_hover": "点击加入此次远征队伍",
   "message.otherworldinn.expedition.create_failed": "远征维度创建失败，请稍后重试",
