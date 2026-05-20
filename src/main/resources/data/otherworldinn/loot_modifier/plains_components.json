@@ -1,0 +1,30 @@
+{
+  "type": "otherworldinn:chart_component",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/village/village_plains_house"
+    },
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/village/village_desert_house"
+    },
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/village/village_savanna_house"
+    },
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/village/village_snowy_house"
+    },
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/village/village_taiga_house"
+    }
+  ],
+  "components": {
+    "plains_biome": 25.0,
+    "surface_world": 18.0,
+    "savannas_biome": 20.0
+  }
+}

@@ -1,34 +1,21 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "ingredients": [
-    {
+  "key": {
+    "B": {
       "item": "otherworldinn:chart_component"
     },
-    {
+    "C": {
       "item": "minecraft:glowstone_dust"
     },
-    {
-      "item": "minecraft:glowstone_dust"
-    },
-    {
-      "item": "minecraft:glowstone_dust"
-    },
-    {
-      "item": "minecraft:glowstone_dust"
-    },
-    {
-      "item": "minecraft:glowstone_dust"
-    },
-    {
-      "item": "minecraft:glowstone_dust"
-    },
-    {
-      "item": "minecraft:glowstone_dust"
-    },
-    {
-      "item": "minecraft:glowstone_dust"
+    "E": {
+      "item": "minecraft:torch"
     }
+  },
+  "pattern": [
+    "CEC",
+    "EBE",
+    "CEC"
   ],
   "result": {
     "components": {

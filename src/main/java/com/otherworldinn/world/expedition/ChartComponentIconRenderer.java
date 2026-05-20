@@ -3,6 +3,7 @@ package com.otherworldinn.world.expedition;
 import com.otherworldinn.OtherworldInn;
 import com.otherworldinn.client.render.SlotIconRenderer;
 import com.otherworldinn.item.ChartComponentItem;
+import com.github.ysbbbbbb.kaleidoscopecookery.item.RecipeItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -69,6 +70,13 @@ public final class ChartComponentIconRenderer {
             ChartComponentType type = ChartComponentType.byId(compType);
             if (type == null) return null;
             return new ItemStack(type.iconItem());
+        }
+        if (stack.getItem() instanceof RecipeItem) {
+            RecipeItem.RecipeRecord record = RecipeItem.getRecipe(stack);
+            if (record == null) return null;
+            ItemStack output = record.output();
+            if (output.isEmpty()) return null;
+            return output.copy();
         }
         return null;
     }

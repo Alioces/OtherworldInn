@@ -1,0 +1,15 @@
+{
+  "type": "otherworldinn:chart_component",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/end_city_treasure"
+    }
+  ],
+  "components": {
+    "end_void": 18.0,
+    "floating_islands": 22.0,
+    "end_highlands_biome": 28.0,
+    "end_islands_biome": 20.0
+  }
+}

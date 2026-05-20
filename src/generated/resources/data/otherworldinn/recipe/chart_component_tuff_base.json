@@ -1,34 +1,21 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "ingredients": [
-    {
+  "key": {
+    "B": {
       "item": "otherworldinn:chart_component"
     },
-    {
+    "C": {
       "item": "minecraft:tuff"
     },
-    {
-      "item": "minecraft:tuff"
-    },
-    {
-      "item": "minecraft:tuff"
-    },
-    {
-      "item": "minecraft:tuff"
-    },
-    {
-      "item": "minecraft:tuff"
-    },
-    {
-      "item": "minecraft:tuff"
-    },
-    {
-      "item": "minecraft:tuff"
-    },
-    {
-      "item": "minecraft:tuff"
+    "E": {
+      "item": "minecraft:polished_tuff"
     }
+  },
+  "pattern": [
+    "CEC",
+    "EBE",
+    "CEC"
   ],
   "result": {
     "components": {

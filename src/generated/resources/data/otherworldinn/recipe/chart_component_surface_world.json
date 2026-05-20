@@ -1,34 +1,21 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "ingredients": [
-    {
+  "key": {
+    "B": {
       "item": "otherworldinn:chart_component"
     },
-    {
+    "C": {
       "item": "minecraft:grass_block"
     },
-    {
-      "item": "minecraft:grass_block"
-    },
-    {
-      "item": "minecraft:grass_block"
-    },
-    {
-      "item": "minecraft:grass_block"
-    },
-    {
-      "item": "minecraft:grass_block"
-    },
-    {
-      "item": "minecraft:grass_block"
-    },
-    {
-      "item": "minecraft:grass_block"
-    },
-    {
-      "item": "minecraft:grass_block"
+    "E": {
+      "item": "minecraft:dirt"
     }
+  },
+  "pattern": [
+    "CEC",
+    "EBE",
+    "CEC"
   ],
   "result": {
     "components": {

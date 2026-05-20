@@ -44,6 +44,7 @@ public class ModLanguageProvider extends LanguageProvider {
     private void addManualTranslations() {
         entry("itemGroup.otherworldinn").zh("旅社物语").en("Otherworld Inn");
         entry("itemGroup.otherworldinn.expedition").zh("旅社物语 · 星图组件").en("Otherworld Inn · Expedition");
+        entry("itemGroup.otherworldinn.recipe_books").zh("旅社物语 · 食谱").en("Otherworld Inn · Recipes");
 
         entry("key.categories.otherworldinn").zh("旅社物语").en("Otherworld Inn");
 
@@ -765,6 +766,13 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.expedition.recruit_broadcast").zh("✦ %s 发起了一场远征组队（%s | 预估费用 %s 币）%s").en("✦ %s started an expedition party (%s | est. fee %s coins) %s");
         entry("message.otherworldinn.expedition.aborted").zh("远征已被管理员强制终止").en("Expedition has been forcibly terminated by admin");
         entry("message.otherworldinn.recipe_book.unlocked").zh("配方已为队伍解锁：%s").en("Recipe unlocked for your team: %s");
+        entry("message.otherworldinn.recipe_book.locked_prefix").zh("(未解锁) %s").en("(Locked) %s");
+        entry("message.otherworldinn.recipe_item.overlay.use").zh("右键使用记录配方").en("Right-click to record recipe");
+
+        entry("command.otherworldinn.team.cookrecipe.unlocked").zh("已解锁食谱：%s").en("Unlocked recipe: %s");
+        entry("command.otherworldinn.team.cookrecipe.locked").zh("已锁定食谱：%s").en("Locked recipe: %s");
+        entry("command.otherworldinn.team.cookrecipe.unlocked_all").zh("已解锁全部食谱").en("All recipes unlocked");
+        entry("command.otherworldinn.team.cookrecipe.locked_all").zh("已锁定全部食谱").en("All recipes locked");
 
         entry("tooltip.otherworldinn.chart_component.blank_entry").zh("  ▸ 空白组件").en("  ▸ Blank Component");
         entry("tooltip.otherworldinn.chart_component.blank").zh("用于合成其它星图组件").en("Used to craft other chart components");

@@ -34,7 +34,6 @@ public class MixinStockpotBlockEntityCookCheck {
 
         TeamData team = TeamManager.getInstance().getPlayerTeam(sp);
         if (team == null) return;
-        if (team.getUnlockedCookRecipes().isEmpty()) return;
         if (team.isCookRecipeUnlocked(recipeId)) return;
 
         result = Items.SUSPICIOUS_STEW.getDefaultInstance();

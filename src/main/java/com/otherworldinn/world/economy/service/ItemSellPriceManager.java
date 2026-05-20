@@ -221,4 +221,12 @@ public class ItemSellPriceManager {
         }
         return result;
     }
+
+    public static List<ResourceLocation> getTopPricedItems(int count) {
+        return PRICES.entrySet().stream()
+                .sorted(Map.Entry.<ResourceLocation, Integer>comparingByValue().reversed())
+                .limit(count)
+                .map(Map.Entry::getKey)
+                .toList();
+    }
 }

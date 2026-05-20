@@ -105,7 +105,8 @@ public class ExpeditionChartItem extends Item {
         ExpeditionSession session = new ExpeditionSession(dimKey, members, getComponentIds(stack), deadlineTick);
 
         ServerLevel expeditionLevel = ExpeditionService.ensureExpeditionLevel(
-                player.getServer(), dimKey, getComponentIds(stack), chartUuid.getLeastSignificantBits());
+                player.getServer(), dimKey, getComponentIds(stack), chartUuid.getLeastSignificantBits(),
+                getChartDimension(stack));
         if (expeditionLevel == null) {
             player.displayClientMessage(
                     Component.translatable("message.otherworldinn.expedition.create_failed")
@@ -230,7 +231,8 @@ public class ExpeditionChartItem extends Item {
         ExpeditionSession session = new ExpeditionSession(dimKey, onlineMembers, getComponentIds(stack), deadlineTick);
 
         ServerLevel expeditionLevel = ExpeditionService.ensureExpeditionLevel(
-                player.getServer(), dimKey, getComponentIds(stack), chartUuid.getLeastSignificantBits());
+                player.getServer(), dimKey, getComponentIds(stack), chartUuid.getLeastSignificantBits(),
+                getChartDimension(stack));
         if (expeditionLevel == null) {
             player.displayClientMessage(
                     Component.translatable("message.otherworldinn.expedition.create_failed")

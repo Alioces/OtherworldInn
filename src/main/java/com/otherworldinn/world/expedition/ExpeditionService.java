@@ -201,7 +201,8 @@ public final class ExpeditionService {
     }
 
     public static ServerLevel ensureExpeditionLevel(MinecraftServer server,
-            ResourceKey<Level> dimKey, List<String> componentIds, long seed) {
+            ResourceKey<Level> dimKey, List<String> componentIds, long seed,
+            ChartComponentType.DimensionCategory chartDimension) {
 
         Map<ResourceKey<Level>, ServerLevel> levels =
                 ((MixinMinecraftServerLevelsAccessor) server).otherworldinn$getLevels();
@@ -211,7 +212,7 @@ public final class ExpeditionService {
 
         ChartComponentType.DimensionCategory category =
                 ChartComponentType.determineDimension(componentIds);
-        if (category == null) category = ChartComponentType.DimensionCategory.MAIN_WORLD;
+        if (category == null) category = chartDimension != null ? chartDimension : ChartComponentType.DimensionCategory.MAIN_WORLD;
 
         ResourceKey<Level> templateKey = getTemplateKey(category);
         ServerLevel template = server.getLevel(templateKey);

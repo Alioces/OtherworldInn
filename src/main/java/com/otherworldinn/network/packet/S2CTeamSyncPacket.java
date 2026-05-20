@@ -29,7 +29,8 @@ public record S2CTeamSyncPacket(
         boolean teleportUnlocked,
         int coins,
         CompoundTag innData,
-        List<CompoundTag> innRegions)
+        List<CompoundTag> innRegions,
+        List<String> unlockedCookRecipes)
         implements CustomPacketPayload {
 
     public static final Type<S2CTeamSyncPacket> TYPE =
@@ -51,6 +52,8 @@ public record S2CTeamSyncPacket(
                         ByteBufCodecs.COMPOUND_TAG.encode(buf, packet.innData());
                         ByteBufCodecs.collection(ArrayList::new, ByteBufCodecs.COMPOUND_TAG)
                                 .encode(buf, new ArrayList<>(packet.innRegions()));
+                        ByteBufCodecs.collection(ArrayList::new, ByteBufCodecs.STRING_UTF8)
+                                .encode(buf, new ArrayList<>(packet.unlockedCookRecipes()));
                     },
                     buf ->
                             // 按相同字段顺序恢复队伍快照
@@ -68,6 +71,9 @@ public record S2CTeamSyncPacket(
                                     ByteBufCodecs.COMPOUND_TAG.decode(buf),
                                     ByteBufCodecs.collection(
                                                     ArrayList::new, ByteBufCodecs.COMPOUND_TAG)
+                                            .decode(buf),
+                                    ByteBufCodecs.collection(
+                                                    ArrayList::new, ByteBufCodecs.STRING_UTF8)
                                             .decode(buf)));
 
     @Override
@@ -94,7 +100,8 @@ public record S2CTeamSyncPacket(
                                     teleportUnlocked(),
                                     coins(),
                                     innData(),
-                                    innRegions());
+                                    innRegions(),
+                                    new HashSet<>(unlockedCookRecipes()));
                 });
     }
 }

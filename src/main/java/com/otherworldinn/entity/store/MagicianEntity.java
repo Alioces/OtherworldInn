@@ -110,6 +110,7 @@ public class MagicianEntity extends StoreEntity {
         this.addStoreItem(new ItemStack(Items.GLASS_BOTTLE), 2, 64);
         this.addStoreItem(new ItemStack(Items.BLAZE_ROD), 16, 32);
         this.addStoreItem(new ItemStack(Items.GLOWSTONE_DUST), 8, 48);
+        this.addStoreItem(new ItemStack(ModItems.CHART_COMPONENT.get()), 12, 8);
 
         this.fixedItemsCount++;
 

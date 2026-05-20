@@ -1,34 +1,21 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "ingredients": [
-    {
+  "key": {
+    "B": {
       "item": "otherworldinn:chart_component"
     },
-    {
+    "C": {
       "item": "minecraft:chorus_flower"
     },
-    {
-      "item": "minecraft:chorus_flower"
-    },
-    {
-      "item": "minecraft:chorus_flower"
-    },
-    {
-      "item": "minecraft:chorus_flower"
-    },
-    {
-      "item": "minecraft:chorus_flower"
-    },
-    {
-      "item": "minecraft:chorus_flower"
-    },
-    {
-      "item": "minecraft:chorus_flower"
-    },
-    {
-      "item": "minecraft:chorus_flower"
+    "E": {
+      "item": "minecraft:end_stone"
     }
+  },
+  "pattern": [
+    "CEC",
+    "EBE",
+    "CEC"
   ],
   "result": {
     "components": {

@@ -11,6 +11,7 @@ import com.otherworldinn.init.ModDimensions;
 import com.otherworldinn.init.ModEntities;
 import com.otherworldinn.init.ModGameRules;
 import com.otherworldinn.init.ModItems;
+import com.otherworldinn.init.ModLootModifiers;
 import com.otherworldinn.init.ModMenuTypes;
 import com.otherworldinn.init.ModSounds;
 import com.otherworldinn.world.expedition.recipe.ExpeditionRecipeSerializers;
@@ -60,6 +61,7 @@ public class OtherworldInn {
         ModCreativeModeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         ModDimensions.register(modEventBus);
         ModSounds.SOUND_EVENTS.register(modEventBus);
+        ModLootModifiers.GLM.register(modEventBus);
         ExpeditionRecipeSerializers.register(modEventBus);
         ModGameRules.init();
 

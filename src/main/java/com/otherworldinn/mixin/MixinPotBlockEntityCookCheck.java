@@ -40,7 +40,6 @@ public class MixinPotBlockEntityCookCheck {
 
         TeamData team = TeamManager.getInstance().getPlayerTeam(sp);
         if (team == null) return;
-        if (team.getUnlockedCookRecipes().isEmpty()) return;
         if (team.isCookRecipeUnlocked(recipeId)) return;
 
         Item fallback = BuiltInRegistries.ITEM.get(otherworldinn$SUSPICIOUS_STIR_FRY_ID);

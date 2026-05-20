@@ -1,34 +1,21 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "ingredients": [
-    {
+  "key": {
+    "B": {
       "item": "otherworldinn:chart_component"
     },
-    {
-      "item": "minecraft:barrier"
+    "C": {
+      "item": "minecraft:bone"
     },
-    {
-      "item": "minecraft:barrier"
-    },
-    {
-      "item": "minecraft:barrier"
-    },
-    {
-      "item": "minecraft:barrier"
-    },
-    {
-      "item": "minecraft:barrier"
-    },
-    {
-      "item": "minecraft:barrier"
-    },
-    {
-      "item": "minecraft:barrier"
-    },
-    {
-      "item": "minecraft:barrier"
+    "E": {
+      "item": "minecraft:rotten_flesh"
     }
+  },
+  "pattern": [
+    "CEC",
+    "EBE",
+    "CEC"
   ],
   "result": {
     "components": {

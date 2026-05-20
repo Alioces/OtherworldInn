@@ -6,6 +6,7 @@ import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.util.AdvancementUtils;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.ChatFormatting;
@@ -205,7 +206,7 @@ public abstract class VipGuestEntity extends GuestEntity {
             scheduleNextVipOrder(level);
             return;
         }
-        ResourceLocation selected = pickVipMealItem();
+        ResourceLocation selected = pickVipMealItem(team);
         if (selected == null) {
             scheduleNextVipOrder(level);
             return;
@@ -302,12 +303,22 @@ public abstract class VipGuestEntity extends GuestEntity {
         return 20;
     }
 
-    private ResourceLocation pickVipMealItem() {
-        List<ResourceLocation> candidates =
-                ItemSellPriceManager.getConfiguredItemsAbovePrice(getVipMealMinPriceExclusive());
-        if (candidates.isEmpty()) {
-            return null;
+    private ResourceLocation pickVipMealItem(TeamData team) {
+        List<ResourceLocation> all = ItemSellPriceManager.getConfiguredItemsAbovePrice(
+                getVipMealMinPriceExclusive() - 1);
+        List<ResourceLocation> candidates = new ArrayList<>();
+        for (ResourceLocation id : all) {
+            if ("kaleidoscope_tavern".equals(id.getNamespace())) continue;
+            String recipeId = id.toString();
+            if (team.isCookRecipeUnlocked(recipeId)) {
+                candidates.add(id);
+            }
         }
+        if (candidates.isEmpty()) {
+            candidates = ItemSellPriceManager.getTopPricedItems(5);
+            candidates.removeIf(id -> "kaleidoscope_tavern".equals(id.getNamespace()));
+        }
+        if (candidates.isEmpty()) return null;
         return candidates.get(this.getRandom().nextInt(candidates.size()));
     }
 

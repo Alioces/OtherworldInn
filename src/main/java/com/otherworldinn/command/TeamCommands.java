@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.otherworldinn.world.economy.service.ItemSellPriceManager;
 import com.otherworldinn.world.inn.InnData;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
@@ -234,7 +235,39 @@ public class TeamCommands {
                                                                                                 EntityArgument
                                                                                                         .getPlayer(
                                                                                                                 ctx,
-                                                                                                                "target")))))));
+                                                                                                                "target"))))))
+                        .then(
+                                Commands.literal("cookrecipe")
+                                        .then(
+                                                Commands.literal("unlock")
+                                                        .then(
+                                                                Commands.argument(
+                                                                                "recipeId",
+                                                                                StringArgumentType
+                                                                                        .greedyString())
+                                                                        .executes(
+                                                                                TeamCommands
+                                                                                        ::unlockCookRecipe)))
+                                        .then(
+                                                Commands.literal("lock")
+                                                        .then(
+                                                                Commands.argument(
+                                                                                "recipeId",
+                                                                                StringArgumentType
+                                                                                        .greedyString())
+                                                                        .executes(
+                                                                                TeamCommands
+                                                                                        ::lockCookRecipe)))
+                                        .then(
+                                                Commands.literal("unlockall")
+                                                        .executes(
+                                                                TeamCommands
+                                                                        ::unlockAllCookRecipes))
+                                        .then(
+                                                Commands.literal("lockall")
+                                                        .executes(
+                                                                TeamCommands
+                                                                        ::lockAllCookRecipes))));
     }
 
     private static int setCoins(CommandContext<CommandSourceStack> context, ServerPlayer target) {
@@ -811,6 +844,138 @@ public class TeamCommands {
                     .sendSuccess(
                             () -> Component.literal("Members: " + team.getMembers().size()), false);
 
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int unlockCookRecipe(CommandContext<CommandSourceStack> context) {
+        try {
+            ServerPlayer player = context.getSource().getPlayerOrException();
+            String recipeId = StringArgumentType.getString(context, "recipeId");
+
+            TeamManager manager = TeamManager.getInstance();
+            TeamData team = manager.getPlayerTeam(player);
+
+            if (team == null) {
+                context.getSource()
+                        .sendFailure(
+                                Component.translatable(
+                                        "command.otherworldinn.team.target_no_team"));
+                return 0;
+            }
+
+            team.unlockCookRecipe(recipeId);
+            manager.syncTeam(team, context.getSource().getServer());
+
+            context.getSource()
+                    .sendSuccess(
+                            () ->
+                                    Component.translatable(
+                                            "command.otherworldinn.team.cookrecipe.unlocked",
+                                            recipeId),
+                            true);
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int lockCookRecipe(CommandContext<CommandSourceStack> context) {
+        try {
+            ServerPlayer player = context.getSource().getPlayerOrException();
+            String recipeId = StringArgumentType.getString(context, "recipeId");
+
+            TeamManager manager = TeamManager.getInstance();
+            TeamData team = manager.getPlayerTeam(player);
+
+            if (team == null) {
+                context.getSource()
+                        .sendFailure(
+                                Component.translatable(
+                                        "command.otherworldinn.team.target_no_team"));
+                return 0;
+            }
+
+            team.getUnlockedCookRecipes().remove(recipeId);
+            manager.syncTeam(team, context.getSource().getServer());
+
+            context.getSource()
+                    .sendSuccess(
+                            () ->
+                                    Component.translatable(
+                                            "command.otherworldinn.team.cookrecipe.locked",
+                                            recipeId),
+                            true);
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int unlockAllCookRecipes(CommandContext<CommandSourceStack> context) {
+        try {
+            ServerPlayer player = context.getSource().getPlayerOrException();
+
+            TeamManager manager = TeamManager.getInstance();
+            TeamData team = manager.getPlayerTeam(player);
+
+            if (team == null) {
+                context.getSource()
+                        .sendFailure(
+                                Component.translatable(
+                                        "command.otherworldinn.team.target_no_team"));
+                return 0;
+            }
+
+            for (net.minecraft.resources.ResourceLocation id :
+                    ItemSellPriceManager.getConfiguredItemsAbovePrice(-1)) {
+                if (!"kaleidoscope_cookery".equals(id.getNamespace())) continue;
+                team.unlockCookRecipe(id.toString());
+            }
+            manager.syncTeam(team, context.getSource().getServer());
+
+            context.getSource()
+                    .sendSuccess(
+                            () ->
+                                    Component.translatable(
+                                            "command.otherworldinn.team.cookrecipe.unlocked_all"),
+                            true);
+            return 1;
+        } catch (Exception e) {
+            context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int lockAllCookRecipes(CommandContext<CommandSourceStack> context) {
+        try {
+            ServerPlayer player = context.getSource().getPlayerOrException();
+
+            TeamManager manager = TeamManager.getInstance();
+            TeamData team = manager.getPlayerTeam(player);
+
+            if (team == null) {
+                context.getSource()
+                        .sendFailure(
+                                Component.translatable(
+                                        "command.otherworldinn.team.target_no_team"));
+                return 0;
+            }
+
+            team.getUnlockedCookRecipes().clear();
+            manager.syncTeam(team, context.getSource().getServer());
+
+            context.getSource()
+                    .sendSuccess(
+                            () ->
+                                    Component.translatable(
+                                            "command.otherworldinn.team.cookrecipe.locked_all"),
+                            true);
             return 1;
         } catch (Exception e) {
             context.getSource().sendFailure(Component.literal("Error: " + e.getMessage()));
