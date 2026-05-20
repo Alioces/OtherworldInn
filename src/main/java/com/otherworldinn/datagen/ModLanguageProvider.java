@@ -742,7 +742,7 @@ public class ModLanguageProvider extends LanguageProvider {
         // 远征
         entry("message.otherworldinn.expedition.no_team").zh("你当前不在任何队伍中").en("You are not in any team");
         entry("message.otherworldinn.expedition.not_enough_coins").zh("队伍金币不足，还需 %s 金币").en("Not enough coins, need %s more");
-        entry("message.otherworldinn.expedition.solo_started").zh("单人远征已开启！维度传送中…").en("Solo expedition started! Entering dimension...");
+        entry("message.otherworldinn.expedition.solo_started").zh("远征已开启！维度传送中…").en("Solo expedition started! Entering dimension...");
         entry("message.otherworldinn.expedition.sneak_to_confirm").zh("潜行右键以确认开启远征").en("Sneak + right click to confirm expedition");
         entry("message.otherworldinn.expedition.not_leader").zh("只有发起者才能开启远征").en("Only the leader can start the expedition");
         entry("message.otherworldinn.expedition.started").zh("✦ 远征开始！%s 名冒险者踏上征途").en("✦ Expedition started! %s adventurers depart");
@@ -761,6 +761,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.expedition.invalid_id").zh("无效的远征ID").en("Invalid expedition ID");
         entry("message.otherworldinn.expedition.cannot_enter").zh("你无法进入此远征维度").en("You cannot enter this expedition dimension");
         entry("message.otherworldinn.expedition.cannot_leave").zh("远征中无法前往其他维度").en("Cannot leave expedition dimension");
+        entry("message.otherworldinn.expedition.already_active").zh("已有正在进行的远征，请等待当前远征结束后再尝试").en("An expedition is already in progress, wait for it to end");
         entry("message.otherworldinn.expedition.click_to_join").zh("[点击加入]").en("[Click to join]");
         entry("message.otherworldinn.expedition.click_to_join_hover").zh("点击加入此次远征队伍").en("Click to join this expedition party");
         entry("message.otherworldinn.expedition.recruit_broadcast").zh("✦ %s 发起了一场远征组队（%s | 预估费用 %s 币）%s").en("✦ %s started an expedition party (%s | est. fee %s coins) %s");

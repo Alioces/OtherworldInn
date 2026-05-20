@@ -5,6 +5,8 @@ import com.otherworldinn.world.expedition.ExpeditionDimensions;
 import com.otherworldinn.world.expedition.ExpeditionService;
 import com.otherworldinn.world.expedition.ExpeditionSession;
 import com.otherworldinn.init.ModItems;
+import com.otherworldinn.network.ModMessages;
+import com.otherworldinn.network.packet.S2CExpeditionTimerPacket;
 import com.otherworldinn.world.team.TeamData;
 import com.otherworldinn.world.team.service.TeamManager;
 import java.util.ArrayList;
@@ -55,7 +57,7 @@ public class ExpeditionChartItem extends Item {
         if (level.isClientSide) return InteractionResultHolder.success(stack);
         if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResultHolder.fail(stack);
 
-        player.getCooldowns().addCooldown(this, 80);
+        player.getCooldowns().addCooldown(this, 2400);
 
         String state = getChartState(stack);
         if ("recruiting".equals(state)) {
@@ -104,6 +106,13 @@ public class ExpeditionChartItem extends Item {
         ResourceKey<net.minecraft.world.level.Level> dimKey = ExpeditionDimensions.createChartKey(chartUuid);
         ExpeditionSession session = new ExpeditionSession(dimKey, members, getComponentIds(stack), deadlineTick);
 
+        if (ExpeditionService.getActiveSession() != null) {
+            player.displayClientMessage(
+                    Component.translatable("message.otherworldinn.expedition.already_active")
+                            .withStyle(ChatFormatting.RED), true);
+            return InteractionResultHolder.fail(stack);
+        }
+
         ServerLevel expeditionLevel = ExpeditionService.ensureExpeditionLevel(
                 player.getServer(), dimKey, getComponentIds(stack), chartUuid.getLeastSignificantBits(),
                 getChartDimension(stack));
@@ -132,6 +141,9 @@ public class ExpeditionChartItem extends Item {
             ServerPlayer mp = player.getServer().getPlayerList().getPlayer(id);
             if (mp != null) {
                 teleportToSafeSurface(mp, expeditionLevel);
+                long remaining = session.deadlineTick() - player.getServer().getTickCount();
+                ModMessages.sendToPlayer(
+                        new S2CExpeditionTimerPacket(remaining), mp);
             }
         }
 
@@ -230,6 +242,13 @@ public class ExpeditionChartItem extends Item {
         ResourceKey<net.minecraft.world.level.Level> dimKey = ExpeditionDimensions.createChartKey(chartUuid);
         ExpeditionSession session = new ExpeditionSession(dimKey, onlineMembers, getComponentIds(stack), deadlineTick);
 
+        if (ExpeditionService.getActiveSession() != null) {
+            player.displayClientMessage(
+                    Component.translatable("message.otherworldinn.expedition.already_active")
+                            .withStyle(ChatFormatting.RED), true);
+            return InteractionResultHolder.fail(stack);
+        }
+
         ServerLevel expeditionLevel = ExpeditionService.ensureExpeditionLevel(
                 player.getServer(), dimKey, getComponentIds(stack), chartUuid.getLeastSignificantBits(),
                 getChartDimension(stack));
@@ -258,6 +277,9 @@ public class ExpeditionChartItem extends Item {
             ServerPlayer mp = player.getServer().getPlayerList().getPlayer(id);
             if (mp != null) {
                 teleportToSafeSurface(mp, expeditionLevel);
+                long remaining = session.deadlineTick() - player.getServer().getTickCount();
+                ModMessages.sendToPlayer(
+                        new S2CExpeditionTimerPacket(remaining), mp);
             }
         }
 

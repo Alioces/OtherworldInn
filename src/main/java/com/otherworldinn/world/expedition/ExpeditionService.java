@@ -190,6 +190,7 @@ public final class ExpeditionService {
                 ((MixinMinecraftServerLevelsAccessor) server).otherworldinn$getLevels();
         levels.remove(dimKey);
         clearDimComponents(dimKey);
+        deleteDimensionFiles(server, dimKey);
         ACTIVE_EXPEDITIONS.remove(dimKey);
         for (UUID playerId : session.activePlayers()) {
             PLAYER_EXPEDITION_MAP.remove(playerId, dimKey);
@@ -221,13 +222,6 @@ public final class ExpeditionService {
             return null;
         }
 
-        NoiseBasedChunkGenerator customGen =
-                ExpeditionBiomeFactory.createNoiseGenerator(server, componentIds, category);
-        if (customGen == null) {
-            OtherworldInn.LOGGER.error("Failed to create noise generator for expedition");
-            return null;
-        }
-
         ChunkGenerator oldGen = template.getChunkSource().getGenerator();
         if (!(oldGen instanceof ExpeditionChunkGenerator expGen)) {
             OtherworldInn.LOGGER.error("Template dimension {} does not use ExpeditionChunkGenerator", templateKey.location());
@@ -238,11 +232,19 @@ public final class ExpeditionService {
         clearChunkCaches(template);
         deleteTemplateRegionFiles(server, templateKey);
 
+        BlockState stoneReplacement = resolveStoneType(componentIds);
+
+        NoiseBasedChunkGenerator customGen =
+                ExpeditionBiomeFactory.createNoiseGenerator(server, componentIds, category, stoneReplacement);
+        if (customGen == null) {
+            OtherworldInn.LOGGER.error("Failed to create noise generator for expedition");
+            return null;
+        }
+
         expGen.setComponentIds(componentIds);
         expGen.setDelegate(customGen);
         expGen.setStructureBoost(
                 ExpeditionBiomeFactory.hasStructureBoost(componentIds));
-        expGen.setStoneReplacement(resolveStoneType(componentIds));
         expGen.setLavaFlood(componentIds.contains("lava_flood"));
         expGen.setDryLand(componentIds.contains("dry_land"));
         expGen.setWaterWorld(componentIds.contains("water_world"));
@@ -418,6 +420,7 @@ public final class ExpeditionService {
                         ((MixinMinecraftServerLevelsAccessor) server).otherworldinn$getLevels();
                 levels.remove(dimKey);
                 clearDimComponents(dimKey);
+                deleteDimensionFiles(server, dimKey);
                 restoreTemplateDimension(server);
             } else {
                 tickComponentEffects(server, session, level);
@@ -590,7 +593,6 @@ public final class ExpeditionService {
             expGen.setDelegate(null);
             expGen.componentIds().clear();
             expGen.setStructureBoost(false);
-            expGen.setStoneReplacement(Blocks.STONE.defaultBlockState());
             expGen.setLavaFlood(false);
             expGen.setDryLand(false);
             expGen.setWaterWorld(false);
@@ -629,9 +631,54 @@ public final class ExpeditionService {
         }
     }
 
+    private static void deleteDimensionFiles(MinecraftServer server,
+            ResourceKey<Level> dimKey) {
+        try {
+            Field sf = MinecraftServer.class.getDeclaredField("storageSource");
+            sf.setAccessible(true);
+            LevelStorageSource.LevelStorageAccess access =
+                    (LevelStorageSource.LevelStorageAccess) sf.get(server);
+
+            Path dimPath = access.getDimensionPath(dimKey);
+            Path regionPath = dimPath.resolve("region");
+
+            if (Files.isDirectory(regionPath)) {
+                try (var files = Files.list(regionPath)) {
+                    files.filter(p -> p.toString().endsWith(".mca"))
+                            .forEach(p -> {
+                                try { Files.delete(p); } catch (Exception ignored) {}
+                            });
+                }
+            }
+
+            Path entitiesPath = dimPath.resolve("entities");
+            if (Files.isDirectory(entitiesPath)) {
+                try (var files = Files.list(entitiesPath)) {
+                    files.forEach(p -> {
+                        try { Files.delete(p); } catch (Exception ignored) {}
+                    });
+                }
+            }
+
+            Path poiPath = dimPath.resolve("poi");
+            if (Files.isDirectory(poiPath)) {
+                try (var files = Files.list(poiPath)) {
+                    files.forEach(p -> {
+                        try { Files.delete(p); } catch (Exception ignored) {}
+                    });
+                }
+            }
+        } catch (Exception e) {
+            OtherworldInn.LOGGER.warn("Failed to delete dimension files for {}: {}",
+                    dimKey.location(), e.getMessage());
+        }
+    }
+
     private static void clearLevelEntities(ServerLevel level) {
         try {
-            for (var entity : level.getAllEntities()) {
+            var snapshot = new ArrayList<net.minecraft.world.entity.Entity>();
+            level.getAllEntities().forEach(snapshot::add);
+            for (var entity : snapshot) {
                 entity.discard();
             }
         } catch (Exception ignored) {}

@@ -23,9 +23,10 @@ import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.biome.FixedBiomeSource;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSource;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
-import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 
 public final class ExpeditionBiomeFactory {
@@ -165,7 +166,8 @@ public final class ExpeditionBiomeFactory {
     public static NoiseBasedChunkGenerator createNoiseGenerator(
             MinecraftServer server,
             List<String> componentIds,
-            ChartComponentType.DimensionCategory category) {
+            ChartComponentType.DimensionCategory category,
+            BlockState stoneReplacement) {
 
         BiomeSource biomeSource = createBiomeSource(server, componentIds, category);
 
@@ -177,9 +179,14 @@ public final class ExpeditionBiomeFactory {
         }
 
         NoiseGeneratorSettings settings = settingsHolder.value();
+
+        BlockState defaultBlock = settings.defaultBlock();
+        if (stoneReplacement != null && stoneReplacement.getBlock() != Blocks.STONE) {
+            defaultBlock = stoneReplacement;
+        }
         if (componentIds.contains("dry_land")) {
             settings = new NoiseGeneratorSettings(
-                    settings.noiseSettings(), settings.defaultBlock(),
+                    settings.noiseSettings(), defaultBlock,
                     settings.defaultFluid(), settings.noiseRouter(),
                     settings.surfaceRule(), settings.spawnTarget(),
                     -64,
@@ -189,10 +196,20 @@ public final class ExpeditionBiomeFactory {
                     settings.useLegacyRandomSource());
         } else if (componentIds.contains("water_world")) {
             settings = new NoiseGeneratorSettings(
-                    settings.noiseSettings(), settings.defaultBlock(),
+                    settings.noiseSettings(), defaultBlock,
                     settings.defaultFluid(), settings.noiseRouter(),
                     settings.surfaceRule(), settings.spawnTarget(),
                     127,
+                    settings.disableMobGeneration(),
+                    settings.aquifersEnabled(),
+                    settings.oreVeinsEnabled(),
+                    settings.useLegacyRandomSource());
+        } else if (stoneReplacement != null && stoneReplacement.getBlock() != Blocks.STONE) {
+            settings = new NoiseGeneratorSettings(
+                    settings.noiseSettings(), defaultBlock,
+                    settings.defaultFluid(), settings.noiseRouter(),
+                    settings.surfaceRule(), settings.spawnTarget(),
+                    settings.seaLevel(),
                     settings.disableMobGeneration(),
                     settings.aquifersEnabled(),
                     settings.oreVeinsEnabled(),

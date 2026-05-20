@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
@@ -15,7 +14,6 @@ import net.minecraft.world.level.NoiseColumn;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeSource;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -45,15 +43,9 @@ public class ExpeditionChunkGenerator extends ChunkGenerator {
     private final List<String> componentIds = new java.util.ArrayList<>();
     private NoiseBasedChunkGenerator delegate;
     private boolean structureBoost;
-    private BlockState stoneReplacement = Blocks.STONE.defaultBlockState();
     private boolean lavaFlood;
     private boolean dryLand;
     private boolean waterWorld;
-
-    private static final Set<Block> REPLACEABLE_STONES = Set.of(
-            Blocks.STONE, Blocks.DEEPSLATE,
-            Blocks.GRANITE, Blocks.DIORITE, Blocks.ANDESITE,
-            Blocks.TUFF, Blocks.SANDSTONE);
 
     public ExpeditionChunkGenerator(BiomeSource biomeSource, List<String> componentIds) {
         super(biomeSource);
@@ -78,10 +70,6 @@ public class ExpeditionChunkGenerator extends ChunkGenerator {
     }
 
     public boolean isStructureBoost() { return structureBoost; }
-
-    public void setStoneReplacement(BlockState stone) { this.stoneReplacement = stone; }
-
-    public BlockState stoneReplacement() { return stoneReplacement; }
 
     public void setLavaFlood(boolean lavaFlood) { this.lavaFlood = lavaFlood; }
 
@@ -158,8 +146,7 @@ public class ExpeditionChunkGenerator extends ChunkGenerator {
             @NotNull RandomState state, @NotNull StructureManager manager,
             @NotNull ChunkAccess chunk) {
         if (delegate != null) {
-            boolean needsStone = stoneReplacement.getBlock() != Blocks.STONE;
-            if (needsStone || lavaFlood) {
+            if (lavaFlood) {
                 return delegate.fillFromNoise(blender, state, manager, chunk)
                         .thenApply(c -> postProcess(c));
             }
@@ -180,11 +167,6 @@ public class ExpeditionChunkGenerator extends ChunkGenerator {
                     for (int z = 0; z < 16; z++) {
                         BlockState bs = section.getBlockState(x, y, z);
                         int wy = chunk.getSectionYFromSectionIndex(i) * 16 + y;
-
-                        if (stoneReplacement.getBlock() != Blocks.STONE
-                                && REPLACEABLE_STONES.contains(bs.getBlock())) {
-                            section.setBlockState(x, y, z, stoneReplacement);
-                        }
 
                         if (lavaFlood && bs.getFluidState().is(Fluids.WATER)) {
                             if (wy < 63) {

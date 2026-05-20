@@ -12,6 +12,7 @@ import com.otherworldinn.network.packet.C2SWithdrawCoinPacket;
 import com.otherworldinn.network.packet.S2CCommissionBoardPacket;
 import com.otherworldinn.network.packet.S2CDialogueClosePacket;
 import com.otherworldinn.network.packet.S2CDialogueNodePacket;
+import com.otherworldinn.network.packet.S2CExpeditionTimerPacket;
 import com.otherworldinn.network.packet.S2CTeamSyncPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
@@ -48,6 +49,10 @@ public class ModMessages {
                 S2CCommissionBoardPacket.TYPE,
                 S2CCommissionBoardPacket.STREAM_CODEC,
                 S2CCommissionBoardPacket::handle);
+        registrar.playToClient(
+                S2CExpeditionTimerPacket.TYPE,
+                S2CExpeditionTimerPacket.STREAM_CODEC,
+                S2CExpeditionTimerPacket::handle);
 
         // 注册 C2S 数据包
         registrar.playToServer(
