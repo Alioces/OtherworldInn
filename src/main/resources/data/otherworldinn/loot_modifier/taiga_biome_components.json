@@ -3,12 +3,12 @@
   "conditions": [
     {
       "condition": "neoforge:loot_table_id",
-      "loot_table_id": "minecraft:chests/village/village_plains_house"
+      "loot_table_id": "minecraft:chests/village/village_taiga_house"
     }
   ],
   "components": {
-    "plains_biome": 35.0,
-    "surface_world": 25.0,
-    "stone_base": 20.0
+    "taigas_biome": 35.0,
+    "forests_biome": 25.0,
+    "eternal_night": 18.0
   }
 }

@@ -13,6 +13,9 @@
     "otherworldinn:ancient_city_components",
     "otherworldinn:swamp_components",
     "otherworldinn:pillager_components",
-    "otherworldinn:plains_components"
+    "otherworldinn:plains_components",
+    "otherworldinn:savanna_biome_components",
+    "otherworldinn:taiga_biome_components",
+    "otherworldinn:snowy_biome_components"
   ]
 }

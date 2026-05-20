@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "otherworldinn:chart_component"
+    },
+    "C": {
+      "item": "minecraft:grass_block"
+    },
+    "E": {
+      "item": "minecraft:dirt"
+    }
+  },
+  "pattern": [
+    "CEC",
+    "EBE",
+    "CEC"
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_data": {
+        "component_type": "surface_world"
+      }
+    },
+    "count": 1,
+    "id": "otherworldinn:chart_component"
+  }
+}

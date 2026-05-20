@@ -44,6 +44,32 @@ public class ModRecipeProvider extends RecipeProvider {
     static {
         COMPONENT_CRAFT.put("mushroom_biome",
                 ComponentCraftEntry.of(Items.RED_MUSHROOM, Items.MYCELIUM));
+        COMPONENT_CRAFT.put("surface_world",
+                ComponentCraftEntry.of(Items.GRASS_BLOCK, Items.DIRT));
+        COMPONENT_CRAFT.put("floating_islands",
+                ComponentCraftEntry.of(Items.END_STONE, Items.FEATHER));
+        COMPONENT_CRAFT.put("amplified_world",
+                ComponentCraftEntry.of(Items.MOSSY_COBBLESTONE, Items.STONE));
+        COMPONENT_CRAFT.put("cave_world",
+                ComponentCraftEntry.of(Items.DEEPSLATE, Items.COBBLED_DEEPSLATE));
+        COMPONENT_CRAFT.put("nether_cave",
+                ComponentCraftEntry.of(Items.NETHER_BRICKS, Items.NETHERRACK));
+        COMPONENT_CRAFT.put("end_void",
+                ComponentCraftEntry.of(Items.END_STONE_BRICKS, Items.END_STONE));
+        COMPONENT_CRAFT.put("stone_base",
+                ComponentCraftEntry.of(Items.STONE, Items.STONE));
+        COMPONENT_CRAFT.put("deepslate_base",
+                ComponentCraftEntry.of(Items.DEEPSLATE, Items.DEEPSLATE));
+        COMPONENT_CRAFT.put("granite_base",
+                ComponentCraftEntry.of(Items.GRANITE, Items.GRANITE));
+        COMPONENT_CRAFT.put("andesite_base",
+                ComponentCraftEntry.of(Items.ANDESITE, Items.ANDESITE));
+        COMPONENT_CRAFT.put("diorite_base",
+                ComponentCraftEntry.of(Items.DIORITE, Items.DIORITE));
+        COMPONENT_CRAFT.put("sandstone_base",
+                ComponentCraftEntry.of(Items.SANDSTONE, Items.SANDSTONE));
+        COMPONENT_CRAFT.put("tuff_base",
+                ComponentCraftEntry.of(Items.TUFF, Items.TUFF));
     }
 
     public ModRecipeProvider(
@@ -86,6 +112,9 @@ public class ModRecipeProvider extends RecipeProvider {
         SpecialRecipeBuilder.special(
                         (CraftingBookCategory cat) -> new ChartDimensionRecipe(cat))
                 .save(recipeOutput, "chart_dimension");
+        SpecialRecipeBuilder.special(
+                        (CraftingBookCategory cat) -> new ChartComponentRecipe(cat))
+                .save(recipeOutput, "chart_component");
 
         ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, ModItems.CHART_COMPONENT.get(), 2)
                 .requires(Items.PAPER, 4)
