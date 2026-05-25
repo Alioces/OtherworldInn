@@ -419,17 +419,6 @@ public class InnData {
     }
 
     /**
-     * 每 tick 更新逻辑
-     *
-     * <p>处理旅社的全局逻辑，例如统计或批量更新。 旅客个体的逻辑由 GuestEntity 自身处理。
-     *
-     * @param level 服务器等级
-     */
-    public void tick(ServerLevel level) {
-        // 全局旅客管理逻辑（如自动退房检查）可在此处实现
-    }
-
-    /**
      * 计算并更新房间属性
      *
      * <p>遍历房间内的所有方块，查找已注册的家具，累加其属性值。

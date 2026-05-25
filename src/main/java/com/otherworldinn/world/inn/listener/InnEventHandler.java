@@ -260,7 +260,7 @@ public class InnEventHandler {
         TeamSavedData data = teamManager.getData(level.getServer());
         if (data != null) {
             for (TeamData team : data.getTeams().values()) {
-                team.getInnData().tick(level);
+                team.getInnData().tick(level, team);
             }
         }
 
