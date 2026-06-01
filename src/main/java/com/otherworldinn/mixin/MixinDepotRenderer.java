@@ -52,7 +52,6 @@ public class MixinDepotRenderer {
 
     @Inject(method = "renderItem", at = @At("HEAD"), cancellable = true, remap = false)
     private static void injectRenderBlockItemAsBlock(
-            Level level,
             PoseStack poseStack,
             MultiBufferSource bufferSource,
             int light,

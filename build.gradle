@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.140'
+    id 'net.neoforged.moddev' version '2.0.141'
     id 'idea'
 }
 
@@ -17,15 +17,27 @@ tasks.named('wrapper', Wrapper).configure {
 version = mod_version
 group = mod_group_id
 
-repositories {
+repositories{
+    maven {
+        url = uri("https://maven.aliyun.com/nexus/content/groups/public/")
+    }
+    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" }
+    maven { url = "https://maven.createmod.net" }
+    maven {
+        // location of the maven that hosts JEI files since January 2023
+        name = "Jared's maven"
+        url = "https://maven.blamejared.com/"
+    }
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
     maven {
         //Architectury
         url = "https://maven.architectury.dev/"
     }
-    maven {
-        // Create, Ponder, Flywheel
-        url = "https://maven.createmod.net"
-    }
+    maven { url = "https://maven.createmod.net" } // Ponder, Flywheel
     maven {
         // Registrate
         url = "https://maven.ithundxr.dev/snapshots"
@@ -63,10 +75,13 @@ repositories {
         name = "ConditionalMixin"
         url 'https://maven.fallenbreath.me/releases'
     }
+    maven { // Registrate
+        url "https://maven.gegy.dev/releases"
+    }
     maven {
         // FTB Mods
         name = "FTB Maven"
-        url = "https://maven.ftb.dev/releases"
+        url "https://maven.ftb.dev/releases"
         content {
             includeGroup "dev.ftb.mods"
         }
@@ -201,11 +216,12 @@ def createUtilitiesModuleJar = tasks.register("createUtilitiesModuleJar", Jar) {
 
 dependencies {
     implementation("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
-    implementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}")
+//    implementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}")
+    implementation(files("libs/ponder-neoforge-1.0.82+mc1.21.1.jar"))
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${flywheel_minecraft_version}:${flywheel_version}")
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${flywheel_minecraft_version}:${flywheel_version}")
-    implementation("com.tterrag.registrate:Registrate:${registrate_version}")
-
+//    implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+    implementation(files("libs/Registrate-MC1.21-1.3.0+62.jar"))
     compileOnly("mezz.jei:jei-${jei_minecraft_version}-common-api:${jei_version}")
     compileOnly("mezz.jei:jei-${jei_minecraft_version}-neoforge-api:${jei_version}")
     runtimeOnly("mezz.jei:jei-${jei_minecraft_version}-neoforge:${jei_version}")
@@ -221,8 +237,14 @@ dependencies {
     localRuntime("maven.modrinth:serene-seasons:${serene_seasons_version}")
     compileOnly("curse.maven:reskillable-reimagined-1170464:${reskillable_reimagined_version}")
     localRuntime("curse.maven:reskillable-reimagined-1170464:${reskillable_reimagined_version}")
-    compileOnly("dev.ftb.mods:ftb-ultimine:${ftb_ultimine_version}")
-    localRuntime("dev.ftb.mods:ftb-ultimine-neoforge:${ftb_ultimine_version}")
+//    compileOnly("dev.ftb.mods:ftb-ultimine:${ftb_ultimine_version}")
+//    localRuntime("dev.ftb.mods:ftb-ultimine-neoforge:${ftb_ultimine_version}")
+    compileOnly(files("libs/ftb-ultimine-neoforge-2101.1.13.jar"))
+    localRuntime(files("libs/ftb-ultimine-neoforge-2101.1.13.jar"))
+    compileOnly(files("libs/ftb-library-neoforge-2101.1.31.jar"))
+    localRuntime(files("libs/ftb-library-neoforge-2101.1.31.jar"))
+    compileOnly(files("libs/architectury-13.0.8-neoforge.jar"))
+    localRuntime(files("libs/architectury-13.0.8-neoforge.jar"))
     implementation(jarJar(files(createUtilitiesModuleJar)))
     localRuntime(files("libs/createutilities-0.3.2+1.21.1.jar"))
 
