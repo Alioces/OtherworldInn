@@ -79,6 +79,12 @@ public abstract class GuestEntity extends PathfinderMob {
             SynchedEntityData.defineId(GuestEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> GUEST_BUDGET =
             SynchedEntityData.defineId(GuestEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> GUEST_COMFORT_PREF =
+            SynchedEntityData.defineId(GuestEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> GUEST_LIGHT_PREF =
+            SynchedEntityData.defineId(GuestEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> GUEST_HUMIDITY_PREF =
+            SynchedEntityData.defineId(GuestEntity.class, EntityDataSerializers.INT);
     // 搜索“餐台”的范围：以旅客为中心 32 格
     private static final int DINING_SEARCH_RADIUS = 32;
     // 平均一天触发 3 次：24000 / 3 = 8000 tick
@@ -120,12 +126,8 @@ public abstract class GuestEntity extends PathfinderMob {
 
     protected GuestEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
-        // 初始化旅客数据
         long currentTime = level.getGameTime();
         this.guestData = new GuestData(this.getUUID(), currentTime + getStayDuration());
-        // 初始化默认偏好
-        this.initGuestPreferences();
-        // 初始化奖励物品
         this.initRewardItems();
         this.budget = this.generateInitialBudget();
     }
@@ -143,6 +145,24 @@ public abstract class GuestEntity extends PathfinderMob {
             this.setCustomName(GuestNameManager.getRandomName(this.getRandom()));
         }
         assignRandomDialogueIfAbsent();
+
+        this.initGuestPreferences();
+
+        this.entityData.set(
+                GUEST_COMFORT_PREF,
+                packPreference(
+                        this.guestData.getComfortPreference().min(),
+                        this.guestData.getComfortPreference().max()));
+        this.entityData.set(
+                GUEST_LIGHT_PREF,
+                packPreference(
+                        this.guestData.getLightPreference().min(),
+                        this.guestData.getLightPreference().max()));
+        this.entityData.set(
+                GUEST_HUMIDITY_PREF,
+                packPreference(
+                        this.guestData.getHumidityPreference().min(),
+                        this.guestData.getHumidityPreference().max()));
 
         return spawnData;
     }
@@ -979,6 +999,25 @@ public abstract class GuestEntity extends PathfinderMob {
                 this.entityData.set(GUEST_BUDGET, this.budget);
             }
 
+            int packedComfort = packPreference(
+                    this.guestData.getComfortPreference().min(),
+                    this.guestData.getComfortPreference().max());
+            if (this.entityData.get(GUEST_COMFORT_PREF) != packedComfort) {
+                this.entityData.set(GUEST_COMFORT_PREF, packedComfort);
+            }
+            int packedLight = packPreference(
+                    this.guestData.getLightPreference().min(),
+                    this.guestData.getLightPreference().max());
+            if (this.entityData.get(GUEST_LIGHT_PREF) != packedLight) {
+                this.entityData.set(GUEST_LIGHT_PREF, packedLight);
+            }
+            int packedHumidity = packPreference(
+                    this.guestData.getHumidityPreference().min(),
+                    this.guestData.getHumidityPreference().max());
+            if (this.entityData.get(GUEST_HUMIDITY_PREF) != packedHumidity) {
+                this.entityData.set(GUEST_HUMIDITY_PREF, packedHumidity);
+            }
+
             // 发光逻辑：等待入住时发光
             if (this.shouldGuestGlow()) {
                 if (!this.hasGlowingTag()) {
@@ -1003,6 +1042,16 @@ public abstract class GuestEntity extends PathfinderMob {
             GuestData.IntRange budgetRange = getBudgetRange();
             this.budget = Mth.clamp(this.entityData.get(GUEST_BUDGET), budgetRange.min(), budgetRange.max());
 
+            int packedComfort = this.entityData.get(GUEST_COMFORT_PREF);
+            this.guestData.setComfortPreference(
+                    unpackMin(packedComfort), unpackMax(packedComfort));
+            int packedLight = this.entityData.get(GUEST_LIGHT_PREF);
+            this.guestData.setLightPreference(
+                    unpackMin(packedLight), unpackMax(packedLight));
+            int packedHumidity = this.entityData.get(GUEST_HUMIDITY_PREF);
+            this.guestData.setHumidityPreference(
+                    unpackMin(packedHumidity), unpackMax(packedHumidity));
+
             // 客户端发光逻辑 (虽然 glowing tag 会自动同步，但这里双重保险或用于其他客户端效果)
             // 注意：setGlowingTag 主要由服务端控制，客户端设置可能只在本地生效
         }
@@ -1014,6 +1063,9 @@ public abstract class GuestEntity extends PathfinderMob {
         builder.define(SKIN_VARIANT, 0);
         builder.define(GUEST_STATE, GuestData.GuestState.IDLE.ordinal());
         builder.define(GUEST_BUDGET, getBudgetRange().min());
+        builder.define(GUEST_COMFORT_PREF, packPreference(0, 100));
+        builder.define(GUEST_LIGHT_PREF, packPreference(0, 100));
+        builder.define(GUEST_HUMIDITY_PREF, packPreference(0, 100));
     }
 
     @Override
@@ -1279,6 +1331,18 @@ public abstract class GuestEntity extends PathfinderMob {
             max = temp;
         }
         rangeSetter.accept(min, max);
+    }
+
+    private static int packPreference(int min, int max) {
+        return (min & 0xFF) | ((max & 0xFF) << 8);
+    }
+
+    private static int unpackMin(int packed) {
+        return packed & 0xFF;
+    }
+
+    private static int unpackMax(int packed) {
+        return (packed >> 8) & 0xFF;
     }
 
     private GuestData.IntRange getBudgetRange() {

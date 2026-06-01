@@ -50,7 +50,15 @@ public final class SponsorNamePool {
                     "Yumicuibb",
                     "KeyxelDesu",
                     "Caoning",
-                    "NomeSun");
+                    "NomeSun",
+                    "xiao_zhan",
+                    "Shuo_Mo",
+                    "yszx_",
+                    "zzniania",
+                    "Ms_Springfield",
+                    "YAKUMODESU",
+                    "cabll",
+                    "Cillian_master");
 
     private SponsorNamePool() {}
 

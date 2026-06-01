@@ -1282,7 +1282,7 @@ public class InnData {
             guest = guestEntity.getGuestData();
             vipGuest = guestEntity instanceof VipGuestEntity;
             if (guest != null) {
-                guest.dropRewards(level, entity.blockPosition());
+                guest.dropRewards(level, entity.blockPosition(), guest.getAssignedBedPos());
             }
         }
         RoomData targetRoom = null;
