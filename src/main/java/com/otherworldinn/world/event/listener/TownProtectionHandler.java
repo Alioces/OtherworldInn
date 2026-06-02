@@ -603,9 +603,20 @@ public class TownProtectionHandler {
             return;
         }
 
-        if (clickedState.hasBlockEntity()) return;
+        if (clickedState.hasBlockEntity()
+                && !(clickedState.getBlock() instanceof net.minecraft.world.level.block.DecoratedPotBlock)) {
+            return;
+        }
 
         if (level instanceof ServerLevel serverLevel && isFreeZone(serverLevel, pos)) {
+            return;
+        }
+
+        if (clickedState.getBlock() instanceof net.minecraft.world.level.block.DecoratedPotBlock) {
+            if (!player.isCreative()) {
+                denyRightClickBlock(event, player,
+                        Component.translatable("message.otherworldinn.protection.deny"));
+            }
             return;
         }
 

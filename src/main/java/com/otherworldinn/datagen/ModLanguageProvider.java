@@ -741,7 +741,7 @@ public class ModLanguageProvider extends LanguageProvider {
 
         // 远征
         entry("message.otherworldinn.expedition.no_team").zh("你当前不在任何队伍中").en("You are not in any team");
-        entry("message.otherworldinn.expedition.not_enough_coins").zh("队伍金币不足，还需 %s 金币").en("Not enough coins, need %s more");
+        entry("message.otherworldinn.expedition.not_enough_coins").zh("队伍金币不足，还需 §f\uE001§r%s").en("Not enough coins, need %s more");
         entry("message.otherworldinn.expedition.solo_started").zh("远征已开启！维度传送中…").en("Solo expedition started! Entering dimension...");
         entry("message.otherworldinn.expedition.sneak_to_confirm").zh("潜行右键以确认开启远征").en("Sneak + right click to confirm expedition");
         entry("message.otherworldinn.expedition.not_leader").zh("只有发起者才能开启远征").en("Only the leader can start the expedition");
@@ -764,7 +764,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("message.otherworldinn.expedition.already_active").zh("已有正在进行的远征，请等待当前远征结束后再尝试").en("An expedition is already in progress, wait for it to end");
         entry("message.otherworldinn.expedition.click_to_join").zh("[点击加入]").en("[Click to join]");
         entry("message.otherworldinn.expedition.click_to_join_hover").zh("点击加入此次远征队伍").en("Click to join this expedition party");
-        entry("message.otherworldinn.expedition.recruit_broadcast").zh("✦ %s 发起了一场远征组队（%s | 预估费用 %s 币）%s").en("✦ %s started an expedition party (%s | est. fee %s coins) %s");
+        entry("message.otherworldinn.expedition.recruit_broadcast").zh("✦ %s 发起了一场远征组队（%s | 预估费用 §f\uE001§r%s）%s").en("✦ %s started an expedition party (%s | est. fee %s coins) %s");
         entry("message.otherworldinn.expedition.aborted").zh("远征已被管理员强制终止").en("Expedition has been forcibly terminated by admin");
         entry("message.otherworldinn.recipe_book.unlocked").zh("配方已为队伍解锁：%s").en("Recipe unlocked for your team: %s");
         entry("message.otherworldinn.recipe_book.locked_prefix").zh("(未解锁) %s").en("(Locked) %s");
@@ -779,7 +779,7 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("tooltip.otherworldinn.chart_component.blank").zh("用于合成其它星图组件").en("Used to craft other chart components");
         entry("tooltip.otherworldinn.chart_component.effect").zh("%s").en("%s");
         entry("tooltip.otherworldinn.chart_component.side_effect").zh("  ⚠ %s").en("  ⚠ %s");
-        entry("tooltip.otherworldinn.chart_component.fee").zh("费用：+%s 金币").en("Fee: +%s coins");
+        entry("tooltip.otherworldinn.chart_component.fee").zh("费用：+§f\uE001§r%s").en("Fee: +%s coins");
 
         entry("tooltip.otherworldinn.expedition_chart.recruiting").zh("  ▸ 招募中").en("  ▸ Recruiting");
         entry("tooltip.otherworldinn.expedition_chart.leader").zh("  发起者：%s").en("  Leader: %s");
@@ -793,8 +793,8 @@ public class ModLanguageProvider extends LanguageProvider {
         entry("tooltip.otherworldinn.expedition_chart.empty_slot").zh("    ○ 空闲槽位").en("    ○ Empty slot");
         entry("tooltip.otherworldinn.expedition_chart.time_limit").zh("  时限：%s 分钟").en("  Time limit: %s min");
         entry("tooltip.otherworldinn.expedition_chart.max_players").zh("  队伍：最多 %s 人").en("  Party: up to %s players");
-        entry("tooltip.otherworldinn.expedition_chart.fee").zh("  预估费用：%s 金币").en("  Estimated fee: %s coins");
-        entry("tooltip.otherworldinn.expedition_chart.fee_with_count").zh("  费用：%s 金币（%s 人）").en("  Fee: %s coins (%s players)");
+        entry("tooltip.otherworldinn.expedition_chart.fee").zh("  预估费用：§f\uE001§r%s").en("  Estimated fee: %s coins");
+        entry("tooltip.otherworldinn.expedition_chart.fee_with_count").zh("  费用：§f\uE001§r%s（%s 人）").en("  Fee: %s coins (%s players)");
         entry("tooltip.otherworldinn.expedition_chart.dimension").zh("  维度类别：%s").en("  Dimension: %s");
         entry("message.otherworldinn.expedition.overlay.use").zh("使用星图").en("Use Chart");
         entry("message.otherworldinn.expedition.overlay.launch").zh("潜行开始远征").en("Sneak To Start");

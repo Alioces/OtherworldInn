@@ -1,6 +1,8 @@
 package com.otherworldinn.world.inn;
 
+import com.otherworldinn.util.BlockEntitySearchUtils;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -16,6 +18,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -178,49 +183,109 @@ public class GuestData {
      * @param pos 掉落位置
      */
     public void dropRewards(ServerLevel level, BlockPos pos) {
+        dropRewards(level, pos, null);
+    }
+
+    /**
+     * 在指定位置掉落奖励物品，优先放入附近的容器
+     *
+     * @param level 服务器等级
+     * @param pos 掉落位置
+     * @param bedPos 床位位置（用于搜索附近容器）
+     */
+    public void dropRewards(ServerLevel level, BlockPos pos, @Nullable BlockPos bedPos) {
         RandomSource random = level.getRandom();
 
-        // 根据偏好分数计算掉落概率乘数 (0.0 - 1.0)
-        // 0 分 -> 0.0 (不掉落)
-        // 10 分 -> 1.0 (正常掉落)
         float multiplier = this.preferenceScore / 10.0f;
 
+        List<ItemStack> itemsToDeliver = new ArrayList<>();
         for (RewardItem reward : rewardItems) {
-            // 计算基础数量
             int count = random.nextInt(reward.count.max - reward.count.min + 1) + reward.count.min;
 
-            // 应用概率判定
-            // 只有当随机值 < multiplier 时才掉落
             if (random.nextFloat() >= multiplier) {
                 count = 0;
             }
 
             if (count > 0) {
-                // 为了避免 lambda 问题，先获取 Item 再处理
                 var itemOptional = BuiltInRegistries.ITEM.getOptional(reward.item);
                 if (itemOptional.isPresent()) {
-                    ItemStack stack = new ItemStack(itemOptional.get(), count);
-                    ItemEntity itemEntity =
-                            new ItemEntity(
-                                    level,
-                                    pos.getX() + 0.5,
-                                    pos.getY() + 1.0,
-                                    pos.getZ() + 0.5,
-                                    stack);
-                    itemEntity.setDeltaMovement(0.0, 0.0, 0.0);
-
-                    // 设置特殊属性：发光、无重力、无敌、永不消失
-                    itemEntity.setGlowingTag(true);
-                    itemEntity.setNoGravity(true);
-                    itemEntity.setInvulnerable(true);
-                    itemEntity.setUnlimitedLifetime();
-
-                    level.addFreshEntity(itemEntity);
+                    itemsToDeliver.add(new ItemStack(itemOptional.get(), count));
                 }
             }
         }
-        // 掉落后清空奖励列表，防止重复获取
         rewardItems.clear();
+
+        if (itemsToDeliver.isEmpty()) return;
+
+        BlockPos searchCenter = bedPos != null ? bedPos : pos;
+        List<ItemStack> remaining = tryInsertIntoNearestContainer(level, searchCenter, itemsToDeliver);
+        if (remaining.isEmpty()) return;
+
+        for (ItemStack stack : remaining) {
+            ItemEntity itemEntity =
+                    new ItemEntity(
+                            level,
+                            pos.getX() + 0.5,
+                            pos.getY() + 1.0,
+                            pos.getZ() + 0.5,
+                            stack);
+            itemEntity.setDeltaMovement(0.0, 0.0, 0.0);
+            itemEntity.setGlowingTag(true);
+            itemEntity.setNoGravity(true);
+            itemEntity.setInvulnerable(true);
+            itemEntity.setUnlimitedLifetime();
+            level.addFreshEntity(itemEntity);
+        }
+    }
+
+    private static List<ItemStack> tryInsertIntoNearestContainer(
+            ServerLevel level, BlockPos center, List<ItemStack> items) {
+        if (items.isEmpty()) return List.of();
+
+        final int SEARCH_RADIUS = 8;
+        record ContainerInfo(BlockPos pos, IItemHandler handler) {}
+        List<ContainerInfo> containers = new ArrayList<>();
+
+        BlockEntitySearchUtils.forEachInBlockRange(
+                level,
+                center.getX() - SEARCH_RADIUS,
+                center.getX() + SEARCH_RADIUS,
+                center.getY() - SEARCH_RADIUS,
+                center.getY() + SEARCH_RADIUS,
+                center.getZ() - SEARCH_RADIUS,
+                center.getZ() + SEARCH_RADIUS,
+                blockEntity -> {
+                    BlockState state = blockEntity.getBlockState();
+                    BlockPos bePos = blockEntity.getBlockPos();
+                    IItemHandler handler =
+                            level.getCapability(
+                                    Capabilities.ItemHandler.BLOCK, bePos, state, blockEntity, null);
+                    if (handler != null) {
+                        containers.add(new ContainerInfo(bePos.immutable(), handler));
+                    }
+                });
+
+        containers.sort(Comparator.comparingDouble(c -> c.pos.distSqr(center)));
+
+        List<ItemStack> remaining = new ArrayList<>();
+        for (ItemStack stack : items) {
+            ItemStack copy = stack.copy();
+            boolean inserted = false;
+            for (ContainerInfo ci : containers) {
+                ItemStack leftover =
+                        net.neoforged.neoforge.items.ItemHandlerHelper.insertItem(
+                                ci.handler, copy, false);
+                if (leftover.isEmpty()) {
+                    inserted = true;
+                    break;
+                }
+                copy = leftover;
+            }
+            if (!inserted) {
+                remaining.add(copy);
+            }
+        }
+        return remaining;
     }
 
     // --- NBT 序列化 ---
